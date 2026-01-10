@@ -11,6 +11,7 @@ export default function Appointments() {
 
   const [selected, setSelected] = useState(null);
   const [mode, setMode] = useState(""); // "view" | "edit"
+  const [doctorFilter, setDoctorFilter] = useState("all");
 
   useEffect(() => {
     fetchAppointments();
@@ -30,8 +31,30 @@ export default function Appointments() {
     closeModal();
   };
 
+  const filteredAppointments =
+    doctorFilter === "all"
+      ? appointments
+      : appointments.filter((a) => a.Doctor === doctorFilter);
+  const doctorList = [...new Set(appointments.map((a) => a.Doctor))];
+
   return (
     <div className="container mt-5">
+      {/* //filter by doctor */}
+      <div className="d-flex justify-content-end mb-3">
+        <select
+          className="form-select w-auto"
+          value={doctorFilter}
+          onChange={(e) => setDoctorFilter(e.target.value)}
+        >
+          <option value="all">All Doctors</option>
+          {doctorList.map((doc, index) => (
+            <option key={index} value={doc}>
+              {doc}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <h2 className="mb-4">Appointments</h2>
 
       {/* ===== Desktop Table ===== */}
@@ -57,7 +80,7 @@ export default function Appointments() {
                 </td>
               </tr>
             ) : (
-              appointments.map((a, i) => (
+              filteredAppointments.map((a, i) => (
                 <tr key={a.id}>
                   <td>{i + 1}</td>
                   <td>{a.Patient}</td>

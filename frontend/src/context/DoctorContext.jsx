@@ -10,6 +10,7 @@ import doc7 from "../assets/image/docter7.jpg";
 import doc8 from "../assets/image/docter8.jpg";
 import doc9 from "../assets/image/docter9.jpg";
 import doc10 from "../assets/image/docter10.jpg";
+import doc11 from "../assets/image/docter11.jpg";
 
 const DoctorContext = createContext();
 
@@ -24,6 +25,7 @@ const doctorsData = [
   { id: 8, name: "Dr. Lina", specialty: "Child", image: doc8 },
   { id: 9, name: "Dr. Inayat", specialty: "Child", image: doc9 },
   { id: 10, name: "Dr. Ozma Khan", specialty: "Child", image: doc10 },
+  { id: 11, name: "Dr. Naseb Khan", specialty: "Child", image: doc11 },
 ];
 
 export const DoctorProvider = ({ children }) => {
