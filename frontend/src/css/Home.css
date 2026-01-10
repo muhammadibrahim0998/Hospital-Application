@@ -1,0 +1,48 @@
+/* ===== Slider Image Transition ===== */
+.slider-container {
+  position: relative;
+}
+
+.slider-img {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.slider-img.active {
+  opacity: 1;
+}
+
+/* ===== Caption Animation ===== */
+.carousel-caption {
+  position: absolute;
+  bottom: 20px;
+  left: 30px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  border-radius: 8px;
+  color: #fff;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 1.8s ease;
+}
+
+.carousel-caption.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ===== Button hover  , This is my first project  effect ===== */
+.btn {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
