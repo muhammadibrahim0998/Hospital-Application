@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import React, {useState} from "react";
+import {useLocation, Link, useNavigate} from "react-router-dom";
 import axios from "axios";
 
 export default function DoctorProfile() {
-  const { state } = useLocation();
+  const {state} = useLocation();
   const doctor = state?.doctor;
   const navigate = useNavigate();
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(state?.openBooking || false);
 
   const [formData, setFormData] = useState({
     Patient: "",
@@ -22,18 +22,21 @@ export default function DoctorProfile() {
     return (
       <div className="container mt-5 text-center">
         <h4 className="text-danger">Doctor data not found</h4>
-        <Link to="/doctors" className="btn btn-primary mt-3">
+        <Link
+          to="/doctors"
+          className="btn btn-primary mt-3"
+        >
           Back to Doctors
         </Link>
       </div>
     );
   }
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = e => {
+    setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     try {
       // Send data to backend
@@ -56,7 +59,7 @@ export default function DoctorProfile() {
               src={doctor.image}
               alt={doctor.name}
               className="rounded-circle img-fluid"
-              style={{ width: "220px", height: "220px", objectFit: "cover" }}
+              style={{width: "220px", height: "220px", objectFit: "cover"}}
             />
           </div>
 
@@ -85,7 +88,10 @@ export default function DoctorProfile() {
                 Book Appointment
               </button>
 
-              <Link to="/doctors" className="btn btn-outline-secondary">
+              <Link
+                to="/doctors"
+                className="btn btn-outline-secondary"
+              >
                 Back
               </Link>
             </div>
@@ -95,7 +101,10 @@ export default function DoctorProfile() {
 
       {/* 🔽 MODAL */}
       {showModal && (
-        <div className="modal show d-block" tabIndex="-1">
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+        >
           <div className="modal-dialog">
             <div className="modal-content">
               <form onSubmit={handleSubmit}>
@@ -193,7 +202,10 @@ export default function DoctorProfile() {
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                  >
                     Confirm Booking
                   </button>
                 </div>
