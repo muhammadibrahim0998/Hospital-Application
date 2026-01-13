@@ -81,6 +81,20 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
                 Contact
               </Link>
             </li>
+            {/* ✅about link */}
+            <li className="nav-item">
+              <Link
+                to="/about"
+                className="nav-link"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setSidebarOpen(false);
+                  setDropdownOpen(false);
+                }}
+              >
+                About
+              </Link>
+            </li>
 
             {/* Account dropdown */}
             <li className="nav-item dropdown">

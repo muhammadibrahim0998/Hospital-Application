@@ -20,6 +20,7 @@ import Reports from "./pages/Reports.jsx";
 import Logout from "./pages/Logout.jsx";
 import DepartmentDetails from "./pages/DepartmentDetails.jsx";
 import FieldDetails from "./pages/FieldDetails.jsx";
+import About  from "./components/About.jsx";
 
 function AppContent() {
   return (
@@ -38,6 +39,8 @@ function AppContent() {
             <Route path="/department/:id" element={<DepartmentDetails />} />
             <Route path="/field/:id" element={<FieldDetails />} />
             <Route path="contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
+
             <Route path="doctors" element={<Doctors />} />
             <Route path="doctor/:id" element={<DoctorProfile />} />
             <Route path="reports" element={<Reports />} />

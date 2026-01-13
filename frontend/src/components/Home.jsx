@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../css/Home.css";
 
 export default function Home() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // JWT token delete
-    navigate("/login"); // redirect to Login page
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+  const handleLearnMore = () => {
+    navigate("/about"); // Learn More تڼۍ About page ته لیږي
   };
 
   const slides = [
@@ -33,7 +37,7 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);
-    }, 2000);
+    }, 3000);
     return () => clearInterval(interval);
   }, [slides.length]);
 
@@ -56,34 +60,37 @@ export default function Home() {
         <div className="carousel-caption show">
           <h2 className="fw-bold">{slides[currentIndex].title}</h2>
           <p className="fs-6">{slides[currentIndex].desc}</p>
-
-          {/* Logout Button */}
-          <button className="btn btn-danger btn-sm" onClick={handleLogout}>
+          <button className="btn btn-danger btn-sm me-2" onClick={handleLogout}>
             Logout
           </button>
         </div>
       </div>
 
-      {/* ===== SERVICES ===== */}
+      {/* ===== HOSPITAL INFO BOX ===== */}
       <div className="container my-5">
-        <div className="row text-center g-4">
-          <div className="col-md-4">
-            <div className="p-4 shadow rounded">
-              <h5 className="fw-bold">Emergency Care</h5>
-              <p className="text-muted small">24/7 emergency services</p>
-            </div>
+        <div className="row align-items-center shadow rounded p-4">
+          <div className="col-md-6">
+            <h3 className="fw-bold text-danger">
+              City Care Hospital, Peshawar
+            </h3>
+            <h6 className="text-muted mb-3">
+              10 years of care, compassion & hope
+            </h6>
+            <p className="text-muted small">
+              City Care Hospital provides quality healthcare services to
+              everyone.
+            </p>
+            <button className="btn btn-danger btn-sm" onClick={handleLearnMore}>
+              Learn More
+            </button>
           </div>
-          <div className="col-md-4">
-            <div className="p-4 shadow rounded">
-              <h5 className="fw-bold">Qualified Doctors</h5>
-              <p className="text-muted small">Certified specialists</p>
-            </div>
-          </div>
-          <div className="col-md-4">
-            <div className="p-4 shadow rounded">
-              <h5 className="fw-bold">Modern Equipment</h5>
-              <p className="text-muted small">Latest medical technology</p>
-            </div>
+
+          <div className="col-md-6 text-center">
+            <img
+              src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3"
+              alt="City Care Hospital"
+              className="img-fluid rounded"
+            />
           </div>
         </div>
       </div>
