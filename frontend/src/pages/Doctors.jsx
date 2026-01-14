@@ -117,17 +117,10 @@ export default function Doctors() {
 
       <div className="container">
         <div className="row g-4">
-          {doctors.map(doc => (
-            <div
-              key={doc.id}
-              className="col-lg-3 col-md-4 col-sm-6"
-            >
+          {doctors.map((doc) => (
+            <div key={doc.id} className="col-lg-3 col-md-4 col-sm-6">
               <div className="doctor-card">
-                <img
-                  src={doc.image}
-                  alt={doc.name}
-                  className="doctor-img"
-                />
+                <img src={doc.image} alt={doc.name} className="doctor-img" />
 
                 {/* 🔥 Hover Overlay */}
                 <div className="doctor-overlay">
@@ -160,6 +153,10 @@ export default function Doctors() {
             <div
               className="modal show d-block"
               tabIndex="-1"
+              onClick={(e) => {
+                // Close modal if clicked outside modal-content
+                if (e.target.classList.contains("modal")) setShowModal(false);
+              }}
             >
               <div className="modal-dialog">
                 <div className="modal-content">
@@ -218,10 +215,7 @@ export default function Doctors() {
 
                         <div className="row g-2">
                           {timeSlots.map((slot, index) => (
-                            <div
-                              className="col-6"
-                              key={index}
-                            >
+                            <div className="col-6" key={index}>
                               <input
                                 type="radio"
                                 name="Time"
@@ -267,10 +261,7 @@ export default function Doctors() {
                       >
                         Cancel
                       </button>
-                      <button
-                        type="submit"
-                        className="btn btn-primary"
-                      >
+                      <button type="submit" className="btn btn-primary">
                         Confirm Booking
                       </button>
                     </div>
