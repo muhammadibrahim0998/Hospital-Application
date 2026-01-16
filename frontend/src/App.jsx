@@ -22,32 +22,46 @@ import DepartmentDetails from "./pages/DepartmentDetails.jsx";
 import FieldDetails from "./pages/FieldDetails.jsx";
 import About  from "./components/About.jsx";
 
+import { LabProvider } from "./context/LabContext.jsx"; 
+import DoctorLab from "../src/Lab/DoctorLab.jsx";   
+import LabPanel from "../src/Lab/LabPanel.jsx";   
+import LabResults from "../src/Lab/LabResults.jsx"; 
+import LaboratoryPanel from "./Lab/LaboratoryPanel.jsx";
+
+
 function AppContent() {
+  const userRole = "doctor";
   return (
     <>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      <LabProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Protected Routes */}
-        <Route element={<PrivateRoute />}>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="appointments" element={<Appointments />} />
-            <Route path="/department/:id" element={<DepartmentDetails />} />
-            <Route path="/field/:id" element={<FieldDetails />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
+          {/* Protected Routes */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="appointments" element={<Appointments />} />
+              <Route path="/department/:id" element={<DepartmentDetails />} />
+              <Route path="/field/:id" element={<FieldDetails />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="/about" element={<About />} />
 
-            <Route path="doctors" element={<Doctors />} />
-            <Route path="doctor/:id" element={<DoctorProfile />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="logout" element={<Logout />} />
+              <Route path="doctors" element={<Doctors />} />
+              <Route path="doctor/:id" element={<DoctorProfile />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="logout" element={<Logout />} />
+              <Route path="/doctor-lab" element={<DoctorLab />} />
+              <Route path="/lab-panel" element={<LabPanel />} />
+              <Route path="/lab-results" element={<LabResults />} />
+              <Route path="/laboratory-panel" element={<LaboratoryPanel />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
+        </Routes>
+      </LabProvider>
 
       {/* Footer on all pages */}
       <Footer />
