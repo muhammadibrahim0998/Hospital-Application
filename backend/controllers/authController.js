@@ -14,19 +14,27 @@ export const register = async (req, res) => {
   if (!name || !email || !password)
     return res.status(400).json({ message: "All fields required" });
 
-  const hashed = await bcrypt.hash(password, 10);
+  try {
+    const existingUsers = await findUserByEmail(email);
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
 
-  createUser({ name, email, password: hashed }, (err) => {
-    if (err) return res.status(400).json({ message: "Email already exists" });
+    const hashed = await bcrypt.hash(password, 10);
+    await createUser({ name, email, password: hashed });
     res.json({ message: "Registered successfully" });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Login
-export const login = (req, res) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  findUserByEmail(email, async (err, users) => {
+  try {
+    const users = await findUserByEmail(email);
     if (!users.length)
       return res.status(400).json({ message: "User not found" });
 
@@ -39,14 +47,21 @@ export const login = (req, res) => {
     });
 
     res.json({ token });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Profile
-export const profile = (req, res) => {
-  findUserById(req.user.id, (err, users) => {
+export const profile = async (req, res) => {
+  try {
+    const users = await findUserById(req.user.id);
     if (!users.length)
       return res.status(404).json({ message: "User not found" });
     res.json(users[0]);
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 };

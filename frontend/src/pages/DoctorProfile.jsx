@@ -1,13 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useDoctors } from "../context/DoctorContext";
+import { useDepartments } from "../context/DepartmentContext";
 import axios from "axios";
 
 export default function DoctorProfile() {
   const { state } = useLocation();
   const doctor = state?.doctor;
   const navigate = useNavigate();
+  const { doctors } = useDoctors();
+  const { departments } = useDepartments();
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(state?.openBooking || false);
+  const [email, setEmail] = useState(doctor?.email || "");
+  const [phone, setPhone] = useState(doctor?.phone || "");
 
   const [formData, setFormData] = useState({
     Patient: "",
@@ -17,6 +23,46 @@ export default function DoctorProfile() {
     Phone: "",
     Fee: 1000,
   });
+
+  const timeSlots = [
+    "8:00 AM - 8:30 AM",
+    "9:00 AM - 9:30 AM",
+    "10:00 AM - 10:30 AM",
+    "11:00 AM - 11:30 AM",
+    "12:00 PM - 12:30 PM",
+    "2:00 PM - 2:30 PM",
+    "3:00 PM - 3:30 PM",
+    "4:00 PM - 4:30 PM",
+  ];
+
+  // Random email & phone generator if not available
+  useEffect(() => {
+    if (!doctor) return;
+
+    // Email
+    if (!doctor.email) {
+      const randomEmail = `${doctor.name
+        .toLowerCase()
+        .replace(/\s+/g, "")}${Math.floor(Math.random() * 1000)}@hospital.com`;
+      setEmail(randomEmail);
+    } else {
+      setEmail(doctor.email);
+    }
+
+    // Phone
+    if (!doctor.phone) {
+      const randomPhone =
+        "+92" + Math.floor(1000000000 + Math.random() * 9000000000);
+      setPhone(randomPhone);
+    } else {
+      setPhone(doctor.phone);
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      Phone: doctor.phone || phone,
+    }));
+  }, [doctor]);
 
   if (!doctor) {
     return (
@@ -36,16 +82,27 @@ export default function DoctorProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Send data to backend
       await axios.post("http://localhost:3002/api/appointments", formData);
       alert("Appointment booked successfully!");
       setShowModal(false);
-      navigate("/appointments");
+      navigate("/appointments"); // optional: navigate to appointments page
     } catch (err) {
       console.error(err);
-      alert("Failed to book appointment. Try again.");
+      alert("Failed to book appointment. Please try again.");
     }
   };
+
+  // Department name
+  const departmentName =
+    departments.find((dep) =>
+      dep.fields.some((field) => field.id === doctor.fieldId)
+    )?.name || "N/A";
+
+  // Field / specialty name
+  const fieldName =
+    departments
+      .flatMap((dep) => dep.fields)
+      .find((field) => field.id === doctor.fieldId)?.name || doctor.specialty;
 
   return (
     <div className="container mt-5">
@@ -62,19 +119,17 @@ export default function DoctorProfile() {
 
           <div className="col-md-8">
             <h3 className="fw-bold text-primary">{doctor.name}</h3>
-            <h5 className="text-muted">{doctor.specialty}</h5>
-            <p>{doctor.experience}</p>
-
+            <h5 className="text-muted">{fieldName}</h5>
+            <p>
+              <strong>Department:</strong> {departmentName}
+            </p>
+            <p>{doctor.bio || "No bio available"}</p>
             <hr />
-
             <p>
-              <strong>Email:</strong> {doctor.email}
+              <strong>Email:</strong> {email}
             </p>
             <p>
-              <strong>Phone:</strong> {doctor.phone}
-            </p>
-            <p>
-              <strong>Bio:</strong> {doctor.bio}
+              <strong>Phone:</strong> {phone}
             </p>
 
             <div className="d-flex gap-2 mt-3">
@@ -84,7 +139,6 @@ export default function DoctorProfile() {
               >
                 Book Appointment
               </button>
-
               <Link to="/doctors" className="btn btn-outline-secondary">
                 Back
               </Link>
@@ -93,15 +147,22 @@ export default function DoctorProfile() {
         </div>
       </div>
 
-      {/* 🔽 MODAL */}
+      {/* Modal */}
       {showModal && (
-        <div className="modal show d-block" tabIndex="-1">
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          onClick={(e) => {
+            // Close modal if clicked outside modal-content
+            if (e.target.classList.contains("modal")) setShowModal(false);
+          }}
+        >
           <div className="modal-dialog">
-            <div className="modal-content">
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <form onSubmit={handleSubmit}>
                 <div className="modal-header">
                   <h5 className="modal-title">
-                    Book Appointment with {doctor.name}
+                    Book Appointment with {doctor?.name}
                   </h5>
                   <button
                     type="button"
@@ -129,9 +190,7 @@ export default function DoctorProfile() {
                       type="text"
                       className="form-control"
                       name="Doctor"
-                      required
                       value={formData.Doctor}
-                      onChange={handleChange}
                       readOnly
                     />
                   </div>
@@ -149,15 +208,35 @@ export default function DoctorProfile() {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Time</label>
-                    <input
-                      type="time"
-                      className="form-control"
-                      name="Time"
-                      required
-                      value={formData.Time}
-                      onChange={handleChange}
-                    />
+                    <label className="form-label fw-bold">
+                      Select Time Slot
+                    </label>
+
+                    <div className="row g-2">
+                      {timeSlots.map((slot, index) => (
+                        <div className="col-6" key={index}>
+                          <input
+                            type="radio"
+                            name="Time"
+                            id={`slot-${index}`}
+                            value={slot}
+                            checked={formData.Time === slot}
+                            onChange={handleChange}
+                            className="d-none"
+                            required
+                          />
+
+                          <label
+                            htmlFor={`slot-${index}`}
+                            className={`slot-box ${
+                              formData.Time === slot ? "active" : ""
+                            }`}
+                          >
+                            {slot}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="mb-3">
@@ -171,19 +250,8 @@ export default function DoctorProfile() {
                       onChange={handleChange}
                     />
                   </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Fee</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="Fee"
-                      required
-                      value={formData.Fee}
-                      onChange={handleChange}
-                    />
-                  </div>
                 </div>
+                
 
                 <div className="modal-footer">
                   <button
@@ -203,8 +271,7 @@ export default function DoctorProfile() {
         </div>
       )}
 
-      {/* Modal backdrop */}
-      {showModal && <div className="modal-backdrop fade show"></div>}
+      {showModal && <div className="modal-backdrop show"></div>}
     </div>
   );
 }
