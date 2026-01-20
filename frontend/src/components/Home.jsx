@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDoctors } from "../context/DoctorContext";
 import { useDepartments } from "../context/DepartmentContext";
-import axios from "axios";
 import "../css/Home.css";
 
 export default function Home() {
@@ -29,55 +28,14 @@ export default function Home() {
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [formData, setFormData] = useState({
-    Patient: "",
-    Doctor: "",
-    Date: "",
-    Time: "",
-    Phone: "",
-    Fee: 1000,
-  });
 
   useEffect(() => {
     const timer = setInterval(
       () => setCurrentIndex((prev) => (prev + 1) % slides.length),
-      3000
+      3000,
     );
     return () => clearInterval(timer);
   }, []);
-
-  const openModal = (doctor = null) => {
-    setSelectedDoctor(doctor);
-    setFormData((prev) => ({ ...prev, Doctor: doctor ? doctor.name : "" }));
-    setShowModal(true);
-  };
-
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post("http://localhost:3002/api/appointments", formData);
-      alert("Appointment booked successfully!");
-      setShowModal(false);
-    } catch (err) {
-      alert("Failed to book appointment");
-    }
-  };
-
-  const timeSlots = [
-    "8:00 AM - 8:30 AM",
-    "9:00 AM - 9:30 AM",
-    "10:00 AM - 10:30 AM",
-    "11:00 AM - 11:30 AM",
-    "12:00 PM - 12:30 PM",
-    "2:00 PM - 2:30 PM",
-    "3:00 PM - 3:30 PM",
-    "4:00 PM - 4:30 PM",
-  ];
 
   return (
     <div>
@@ -111,7 +69,7 @@ export default function Home() {
           <div className="row g-4">
             {departments.map((dept) => {
               const count = doctors.filter(
-                (d) => d.departmentId === dept.id
+                (d) => d.departmentId === dept.id,
               ).length;
               return (
                 <div
@@ -163,12 +121,7 @@ export default function Home() {
                 <div className="card-body">
                   <h6 className="fw-bold">{doc.name}</h6>
                   <p className="text-muted small">{doc.specialty}</p>
-                  <button
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => openModal(doc)}
-                  >
-                    Book Appointment
-                  </button>
+                  {/* Removed Book Appointment button */}
                 </div>
               </div>
             </div>
@@ -176,124 +129,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ================= MODAL ================= */}
-      {showModal && (
-        <>
-          <div className="modal show d-block" tabIndex="-1">
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <form onSubmit={handleSubmit}>
-                  <div className="modal-header">
-                    <h5 className="modal-title">
-                      {selectedDoctor
-                        ? `Book Appointment with ${selectedDoctor.name}`
-                        : "Book Appointment"}
-                    </h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={() => setShowModal(false)}
-                    ></button>
-                  </div>
-
-                  <div className="modal-body">
-                    <div className="mb-3">
-                      <label className="form-label">Patient</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="Patient"
-                        required
-                        value={formData.Patient}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Doctor</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="Doctor"
-                        value={formData.Doctor}
-                        readOnly
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Date</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="Date"
-                        required
-                        value={formData.Date}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label fw-bold">
-                        Select Time Slot
-                      </label>
-                      <div className="row g-2">
-                        {timeSlots.map((slot, index) => (
-                          <div className="col-6" key={index}>
-                            <input
-                              type="radio"
-                              name="Time"
-                              id={`slot-${index}`}
-                              value={slot}
-                              checked={formData.Time === slot}
-                              onChange={handleChange}
-                              className="d-none"
-                              required
-                            />
-                            <label
-                              htmlFor={`slot-${index}`}
-                              className={`slot-box ${
-                                formData.Time === slot ? "active" : ""
-                              }`}
-                            >
-                              {slot}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Phone</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="Phone"
-                        required
-                        value={formData.Phone}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn btn-primary">
-                      Confirm Booking
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div className="modal-backdrop fade show"></div>
-        </>
-      )}
       {/* ================= ABOUT HOSPITAL & DOCTORS ================= */}
       <section className="py-5 bg-light">
         <div className="container">

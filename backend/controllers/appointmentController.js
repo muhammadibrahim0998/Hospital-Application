@@ -1,13 +1,17 @@
 import {
   getAppointments,
+  getAppointmentsByCNIC,
   createAppointment,
   deleteAppointment,
 } from "../models/appointmentModel.js";
 
 export const fetchAppointments = async (req, res) => {
   try {
-    const appointments = await getAppointments();
-    res.json(appointments);
+    const { cnic } = req.query;
+    const data = cnic
+      ? await getAppointmentsByCNIC(cnic)
+      : await getAppointments();
+    res.json(data);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

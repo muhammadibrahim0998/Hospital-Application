@@ -2,50 +2,33 @@ import React, { createContext, useContext, useState } from "react";
 
 const AppointmentContext = createContext();
 
-export function AppointmentProvider({ children }) {
+export const AppointmentProvider = ({ children }) => {
   const [appointments, setAppointments] = useState([]);
 
-  // GET all appointments (assume fetched from backend)
+  // Fetch all appointments
   const fetchAppointments = async () => {
-    try {
-      const res = await fetch("http://localhost:3002/api/appointments");
-      const data = await res.json();
-      setAppointments(data);
-    } catch (err) {
-      console.log("Fetch Error:", err);
-    }
+    const res = await fetch("http://localhost:3002/api/appointments");
+    const data = await res.json();
+    setAppointments(data);
   };
 
-  // POST / add new appointment
-  const bookAppointment = async (appointment) => {
-    try {
-      await fetch("http://localhost:3002/api/appointments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(appointment),
-      });
-      fetchAppointments();
-    } catch (err) {
-      console.log("Book Error:", err);
-    }
-  };
-
-  // DELETE appointment
+  // Delete an appointment
   const deleteAppointment = async (id) => {
-    try {
-      await fetch(`http://localhost:3002/api/appointments/${id}`, {
-        method: "DELETE",
-      });
-      setAppointments((prev) => prev.filter((a) => a.id !== id));
-    } catch (err) {
-      console.log("Delete Error:", err);
-    }
+    await fetch(`http://localhost:3002/api/appointments/${id}`, {
+      method: "DELETE",
+    });
+    setAppointments((prev) => prev.filter((a) => a.id !== id));
   };
 
-  // ✅ FRONTEND-ONLY UPDATE (no backend call)
-  const updateAppointment = (id, updatedData) => {
+  // Update an appointment
+  const updateAppointment = async (id, updatedData) => {
+    await fetch(`http://localhost:3002/api/appointments/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedData),
+    });
     setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...updatedData } : a))
+      prev.map((a) => (a.id === id ? { ...a, ...updatedData } : a)),
     );
   };
 
@@ -54,7 +37,6 @@ export function AppointmentProvider({ children }) {
       value={{
         appointments,
         fetchAppointments,
-        bookAppointment,
         deleteAppointment,
         updateAppointment,
       }}
@@ -62,6 +44,6 @@ export function AppointmentProvider({ children }) {
       {children}
     </AppointmentContext.Provider>
   );
-}
+};
 
 export const useAppointments = () => useContext(AppointmentContext);

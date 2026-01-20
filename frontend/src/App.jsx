@@ -27,7 +27,7 @@ import DoctorLab from "../src/Lab/DoctorLab.jsx";
 import LabPanel from "../src/Lab/LabPanel.jsx";   
 import LabResults from "../src/Lab/LabResults.jsx"; 
 import LaboratoryPanel from "./Lab/LaboratoryPanel.jsx";
-
+import PatientLab from "./Lab/PatientLab.jsx";
 
 function AppContent() {
   const userRole = "doctor";
@@ -58,6 +58,7 @@ function AppContent() {
               <Route path="/lab-panel" element={<LabPanel />} />
               <Route path="/lab-results" element={<LabResults />} />
               <Route path="/laboratory-panel" element={<LaboratoryPanel />} />
+              <Route path="/patient/lab" element={<PatientLab />} />
             </Route>
           </Route>
         </Routes>

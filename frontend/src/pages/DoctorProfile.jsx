@@ -16,12 +16,13 @@ export default function DoctorProfile() {
   const [phone, setPhone] = useState(doctor?.phone || "");
 
   const [formData, setFormData] = useState({
-    Patient: "",
-    Doctor: doctor?.name || "",
-    Date: "",
-    Time: "",
-    Phone: "",
-    Fee: 1000,
+    patient: "",
+    doctor: doctor?.name || "",
+    CNIC: "",
+    date: "",
+    time: "",
+    phone: "",
+    fee: 1000,
   });
 
   const timeSlots = [
@@ -173,7 +174,7 @@ export default function DoctorProfile() {
 
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label className="form-label">Patient</label>
+                    <label className="form-label">patient</label>
                     <input
                       type="text"
                       className="form-control"
@@ -185,7 +186,7 @@ export default function DoctorProfile() {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Doctor</label>
+                    <label className="form-label">doctor</label>
                     <input
                       type="text"
                       className="form-control"
@@ -196,7 +197,7 @@ export default function DoctorProfile() {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Date</label>
+                    <label className="form-label">date</label>
                     <input
                       type="date"
                       className="form-control"
@@ -240,7 +241,7 @@ export default function DoctorProfile() {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Phone</label>
+                    <label className="form-label">phone</label>
                     <input
                       type="text"
                       className="form-control"

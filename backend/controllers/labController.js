@@ -1,56 +1,36 @@
-import * as Lab from "../models/LabTestModel.js";
+import * as Lab from "../models/LabModel.js";
 
-// GET /api/lab/tests
+// doctor
 export const getTests = async (req, res) => {
-  try {
-    const tests = await Lab.getAllTests();
-    res.json(tests);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
-  }
+  res.json(await Lab.getAllTests());
 };
 
-// POST /api/lab/tests
-// POST /api/lab/tests
 export const createTest = async (req, res) => {
-  try {
-    const { test_name, description, normal_range, price, category } = req.body;
-
-    if (!test_name || !price || !category) {
-      return res.status(400).json({ message: "Please provide all required fields" });
-    }
-
-    await Lab.addTest(test_name, description, normal_range, price, category);
-    res.status(201).json({ message: "Test added successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
-  }
+  const test = await Lab.addTest(req.body);
+  res.status(201).json(test);
 };
 
-// PUT /api/lab/:id/perform
+// patient
+export const assignTestCNIC = async (req, res) => {
+  const { cnic, lab_test_id } = req.body;
+  if (!cnic) return res.status(400).json({ message: "CNIC required" });
+
+  await Lab.assignTestByCNIC(cnic, lab_test_id);
+  res.json({ message: "Test assigned" });
+};
+
+export const getPatientTests = async (req, res) => {
+  const { cnic } = req.params;
+  res.json(await Lab.getPatientTests(cnic));
+};
+
+// lab
 export const performLabTest = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { result } = req.body;
-    await Lab.performTest(id, result);
-    res.json({ message: "Test performed successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
-  }
+  await Lab.performTest(req.params.id, req.body.result);
+  res.json({ message: "Test performed" });
 };
 
-// PUT /api/lab/:id/medication
 export const addMedication = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { medication } = req.body;
-    await Lab.giveMedication(id, medication);
-    res.json({ message: "Medication added successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
-  }
+  await Lab.giveMedication(req.params.id, req.body.medication);
+  res.json({ message: "Medication added" });
 };

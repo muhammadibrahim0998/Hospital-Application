@@ -10,7 +10,7 @@ export default function Appointments() {
   } = useAppointments();
 
   const [selected, setSelected] = useState(null);
-  const [mode, setMode] = useState(""); // "view" | "edit"
+  const [mode, setMode] = useState(""); // "view" or "edit"
   const [doctorFilter, setDoctorFilter] = useState("all");
 
   useEffect(() => {
@@ -27,19 +27,22 @@ export default function Appointments() {
   };
 
   const handleUpdate = () => {
-    updateAppointment(selected.id, selected); // frontend update
+    updateAppointment(selected.id, selected);
     closeModal();
   };
 
+  // Filter appointments based on selected doctor
   const filteredAppointments =
     doctorFilter === "all"
       ? appointments
-      : appointments.filter((a) => a.Doctor === doctorFilter);
+      : appointments.filter((a) => a.Doctor === doctorFilter); // note: a.Doctor
+
+  // Unique list of doctors for dropdown
   const doctorList = [...new Set(appointments.map((a) => a.Doctor))];
 
   return (
     <div className="container mt-5">
-      {/* //filter by doctor */}
+      {/* Filter by Doctor */}
       <div className="d-flex justify-content-end mb-3">
         <select
           className="form-select w-auto"
@@ -47,8 +50,8 @@ export default function Appointments() {
           onChange={(e) => setDoctorFilter(e.target.value)}
         >
           <option value="all">All Doctors</option>
-          {doctorList.map((doc, index) => (
-            <option key={index} value={doc}>
+          {doctorList.map((doc, i) => (
+            <option key={i} value={doc}>
               {doc}
             </option>
           ))}
@@ -57,25 +60,26 @@ export default function Appointments() {
 
       <h2 className="mb-4">Appointments</h2>
 
-      {/* ===== Desktop Table ===== */}
-      <div className="d-none d-md-block table-responsive">
+      {/* Appointments Table */}
+      <div className="table-responsive">
         <table className="table table-bordered table-hover">
-          <thead className="text-white" style={{ backgroundColor: "black" }}>
-            <tr className="table-dark">
+          <thead className="table-dark">
+            <tr>
               <th>#</th>
               <th>Patient</th>
               <th>Doctor</th>
+              <th>CNIC</th>
               <th>Date</th>
               <th>Time</th>
               <th>Phone</th>
               <th>Fee</th>
-              <th className="text-center">Action</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {appointments.length === 0 ? (
+            {filteredAppointments.length === 0 ? (
               <tr>
-                <td colSpan="8" className="text-center">
+                <td colSpan="9" className="text-center">
                   No Appointments Found
                 </td>
               </tr>
@@ -85,6 +89,7 @@ export default function Appointments() {
                   <td>{i + 1}</td>
                   <td>{a.Patient}</td>
                   <td>{a.Doctor}</td>
+                  <td>{a.CNIC || "—"}</td>
                   <td>{a.Date}</td>
                   <td>{a.Time}</td>
                   <td>{a.Phone}</td>
@@ -122,125 +127,103 @@ export default function Appointments() {
         </table>
       </div>
 
-      {/* ===== Mobile Cards ===== */}
-      <div className="d-md-none">
-        {appointments.map((a, i) => (
-          <div key={a.id} className="card mb-3 shadow-sm">
-            <div className="card-body">
-              <h5 className="card-title">{a.Patient}</h5>
-              <p>
-                <strong>Doctor:</strong> {a.Doctor}
-              </p>
-              <p>
-                <strong>Date:</strong> {a.Date}
-              </p>
-              <p>
-                <strong>Time:</strong> {a.Time}
-              </p>
-              <p>
-                <strong>Phone:</strong> {a.Phone}
-              </p>
-              <p>
-                <strong>Fee:</strong> {a.Fee}
-              </p>
-              <div className="d-flex gap-2 mt-2">
-                <button
-                  className="btn btn-info btn-sm"
-                  onClick={() => {
-                    setSelected(a);
-                    setMode("view");
-                  }}
-                >
-                  View
-                </button>
-                <button
-                  className="btn btn-warning btn-sm"
-                  onClick={() => {
-                    setSelected(a);
-                    setMode("edit");
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={() => deleteAppointment(a.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ===== Modal ===== */}
+      {/* Modal for View/Edit */}
       {selected && (
-        <div className="modal show d-block">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {mode === "view" ? "View Appointment" : "Edit Appointment"}
-                </h5>
-                <button className="btn-close" onClick={closeModal}></button>
-              </div>
-              <div className="modal-body">
-                <label>Patient</label>
-                <input
-                  className="form-control mb-2"
-                  value={selected.Patient}
-                  readOnly
-                />
-                <label>Doctor</label>
-                <input
-                  className="form-control mb-2"
-                  value={selected.Doctor}
-                  readOnly
-                />
-                <label>Date</label>
-                <input
-                  type="date"
-                  name="Date"
-                  className="form-control mb-2"
-                  value={selected.Date}
-                  onChange={handleChange}
-                  readOnly={mode === "view"}
-                />
-                <label>Time</label>
-                <input
-                  type="time"
-                  name="Time"
-                  className="form-control mb-2"
-                  value={selected.Time}
-                  onChange={handleChange}
-                  readOnly={mode === "view"}
-                />
-                <label>Phone</label>
-                <input
-                  type="text"
-                  name="Phone"
-                  className="form-control mb-2"
-                  value={selected.Phone}
-                  onChange={handleChange}
-                  readOnly={mode === "view"}
-                />
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={closeModal}>
-                  Close
-                </button>
-                {mode === "edit" && (
-                  <button className="btn btn-primary" onClick={handleUpdate}>
-                    Update
+        <>
+          <div className="modal show d-block">
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5>
+                    {mode === "view" ? "View Appointment" : "Edit Appointment"}
+                  </h5>
+                  <button className="btn-close" onClick={closeModal}></button>
+                </div>
+
+                <div className="modal-body">
+                  <label>Patient</label>
+                  <input
+                    className="form-control mb-2"
+                    name="Patient"
+                    value={selected.Patient}
+                    onChange={handleChange}
+                    readOnly={mode === "view"}
+                  />
+
+                  <label>Doctor</label>
+                  <input
+                    className="form-control mb-2"
+                    name="Doctor"
+                    value={selected.Doctor}
+                    onChange={handleChange}
+                    readOnly
+                  />
+
+                  <label>CNIC</label>
+                  <input
+                    className="form-control mb-2"
+                    name="CNIC"
+                    value={selected.CNIC || ""}
+                    onChange={handleChange}
+                    readOnly={mode === "view"}
+                  />
+
+                  <label>Date</label>
+                  <input
+                    type="Date"
+                    className="form-control mb-2"
+                    name="Date"
+                    value={selected.Date}
+                    onChange={handleChange}
+                    readOnly={mode === "view"}
+                  />
+
+                  <label>Time</label>
+                  <input
+                    type="text"
+                    className="form-control mb-2"
+                    name="Time"
+                    value={selected.Time}
+                    onChange={handleChange}
+                    readOnly={mode === "view"}
+                  />
+
+                  <label>Phone</label>
+                  <input
+                    type="text"
+                    className="form-control mb-2"
+                    name="Phone"
+                    value={selected.Phone}
+                    onChange={handleChange}
+                    readOnly={mode === "view"}
+                  />
+
+                  <label>Fee</label>
+                  <input
+                    type="number"
+                    className="form-control mb-2"
+                    name="Fee"
+                    value={selected.Fee}
+                    readOnly
+                  />
+                </div>
+
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={closeModal}>
+                    Close
                   </button>
-                )}
+                  {mode === "edit" && (
+                    <button className="btn btn-primary" onClick={handleUpdate}>
+                      Update
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+          <div className="modal-backdrop show"></div>
+        </>
       )}
-      {selected && <div className="modal-backdrop show"></div>}
     </div>
   );
 }
