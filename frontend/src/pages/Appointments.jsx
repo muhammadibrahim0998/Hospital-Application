@@ -60,8 +60,8 @@ export default function Appointments() {
       {/* ===== Desktop Table ===== */}
       <div className="d-none d-md-block table-responsive">
         <table className="table table-bordered table-hover">
-          <thead className="text-white" style={{ backgroundColor: "green" }}>
-            <tr>
+          <thead className="text-white" style={{ backgroundColor: "black" }}>
+            <tr className="table-dark">
               <th>#</th>
               <th>Patient</th>
               <th>Doctor</th>
@@ -69,7 +69,7 @@ export default function Appointments() {
               <th>Time</th>
               <th>Phone</th>
               <th>Fee</th>
-              <th>Action</th>
+              <th className="text-center">Action</th>
             </tr>
           </thead>
           <tbody>

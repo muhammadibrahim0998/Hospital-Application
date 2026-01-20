@@ -1,47 +1,30 @@
-// Layout.jsx
 import React, { useState, useEffect } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 
 export default function Layout() {
   const location = useLocation();
   const isHome = location.pathname === "/";
-
-  // ✅ Desktop: sidebar visible, Mobile: hidden
   const [sidebarOpen, setSidebarOpen] = useState(
     !isHome && window.innerWidth > 768
   );
 
-  // Handle window resize to auto-collapse sidebar on small screens
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setSidebarOpen(false);
-      } else {
-        setSidebarOpen(true);
-      }
+      setSidebarOpen(window.innerWidth > 768);
     };
     window.addEventListener("resize", handleResize);
-
-    // Initial check
     handleResize();
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
-      {/* ===== NAVBAR ===== */}
-      <Navbar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        showSidebarToggle={true}
-      />
-
+      <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <div className="d-flex flex-grow-1">
-        {/* ===== SIDEBAR ===== */}
+        {/* Sidebar */}
         <div
-          className={`bg-primary text-white position-fixed top-5 start-0 h-100 p-3`}
+          className="bg-primary text-white position-fixed top-5 start-0 h-100 p-3"
           style={{
             width: sidebarOpen ? "220px" : "0",
             transition: "width 0.3s",
@@ -52,30 +35,45 @@ export default function Layout() {
           {sidebarOpen && (
             <ul className="nav flex-column mt-5">
               <li className="nav-item">
-                <a className="nav-link text-white" href="/dashboard">
+                <Link className="nav-link text-white" to="/dashboard">
                   Dashboard
-                </a>
+                </Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link text-white" href="/appointments">
+                <Link className="nav-link text-white" to="/appointments">
                   Appointments
-                </a>
+                </Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link text-white" href="/doctors">
+                <Link className="nav-link text-white" to="/doctors">
                   Doctors
-                </a>
+                </Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link text-white" href="/reports">
+                <Link className="nav-link text-white" to="/reports">
                   Reports
-                </a>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/doctor-lab">
+                  Doctor → Lab Tests
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/laboratory-panel">
+                  Laboratory Panel
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/lab-results">
+                  Lab Results
+                </Link>
               </li>
             </ul>
           )}
         </div>
 
-        {/* ===== MAIN CONTENT ===== */}
+        {/* Main Content */}
         <div
           className="flex-grow-1"
           style={{

@@ -24,7 +24,10 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow position-fixed w-100" style={{ zIndex: 1100 }}>
+    <nav
+      className="navbar navbar-expand-lg navbar-dark bg-dark shadow position-fixed w-100"
+      style={{ zIndex: 1100 }}
+    >
       <div className="container d-flex align-items-center justify-content-between">
         {/* Left side */}
         <div className="d-flex align-items-center">
@@ -62,6 +65,35 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               <span className="nav-link cursor-pointer" onClick={goHome}>
                 Home
               </span>
+            </li>
+
+            {/* ✅ Contact link */}
+            <li className="nav-item">
+              <Link
+                to="/contact"
+                className="nav-link"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setSidebarOpen(false);
+                  setDropdownOpen(false);
+                }}
+              >
+                Contact
+              </Link>
+            </li>
+            {/* ✅about link */}
+            <li className="nav-item">
+              <Link
+                to="/about"
+                className="nav-link"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setSidebarOpen(false);
+                  setDropdownOpen(false);
+                }}
+              >
+                About
+              </Link>
             </li>
 
             {/* Account dropdown */}
