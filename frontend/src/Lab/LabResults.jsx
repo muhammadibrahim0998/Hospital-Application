@@ -55,7 +55,7 @@ export default function LabResults() {
         <p className="text-muted">No lab results available.</p>
       ) : (
         <table className="table table-bordered">
-          <thead id="" className="table-dark">
+          <thead className="table-dark">
             <tr>
               <th>#</th>
               <th>Test Name</th>
