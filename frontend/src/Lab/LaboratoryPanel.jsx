@@ -6,7 +6,7 @@ export default function LaboratoryPanel() {
   const [result, setResult] = useState("");
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4 mt-5">
       <h3>Laboratory Panel</h3>
 
       <table className="table table-hover">

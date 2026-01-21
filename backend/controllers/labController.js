@@ -1,9 +1,10 @@
 import * as Lab from "../models/LabTestModel.js";
 
-// GET /api/lab/tests
+// GET /api/lab/tests?cnic=...
 export const getTests = async (req, res) => {
   try {
-    const tests = await Lab.getAllTests();
+    const { cnic } = req.query;
+    let tests = cnic ? await Lab.getTestsByCNIC(cnic) : await Lab.getAllTests();
     res.json(tests);
   } catch (err) {
     console.error(err);
@@ -12,16 +13,33 @@ export const getTests = async (req, res) => {
 };
 
 // POST /api/lab/tests
-// POST /api/lab/tests
 export const createTest = async (req, res) => {
   try {
-    const { test_name, description, normal_range, price, category } = req.body;
+    const {
+      patient_name,
+      cnic,
+      test_name,
+      description,
+      normal_range,
+      price,
+      category,
+    } = req.body;
 
-    if (!test_name || !price || !category) {
-      return res.status(400).json({ message: "Please provide all required fields" });
+    if (!patient_name || !cnic || !test_name || !price || !category) {
+      return res
+        .status(400)
+        .json({ message: "Please provide all required fields" });
     }
 
-    await Lab.addTest(test_name, description, normal_range, price, category);
+    await Lab.addTest(
+      patient_name,
+      cnic,
+      test_name,
+      description,
+      normal_range,
+      price,
+      category,
+    );
     res.status(201).json({ message: "Test added successfully" });
   } catch (err) {
     console.error(err);

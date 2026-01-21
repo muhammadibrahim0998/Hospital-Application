@@ -1,99 +1,52 @@
-// import React from "react";
-// import { useNavigate } from "react-router-dom";
-// import { useDoctors } from "../context/DoctorContext";
-
-// export default function Doctors() {
-//   const { doctors } = useDoctors();
-//   const navigate = useNavigate();
-
-//   const handleView = (doctor) => {
-//     navigate(`/doctor/${doctor.id}`, { state: { doctor } });
-//   };
-
-//   return (
-//     <div className="container-fluid bg-light py-5">
-//       <div className="text-center mb-5">
-//         <h2 className="fw-bold text-primary">Our Doctors</h2>
-//         <p className="text-muted">Meet our professional medical team</p>
-//       </div>
-
-//       <div className="container">
-//         <div className="row g-4">
-//           {doctors.map((doc) => (
-//             <div key={doc.id} className="col-lg-3 col-md-4 col-sm-6">
-//               <div className="card shadow-sm border-0 h-100">
-//                 <img
-//                   src={doc.image}
-//                   alt={doc.name}
-//                   className="card-img-top"
-//                   style={{ height: "260px", objectFit: "cover" }}
-//                 />
-//                 <div className="card-body text-center">
-//                   <h5 className="fw-bold">{doc.name}</h5>
-//                   <p className="text-primary mb-1">{doc.specialty}</p>
-
-//                   <button
-//                     onClick={() => handleView(doc)}
-//                     className="btn btn-primary btn-sm w-100 mt-3"
-//                   >
-//                     View Profile
-//                   </button>
-//                 </div>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-import React from "react";
-import {useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {useDoctors} from "../context/DoctorContext";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDoctors } from "../context/DoctorContext";
 import "./Doctors.css";
 import axios from "axios";
 
 export default function Doctors() {
-  const {doctors} = useDoctors();
+  const { doctors } = useDoctors();
   const navigate = useNavigate();
+
   const [showModal, setShowModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+
   const [formData, setFormData] = useState({
     Patient: "",
     Doctor: "",
+    CNIC: "",
     Date: "",
     Time: "",
     Phone: "",
     Fee: 1000,
   });
 
-  const handleView = doctor => {
-    navigate(`/doctor/${doctor.id}`, {state: {doctor}});
+  const handleView = (doctor) => {
+    navigate(`/doctor/${doctor.id}`, { state: { doctor } });
   };
 
-  const handleBook = doctor => {
+  const handleBook = (doctor) => {
     setSelectedDoctor(doctor);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       Doctor: doctor.name,
     }));
     setShowModal(true);
   };
 
-  const handleChange = e => {
-    setFormData({...formData, [e.target.name]: e.target.value});
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await axios.post("http://localhost:3002/api/appointments", formData);
       alert("Appointment booked successfully!");
       setShowModal(false);
     } catch (err) {
-      alert("Failed to book appointment", err);
+      alert("Failed to book appointment");
+      console.error(err);
     }
   };
 
@@ -122,7 +75,6 @@ export default function Doctors() {
               <div className="doctor-card">
                 <img src={doc.image} alt={doc.name} className="doctor-img" />
 
-                {/* 🔥 Hover Overlay */}
                 <div className="doctor-overlay">
                   <button
                     className="btn btn-outline-light btn-sm mb-2 w-100"
@@ -154,7 +106,6 @@ export default function Doctors() {
               className="modal show d-block"
               tabIndex="-1"
               onClick={(e) => {
-                // Close modal if clicked outside modal-content
                 if (e.target.classList.contains("modal")) setShowModal(false);
               }}
             >
@@ -196,6 +147,19 @@ export default function Doctors() {
                         />
                       </div>
 
+                      {/* ✅ CNIC FIXED */}
+                      <div className="mb-3">
+                        <label className="form-label">CNIC</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="CNIC"
+                          value={formData.CNIC}
+                          onChange={handleChange}
+                          placeholder="12345-1234567-1"
+                        />
+                      </div>
+
                       <div className="mb-3">
                         <label className="form-label">Date</label>
                         <input
@@ -212,7 +176,6 @@ export default function Doctors() {
                         <label className="form-label fw-bold">
                           Select Time Slot
                         </label>
-
                         <div className="row g-2">
                           {timeSlots.map((slot, index) => (
                             <div className="col-6" key={index}>
@@ -226,7 +189,6 @@ export default function Doctors() {
                                 className="d-none"
                                 required
                               />
-
                               <label
                                 htmlFor={`slot-${index}`}
                                 className={`slot-box ${
