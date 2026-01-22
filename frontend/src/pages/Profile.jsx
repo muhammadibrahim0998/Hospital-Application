@@ -27,14 +27,14 @@ export default function Profile() {
 
     try {
       const res = await axios.put(
-        "http://localhost:3002/api/auth/profile",
+        "https://hospital-backend-g5q0.onrender.com/profile",
         formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       alert("Profile updated successfully");
       setUser(res.data);

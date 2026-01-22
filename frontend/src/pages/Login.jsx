@@ -11,10 +11,13 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:3002/api/auth/login", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        "https://hospital-backend-g5q0.onrender.com/login",
+        {
+          email,
+          password,
+        },
+      );
       // Save JWT token
       localStorage.setItem("token", res.data.token);
       navigate("/"); // redirect to Home

@@ -12,7 +12,7 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3002/api/auth/register", {
+      await axios.post("https://hospital-backend-g5q0.onrender.com/register", {
         name,
         email,
         password,
