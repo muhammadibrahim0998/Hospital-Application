@@ -27,6 +27,8 @@ import DoctorLab from "../src/Lab/DoctorLab.jsx";
 import LabPanel from "../src/Lab/LabPanel.jsx";   
 import LabResults from "../src/Lab/LabResults.jsx"; 
 import LaboratoryPanel from "./Lab/LaboratoryPanel.jsx";
+import Admin from "./pages/Admin.jsx";
+import User from "./pages/User.jsx";
 
 
 function AppContent() {
@@ -58,6 +60,8 @@ function AppContent() {
               <Route path="/lab-panel" element={<LabPanel />} />
               <Route path="/lab-results" element={<LabResults />} />
               <Route path="/laboratory-panel" element={<LaboratoryPanel />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/user" element={<User />} />
             </Route>
           </Route>
         </Routes>

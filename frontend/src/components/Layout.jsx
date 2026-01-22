@@ -5,11 +5,11 @@ import Navbar from "./Navbar";
 export default function Layout() {
   const location = useLocation();
   const isHome = location.pathname === "/";
+
   const [sidebarOpen, setSidebarOpen] = useState(
     !isHome && window.innerWidth > 768,
   );
 
-  // Track window width for responsive auto-hide
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
@@ -22,9 +22,7 @@ export default function Layout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Function to handle sidebar link click
   const handleLinkClick = () => {
-    // Auto-hide sidebar if screen width <= 768px (mobile/tablet)
     if (windowWidth <= 768) {
       setSidebarOpen(false);
     }
@@ -33,19 +31,44 @@ export default function Layout() {
   return (
     <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
       <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
       <div className="d-flex flex-grow-1">
-        {/* Sidebar */}
+        {/* ================= SIDEBAR ================= */}
         <div
-          className="bg-primary text-white position-fixed top-5 start-0 h-100 "
+          className="bg-primary text-white position-fixed top-5 start-0 h-100"
           style={{
             width: sidebarOpen ? "200px" : "0",
-            transition: "width 0.35",
+            transition: "width 0.35s",
             overflow: "hidden",
             zIndex: 1000,
           }}
         >
           {sidebarOpen && (
             <ul className="nav flex-column mt-5">
+              {/* 🔹 ADMIN & USER LINKS */}
+              <li className="nav-item">
+                <Link
+                  className="nav-link text-white"
+                  to="/admin"
+                  onClick={handleLinkClick}
+                >
+                  Admin
+                </Link>
+              </li>
+
+              <li className="nav-item">
+                <Link
+                  className="nav-link text-white"
+                  to="/user"
+                  onClick={handleLinkClick}
+                >
+                  User
+                </Link>
+              </li>
+
+              <hr className="text-white" />
+
+              {/* EXISTING MENU */}
               <li className="nav-item">
                 <Link
                   className="nav-link text-white"
@@ -55,6 +78,7 @@ export default function Layout() {
                   Dashboard
                 </Link>
               </li>
+
               <li className="nav-item">
                 <Link
                   className="nav-link text-white"
@@ -64,6 +88,7 @@ export default function Layout() {
                   Appointments
                 </Link>
               </li>
+
               <li className="nav-item">
                 <Link
                   className="nav-link text-white"
@@ -73,6 +98,7 @@ export default function Layout() {
                   Doctors
                 </Link>
               </li>
+
               <li className="nav-item">
                 <Link
                   className="nav-link text-white"
@@ -82,6 +108,7 @@ export default function Layout() {
                   Reports
                 </Link>
               </li>
+
               <li className="nav-item">
                 <Link
                   className="nav-link text-white"
@@ -91,6 +118,7 @@ export default function Layout() {
                   Doctor → Lab Tests
                 </Link>
               </li>
+
               <li className="nav-item">
                 <Link
                   className="nav-link text-white"
@@ -100,6 +128,7 @@ export default function Layout() {
                   Laboratory Panel
                 </Link>
               </li>
+
               <li className="nav-item">
                 <Link
                   className="nav-link text-white"
@@ -113,7 +142,7 @@ export default function Layout() {
           )}
         </div>
 
-        {/* Main Content */}
+        {/* ================= MAIN CONTENT ================= */}
         <div
           className="flex-grow-1"
           style={{
