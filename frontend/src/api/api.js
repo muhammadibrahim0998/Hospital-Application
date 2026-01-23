@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://hospital-backend-g5q0.onrender.com/";
+const API_URL = "http://localhost:3002/api/auth";
 
 // Register user
 export const registerUser = (formData) => {

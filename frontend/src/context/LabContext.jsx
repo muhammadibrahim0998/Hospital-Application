@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { API_BASE_URL } from "../config";
 
 const LabContext = createContext();
 export const useLab = () => useContext(LabContext);
@@ -8,14 +9,14 @@ export const LabProvider = ({ children }) => {
 
   const fetchTests = async (cnic = "") => {
     const res = await fetch(
-      `http://localhost:3002/api/lab/tests${cnic ? "?cnic=" + cnic : ""}`,
+      `${API_BASE_URL}/api/lab/tests${cnic ? "?cnic=" + cnic : ""}`,
     );
     const data = await res.json();
     setTests(data);
   };
 
   const addTest = async (form) => {
-    await fetch("http://localhost:3002/api/lab/tests", {
+    await fetch(`${API_BASE_URL}/api/lab/tests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -24,7 +25,7 @@ export const LabProvider = ({ children }) => {
   };
 
   const performTest = async (id, result) => {
-    await fetch(`http://localhost:3002/api/lab/tests/${id}/perform`, {
+    await fetch(`${API_BASE_URL}/api/lab/tests/${id}/perform`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ result }),
@@ -33,7 +34,7 @@ export const LabProvider = ({ children }) => {
   };
 
   const giveMedication = async (id, medication) => {
-    await fetch(`http://localhost:3002/api/lab/tests/${id}/medication`, {
+    await fetch(`${API_BASE_URL}/api/lab/tests/${id}/medication`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ medication }),

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
@@ -12,7 +13,7 @@ export default function Reports() {
 
   const fetchReports = async () => {
     try {
-      const res = await axios.get("http://localhost:3002/api/reports");
+      const res = await axios.get(`${API_BASE_URL}/api/reports`);
       console.log("Reports API Response:", res.data); // 👈 DEBUG
 
       // ✅ if backend sends array

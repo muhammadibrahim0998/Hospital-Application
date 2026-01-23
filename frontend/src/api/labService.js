@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
-const API = "http://localhost:3002/api/lab";
+const API = `${API_BASE_URL}/api/lab`;
 
 export const fetchTests = () => axios.get(`${API}/tests`);
 export const addTest = (data) => axios.post(`${API}/tests`, data);

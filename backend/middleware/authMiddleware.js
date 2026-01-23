@@ -1,14 +1,16 @@
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../config/jwt.js";
 
 export const protect = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; // Bearer token
-  if (!token) return res.status(401).json({ message: "No token provided" });
+  const auth = req.headers.authorization;
+
+  if (!auth || !auth.startsWith("Bearer "))
+    return res.status(401).json({ message: "No token" });
 
   try {
-    req.user = jwt.verify(token, JWT_SECRET);
+    const token = auth.split(" ")[1];
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
-  } catch (err) {
+  } catch {
     res.status(401).json({ message: "Invalid token" });
   }
 };

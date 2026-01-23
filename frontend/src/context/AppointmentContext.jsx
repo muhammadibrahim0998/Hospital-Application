@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+import { API_BASE_URL } from "../config";
 
 const AppointmentContext = createContext();
 
@@ -8,7 +9,7 @@ export function AppointmentProvider({ children }) {
   // GET all appointments (assume fetched from backend)
   const fetchAppointments = async () => {
     try {
-      const res = await fetch("http://localhost:3002/api/appointments");
+      const res = await fetch(`${API_BASE_URL}/api/appointments`);
       const data = await res.json();
       setAppointments(data);
     } catch (err) {
@@ -19,7 +20,7 @@ export function AppointmentProvider({ children }) {
   // POST / add new appointment
   const bookAppointment = async (appointment) => {
     try {
-      await fetch("http://localhost:3002/api/appointments", {
+      await fetch(`${API_BASE_URL}/api/appointments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(appointment),
@@ -33,7 +34,7 @@ export function AppointmentProvider({ children }) {
   // DELETE appointment
   const deleteAppointment = async (id) => {
     try {
-      await fetch(`http://localhost:3002/api/appointments/${id}`, {
+      await fetch(`${API_BASE_URL}/api/appointments/${id}`, {
         method: "DELETE",
       });
       setAppointments((prev) => prev.filter((a) => a.id !== id));

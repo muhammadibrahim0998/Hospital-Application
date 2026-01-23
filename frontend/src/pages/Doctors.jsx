@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDoctors } from "../context/DoctorContext";
 import "./Doctors.css";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 export default function Doctors() {
   const { doctors } = useDoctors();
@@ -41,7 +42,7 @@ export default function Doctors() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3002/api/appointments", formData);
+      await axios.post(`${API_BASE_URL}/api/appointments`, formData);
       alert("Appointment booked successfully!");
       setShowModal(false);
     } catch (err) {
@@ -191,9 +192,8 @@ export default function Doctors() {
                               />
                               <label
                                 htmlFor={`slot-${index}`}
-                                className={`slot-box ${
-                                  formData.Time === slot ? "active" : ""
-                                }`}
+                                className={`slot-box ${formData.Time === slot ? "active" : ""
+                                  }`}
                               >
                                 {slot}
                               </label>

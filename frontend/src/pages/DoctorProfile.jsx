@@ -3,6 +3,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useDoctors } from "../context/DoctorContext";
 import { useDepartments } from "../context/DepartmentContext";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 export default function DoctorProfile() {
   const { state } = useLocation();
@@ -82,7 +83,7 @@ export default function DoctorProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3002/api/appointments", formData);
+      await axios.post(`${API_BASE_URL}/api/appointments`, formData);
       alert("Appointment booked successfully!");
       setShowModal(false);
       navigate("/appointments"); // optional: navigate to appointments page
@@ -228,9 +229,8 @@ export default function DoctorProfile() {
 
                           <label
                             htmlFor={`slot-${index}`}
-                            className={`slot-box ${
-                              formData.Time === slot ? "active" : ""
-                            }`}
+                            className={`slot-box ${formData.Time === slot ? "active" : ""
+                              }`}
                           >
                             {slot}
                           </label>
@@ -251,7 +251,7 @@ export default function DoctorProfile() {
                     />
                   </div>
                 </div>
-                
+
 
                 <div className="modal-footer">
                   <button

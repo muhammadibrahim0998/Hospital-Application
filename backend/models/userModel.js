@@ -1,17 +1,14 @@
 import db from "../config/db.js";
 
-export const createUser = async (user) => {
+// Create user in `users` table
+export const createUser = async (data) => {
   const sql = "INSERT INTO users (name, email, password) VALUES (?,?,?)";
-  const [result] = await db.query(sql, [user.name, user.email, user.password]);
-  return result;
+  return await db.query(sql, data);
 };
 
+// Find user by email in `users` table
 export const findUserByEmail = async (email) => {
-  const [rows] = await db.query("SELECT * FROM users WHERE email=?", [email]);
-  return rows;
-};
-
-export const findUserById = async (id) => {
-  const [rows] = await db.query("SELECT id, name, email FROM users WHERE id=?", [id]);
+  const sql = "SELECT * FROM users WHERE email = ?";
+  const [rows] = await db.query(sql, [email]);
   return rows;
 };

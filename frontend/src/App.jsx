@@ -10,14 +10,15 @@ import Home from "./components/Home.jsx";
 import Contact from "./components/Contact.jsx";
 import Footer from "./components/Footer.jsx";
 
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
+import Register from "../src/Signup/Register.jsx";
+import Login from "../src/Signup/Login.jsx";
+import Logout from "../src/Signup/Logout.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Appointments from "./pages/Appointments.jsx";
 import Doctors from "./pages/Doctors.jsx";
 import DoctorProfile from "./pages/DoctorProfile.jsx";
 import Reports from "./pages/Reports.jsx";
-import Logout from "./pages/Logout.jsx";
+
 import DepartmentDetails from "./pages/DepartmentDetails.jsx";
 import FieldDetails from "./pages/FieldDetails.jsx";
 import About  from "./components/About.jsx";
