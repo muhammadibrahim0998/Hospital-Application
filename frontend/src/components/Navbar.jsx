@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const isLoggedIn = !!sessionStorage.getItem("token");
+
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const logout = () => {
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("user");
     navigate("/login");
     setDropdownOpen(false);
     setMenuOpen(false);
@@ -102,70 +103,40 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
                 className="btn btn-primary dropdown-toggle ms-2"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               >
-                {user ? "My Account" : "Account"}
+                {isLoggedIn ? "My Account" : "Account"}
               </button>
 
               <ul
-                className={`dropdown-menu dropdown-menu-end ${
-                  dropdownOpen ? "show" : ""
-                }`}
+                className={`dropdown-menu dropdown-menu-end ${dropdownOpen ? "show" : ""
+                  }`}
               >
-                {!user && (
+                {!isLoggedIn && (
                   <>
                     <li>
-                      <Link
-                        className="dropdown-item"
-                        to="/login"
-                        onClick={() => {
-                          setDropdownOpen(false);
-                          setMenuOpen(false);
-                        }}
-                      >
-                        Login
-                      </Link>
+                      <Link className="dropdown-item" to="/login">Login</Link>
                     </li>
                     <li>
-                      <Link
-                        className="dropdown-item"
-                        to="/register"
-                        onClick={() => {
-                          setDropdownOpen(false);
-                          setMenuOpen(false);
-                        }}
-                      >
-                        Register
-                      </Link>
+                      <Link className="dropdown-item" to="/register">Register</Link>
                     </li>
                   </>
                 )}
 
-                {user && (
+                {isLoggedIn && (
                   <>
                     <li>
-                      <Link
-                        className="dropdown-item"
-                        to="/profile"
-                        onClick={() => {
-                          setDropdownOpen(false);
-                          setMenuOpen(false);
-                        }}
-                      >
+                      <Link className="dropdown-item" to="/profile">
                         Profile
                       </Link>
                     </li>
+                    <li><hr className="dropdown-divider" /></li>
                     <li>
-                      <hr className="dropdown-divider" />
-                    </li>
-                    <li>
-                      <button
-                        className="dropdown-item text-danger"
-                        onClick={logout}
-                      >
+                      <button className="dropdown-item text-danger" onClick={logout}>
                         Logout
                       </button>
                     </li>
                   </>
                 )}
+
               </ul>
             </li>
           </ul>

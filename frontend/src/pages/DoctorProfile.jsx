@@ -19,6 +19,7 @@ export default function DoctorProfile() {
   const [formData, setFormData] = useState({
     Patient: "",
     Doctor: doctor?.name || "",
+    CNIC: "",
     Date: "",
     Time: "",
     Phone: "",
@@ -194,6 +195,7 @@ export default function DoctorProfile() {
                       value={formData.Doctor}
                       readOnly
                     />
+                    
                   </div>
 
                   <div className="mb-3">

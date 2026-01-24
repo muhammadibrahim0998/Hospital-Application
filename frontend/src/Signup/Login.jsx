@@ -1,60 +1,71 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
+import { API_BASE_URL } from "../config";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
+
   const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
-    const res = await axios.post("http://localhost:3002/api/auth/login", form);
-    localStorage.setItem("token", res.data.token);
-    alert("Login successful");
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, form);
+
+      sessionStorage.setItem("token", res.data.token);
+      login(res.data.user);
+
+      navigate("/", { replace: true }); // ✅ Home after login
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow p-4" style={{ width: "400px" }}>
+    <div className="vh-100 d-flex justify-content-center align-items-center">
+      <div className="card p-4 shadow" style={{ width: "400px" }}>
         <h3 className="text-center mb-4">Login</h3>
 
+        {error && <div className="alert alert-danger">{error}</div>}
+
         <form onSubmit={submit}>
-          {/* Email */}
-          <div className="mb-3 input-group">
-            <span className="input-group-text">
-              <i className="bi bi-envelope"></i>
-            </span>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              placeholder="Email Address"
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <input
+            className="form-control mb-3"
+            name="email"
+            type="email"
+            placeholder="Email"
+            onChange={handleChange}
+            required
+          />
+          <input
+            className="form-control mb-3"
+            name="password"
+            type="password"
+            placeholder="Password"
+            onChange={handleChange}
+            required
+          />
 
-          {/* Password */}
-          <div className="mb-3 input-group">
-            <span className="input-group-text">
-              <i className="bi bi-lock"></i>
-            </span>
-            <input
-              type="password"
-              name="password"
-              className="form-control"
-              placeholder="Password"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <button className="btn btn-success w-100">Login</button>
+          <button className="btn btn-success w-100" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
         </form>
 
-        <p className="text-center mt-3 mb-0">
-          Don’t have an account? <a href="/register">Register</a>
+        <p className="text-center mt-3">
+          No account? <Link to="/register">Register</Link>
         </p>
       </div>
     </div>

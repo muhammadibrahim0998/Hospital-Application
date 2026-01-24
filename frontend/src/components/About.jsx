@@ -109,7 +109,7 @@ export default function About() {
           backgroundSize: "cover",
           backgroundPosition: "center",
           marginTop: "47px",
-          marginLeft: "45px",
+          marginLeft: "5px",
         }}
       >
         <Container>

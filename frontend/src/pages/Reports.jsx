@@ -7,60 +7,94 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
-
+  // Fetch reports from backend
   const fetchReports = async () => {
+    setLoading(true);
+    setError("");
     try {
       const res = await axios.get(`${API_BASE_URL}/api/reports`);
-      console.log("Reports API Response:", res.data); // 👈 DEBUG
-
-      // ✅ if backend sends array
-      if (Array.isArray(res.data)) {
-        setReports(res.data);
-      } else {
-        setReports(res.data.data || []);
-      }
+      // Check if response is array or wrapped in data
+      const data = Array.isArray(res.data) ? res.data : res.data.data || [];
+      setReports(data);
     } catch (err) {
       console.error("Error fetching reports:", err);
-      setError("Failed to load reports");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to load reports. Please try again later.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <p className="text-center mt-5">Loading reports...</p>;
+  useEffect(() => {
+    fetchReports();
+  }, []);
 
-  if (error) return <p className="text-center text-danger mt-5">{error}</p>;
+  // Loading state
+  if (loading)
+    return (
+      <div className="text-center mt-5">
+        <p className="fw-bold">Loading reports...</p>
+      </div>
+    );
+
+  // Error state
+  if (error)
+    return (
+      <div className="text-center mt-5 text-danger">
+        <p className="fw-bold">{error}</p>
+      </div>
+    );
 
   return (
     <div className="container mt-5">
       <h2 className="fw-bold mb-4">Reports</h2>
 
       {reports.length === 0 ? (
-        <p className="text-muted">No reports found</p>
+        <p className="text-muted mt-5 text-center">No reports found.</p>
       ) : (
-        <table className="table table-hover shadow-sm">
-          <thead className="table-success">
-            <tr>
-              <th>#</th>
-              <th>Patient</th>
-              <th>Report Type</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reports.map((rep, index) => (
-              <tr key={rep.id || index}>
-                <td>{index + 1}</td>
-                <td>{rep.patient || rep.patientName}</td>
-                <td>{rep.type || rep.reportType}</td>
-                <td>{rep.date || rep.createdAt}</td>
+        <div className="table-responsive shadow-sm">
+          <table className="table table-hover table-bordered align-middle">
+            <thead className="table-success text-center">
+              <tr>
+                <th>#</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Test / Report</th>
+                <th>Result</th>
+                <th>Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {reports.map((rep, index) => (
+                <tr key={rep.id || index}>
+                  <td className="text-center">{index + 1}</td>
+                  <td>{rep.patient || rep.patientName || "-"}</td>
+                  <td>{rep.doctor || rep.doctorName || "-"}</td>
+                  <td>
+                    {Array.isArray(rep.tests)
+                      ? rep.tests.map((t, i) => (
+                          <div key={i}>
+                            <strong>{t.test_name}</strong>
+                          </div>
+                        ))
+                      : rep.test_name || rep.type || "-"}
+                  </td>
+                  <td>
+                    {Array.isArray(rep.tests)
+                      ? rep.tests.map((t, i) => (
+                          <div key={i}>{t.result || "Pending"}</div>
+                        ))
+                      : rep.result || "-"}
+                  </td>
+                  <td>{rep.date || rep.createdAt || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

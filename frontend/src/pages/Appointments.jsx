@@ -224,7 +224,7 @@ export default function Appointments() {
                   />
 
                   <input
-                    type="date"
+                    type="Date"
                     name="Date"
                     className="form-control mb-2"
                     value={selected.Date}
@@ -232,7 +232,7 @@ export default function Appointments() {
                     readOnly={mode === "view"}
                   />
                   <input
-                    type="time"
+                    type="Time"
                     name="Time"
                     className="form-control mb-2"
                     value={selected.Time}

@@ -1,20 +1,30 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 export default function Register() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
-    await axios.post("http://localhost:3002/api/auth/register", form);
-    alert("Registered successfully");
+    setLoading(true);
+    setError("");
+    try {
+      await axios.post(`${API_BASE_URL}/api/auth/register`, form);
+      alert("Registered successfully! Please login.");
+      navigate("/login"); // Redirect to login page
+    } catch (err) {
+      setError(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,8 +32,9 @@ export default function Register() {
       <div className="card shadow p-4" style={{ width: "400px" }}>
         <h3 className="text-center mb-4">Create Account</h3>
 
+        {error && <div className="alert alert-danger">{error}</div>}
+
         <form onSubmit={submit}>
-          {/* Name */}
           <div className="mb-3 input-group">
             <span className="input-group-text">
               <i className="bi bi-person"></i>
@@ -38,7 +49,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Email */}
           <div className="mb-3 input-group">
             <span className="input-group-text">
               <i className="bi bi-envelope"></i>
@@ -53,7 +63,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Password */}
           <div className="mb-3 input-group">
             <span className="input-group-text">
               <i className="bi bi-lock"></i>
@@ -68,7 +77,9 @@ export default function Register() {
             />
           </div>
 
-          <button className="btn btn-primary w-100">Register</button>
+          <button className="btn btn-primary w-100" disabled={loading}>
+            {loading ? "Registering..." : "Register"}
+          </button>
         </form>
 
         <p className="text-center mt-3 mb-0">

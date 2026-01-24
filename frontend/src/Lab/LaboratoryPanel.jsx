@@ -10,7 +10,7 @@ export default function LaboratoryPanel() {
       <h3>Laboratory Panel</h3>
 
       <table className="table table-hover">
-        <thead>
+        <thead className="table-dark">
           <tr>
             <th>#</th>
             <th>Test</th>

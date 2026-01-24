@@ -81,7 +81,7 @@ export default function Home() {
   ];
 
   return (
-    <div>
+    <div >
       {/* ================= HERO SLIDER ================= */}
       <div className="position-relative slider-container">
         {slides.map((slide, i) => (
