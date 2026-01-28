@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import { useAppointments } from "../context/AppointmentContext";
 
@@ -33,6 +31,20 @@ export default function Appointments() {
     closeModal();
   };
 
+  // ✅ WhatsApp
+  const openWhatsApp = (a) => {
+    const message = `
+Hello Doctor,
+I am ${a.Patient}.
+My appointment is on ${a.Date} at ${a.Time}.
+    `;
+    const phone = 923295649784;
+    window.open(
+      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+      "_blank",
+    );
+  };
+
   const filteredAppointments =
     doctorFilter === "all"
       ? appointments
@@ -41,30 +53,28 @@ export default function Appointments() {
   const doctorList = [...new Set(appointments.map((a) => a.Doctor))];
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-5">
       {/* Doctor Filter */}
-      <div className="d-flex justify-content-end mb-3 mt-5">
+      <div className="d-flex justify-content-end mb-3">
         <select
           className="form-select w-auto"
           value={doctorFilter}
           onChange={(e) => setDoctorFilter(e.target.value)}
         >
           <option value="all">All Doctors</option>
-          {doctorList.map((doc, i) => (
-            <option key={i} value={doc}>
-              {doc}
+          {doctorList.map((d, i) => (
+            <option key={i} value={d}>
+              {d}
             </option>
           ))}
         </select>
       </div>
 
-      <h3 className="mb-4">
-        Appointments
-      </h3>
+      <h3 className="mb-4">Appointments</h3>
 
-      {/* ================= LARGE SCREEN (≥1200px) TABLE ================= */}
-      <div className="d-none d-xl-block table-responsive">
-        <table className="table table-bordered table-hover">
+      {/* ================= TABLE ================= */}
+      <div className="table-responsive d-none d-xl-block">
+        <table className="table table-bordered">
           <thead className="table-dark">
             <tr>
               <th>#</th>
@@ -75,119 +85,56 @@ export default function Appointments() {
               <th>Time</th>
               <th>Phone</th>
               <th>Fee</th>
-              <th className="text-center">Action</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {filteredAppointments.length === 0 ? (
-              <tr>
-                <td colSpan="8" className="text-center">
-                  No Appointments Found
-                </td>
-              </tr>
-            ) : (
-              filteredAppointments.map((a, i) => (
-                <tr key={a.id}>
-                  <td>{i + 1}</td>
-                  <td>{a.Patient}</td>
-                  <td>{a.Doctor}</td>
-                  <td>{a.CNIC}</td>
-                  <td>{a.Date}</td>
-                  <td>{a.Time}</td>
-                  <td>{a.Phone}</td>
-                  <td>{a.Fee}</td>
-                  <td className="d-flex gap-2 justify-content-center">
-                    <button
-                      className="btn btn-info btn-sm"
-                      onClick={() => {
-                        setSelected(a);
-                        setMode("view");
-                      }}
-                    >
-                      View
-                    </button>
-                    <button
-                      className="btn btn-warning btn-sm"
-                      onClick={() => {
-                        setSelected(a);
-                        setMode("edit");
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => deleteAppointment(a.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ================= SMALL → MEDIUM SCREENS (≤1200px) CARDS ================= */}
-      <div className="d-xl-none">
-        <div className="row g-3">
-          {filteredAppointments.map((a) => (
-            <div key={a.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
-              <div className="card h-100 shadow-sm">
-                <div className="card-body">
-                  <h6 className="card-title fw-bold">{a.Patient}</h6>
-                  <p className="mb-1">
-                    <strong>Doctor:</strong> {a.Doctor}
-                  </p>
-                  <p className="mb-1">
-                    <strong>Date:</strong> {a.Date}
-                  </p>
-                  <p className="mb-1">
-                    <strong>CNIC:</strong> {a.CNIC}
-                  </p>
-                  <p className="mb-1">
-                    <strong>Time:</strong> {a.Time}
-                  </p>
-                  <p className="mb-1">
-                    <strong>Phone:</strong> {a.Phone}
-                  </p>
-                  <p className="mb-2">
-                    <strong>Fee:</strong> {a.Fee}
-                  </p>
-
-                  <div className="d-flex gap-2">
-                    <button
-                      className="btn btn-info btn-sm w-100"
-                      onClick={() => {
-                        setSelected(a);
-                        setMode("view");
-                      }}
-                    >
-                      View
-                    </button>
-                    <button
-                      className="btn btn-warning btn-sm w-100"
-                      onClick={() => {
-                        setSelected(a);
-                        setMode("edit");
-                      }}
-                    >
-                      Edit
-                    </button>
-                  </div>
-
+            {filteredAppointments.map((a, i) => (
+              <tr key={a.id}>
+                <td>{i + 1}</td>
+                <td>{a.Patient}</td>
+                <td>{a.Doctor}</td>
+                <td>{a.CNIC}</td>
+                <td>{a.Date}</td>
+                <td>{a.Time}</td>
+                <td>{a.Phone}</td>
+                <td>{a.Fee}</td>
+                <td className="d-flex gap-2">
                   <button
-                    className="btn btn-danger btn-sm w-100 mt-2"
+                    className="btn btn-success btn-sm"
+                    onClick={() => openWhatsApp(a)}
+                  >
+                    WhatsApp
+                  </button>
+                  <button
+                    className="btn btn-info btn-sm"
+                    onClick={() => {
+                      setSelected(a);
+                      setMode("view");
+                    }}
+                  >
+                    View
+                  </button>
+                  <button
+                    className="btn btn-warning btn-sm"
+                    onClick={() => {
+                      setSelected(a);
+                      setMode("edit");
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="btn btn-danger btn-sm"
                     onClick={() => deleteAppointment(a.id)}
                   >
                     Delete
                   </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* ================= MODAL ================= */}
@@ -204,49 +151,32 @@ export default function Appointments() {
                 </div>
 
                 <div className="modal-body">
-                  <input
-                    className="form-control mb-2"
-                    value={selected.Patient}
-                    readOnly
-                  />
-                  <input
-                    className="form-control mb-2"
-                    value={selected.Doctor}
-                    readOnly
-                  />
-                  <input
-                    type="text"
-                    className="form-control mb-2"
-                    name="CNIC"
-                    value={selected.CNIC}
-                    onChange={handleChange}
-                    readOnly={mode === "view"}
-                  />
-
-                  <input
-                    type="Date"
-                    name="Date"
-                    className="form-control mb-2"
-                    value={selected.Date}
-                    onChange={handleChange}
-                    readOnly={mode === "view"}
-                  />
-                  <input
-                    type="Time"
-                    name="Time"
-                    className="form-control mb-2"
-                    value={selected.Time}
-                    onChange={handleChange}
-                    readOnly={mode === "view"}
-                  />
-                  <input
-                    type="text"
-                    name="Phone"
-                    className="form-control mb-2"
-                    value={selected.Phone}
-                    onChange={handleChange}
-                    readOnly={mode === "view"}
-                  />
+                  {[
+                    "Patient",
+                    "Doctor",
+                    "CNIC",
+                    "Date",
+                    "Time",
+                    "Phone",
+                    "Fee",
+                  ].map((field) => (
+                    <input
+                      key={field}
+                      type={
+                        field === "Date"
+                          ? "date"
+                          : field === "Time"
+                            ? "time"
+                            : "text"
+                      }
+                      className="form-control mb-2"
+                      name={field}
+                      value={selected[field] || ""}
+                      onChange={handleChange}
+                      readOnly={mode === "view"}
+                      placeholder={field}
+                    />
+                  ))}
                 </div>
 
                 <div className="modal-footer">

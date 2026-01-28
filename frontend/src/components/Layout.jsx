@@ -69,7 +69,7 @@ export default function Layout() {
           {sidebarOpen && (
             <ul className="nav flex-column mt-5">
               {/* ADMIN */}
-              <li className="nav-item">
+            {/* <li className="nav-item">
                 <Link
                   className="nav-link text-white"
                   to="/admin"
@@ -83,7 +83,7 @@ export default function Layout() {
                 </Link>
               </li>
 
-              {/* USER */}
+             
               <li className="nav-item">
                 <Link
                   className="nav-link text-white"
@@ -96,7 +96,7 @@ export default function Layout() {
                   />
                   User
                 </Link>
-              </li>
+              </li>  */}
 
               <hr className="text-white" />
 

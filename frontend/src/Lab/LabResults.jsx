@@ -1,22 +1,20 @@
 import React from "react";
 import { useLab } from "../context/LabContext";
-import jsPDF from "jspdf"; // npm install jspdf
-import html2canvas from "html2canvas"; // npm install html2canvas
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function LabResults() {
   const { tests } = useLab();
 
   const completedTests = tests.filter((t) => t.status === "done" && t.result);
 
-  const hospitalName = "City Hospital"; // set your hospital name here
+  const hospitalName = "City Hospital";
 
-  // Format current date
   const formatDate = (date) => {
     const d = date ? new Date(date) : new Date();
     return d.toLocaleDateString() + " " + d.toLocaleTimeString();
   };
 
-  // Print single test
   const handlePrintSingle = (id) => {
     const test = completedTests.find((t) => t.id === id);
     if (!test) return;
@@ -58,16 +56,13 @@ export default function LabResults() {
     printWindow.print();
   };
 
-  // Save single test as PDF
   const handlePDFSingle = async (id) => {
     const test = completedTests.find((t) => t.id === id);
     if (!test) return;
 
-    // Create a temporary div
     const tempDiv = document.createElement("div");
     tempDiv.style.position = "absolute";
     tempDiv.style.left = "-9999px";
-
     tempDiv.innerHTML = `
       <div style="font-family: Arial, sans-serif; margin: 30px; width: 600px;">
         <h2 style="text-align:center; color:#2c3e50;">${hospitalName}</h2>
@@ -107,6 +102,7 @@ export default function LabResults() {
         <p className="text-muted">No lab results available.</p>
       ) : (
         <>
+          {/* Desktop Table */}
           <div className="d-none d-md-block table-responsive">
             <table className="table table-bordered table-hover">
               <thead className="table-dark text-center">
@@ -143,6 +139,46 @@ export default function LabResults() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="d-md-none">
+            {completedTests.map((t, i) => (
+              <div
+                key={t.id}
+                className="card mb-3 shadow-sm"
+                style={{ borderLeft: "5px solid #17a2b8" }}
+              >
+                <div className="card-body">
+                  <h5 className="card-title">
+                    {i + 1}. {t.test_name}
+                  </h5>
+                  <p className="card-text">
+                    <strong>Result:</strong> {t.result}
+                  </p>
+                  <p className="card-text">
+                    <strong>Medication:</strong> {t.medicationGiven || "—"}
+                  </p>
+                  <p className="card-text">
+                    <strong>Date:</strong> {formatDate(t.date || t.createdAt)}
+                  </p>
+                  <div className="d-flex justify-content-end mt-2">
+                    <button
+                      className="btn btn-sm btn-primary me-2"
+                      onClick={() => handlePrintSingle(t.id)}
+                    >
+                      Print
+                    </button>
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={() => handlePDFSingle(t.id)}
+                    >
+                      PDF
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </>
       )}
