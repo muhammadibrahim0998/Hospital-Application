@@ -1,0 +1,214 @@
+/* .doctor-card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease;
+}
+
+.doctor-card:hover {
+  transform: translateY(-6px);
+}
+
+.doctor-img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+}
+
+
+.doctor-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(21, 37, 54, 0.75);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.doctor-card:hover .doctor-overlay {
+  opacity: 1;
+}
+
+
+.doctor-info {
+  padding: 15px;
+}
+
+
+.slot-box {
+  display: block;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+.slot-box:hover {
+  border-color: #0d6efd;
+}
+
+.slot-box.active {
+  background: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+} */
+/* General Body */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Container Headings */
+.text-center h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.text-center p {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+/* Doctor Card */
+.doctor-card {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  background-color: #fff;
+}
+
+.doctor-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.doctor-img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.doctor-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: rgba(0,0,0,0.6);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.doctor-card:hover .doctor-overlay {
+  opacity: 1;
+}
+
+.doctor-info {
+  padding: 10px;
+}
+
+.doctor-info h6 {
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+}
+
+.doctor-info small {
+  color: #0d6efd;
+}
+
+/* Modal Styles */
+.modal-dialog {
+  max-width: 600px; /* Desktop max width */
+}
+
+.modal-content {
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.modal-body .form-label {
+  font-weight: 500;
+}
+
+.modal-footer .btn {
+  min-width: 120px;
+}
+
+/* Time Slot Boxes */
+.slot-box {
+  display: block;
+  text-align: center;
+  padding: 0.5rem;
+  border: 1px solid #0d6efd;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+  background-color: #fff;
+  user-select: none;
+}
+
+.slot-box.active,
+.slot-box:hover {
+  background-color: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+
+/* Responsive for Mobile */
+@media (max-width: 576px) {
+  .doctor-img {
+    height: 200px;
+  }
+
+  .modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    height: 100%;
+  }
+
+  .modal-content {
+    height: 100%;
+    border-radius: 0;
+    padding: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.2rem;
+  }
+
+  .form-label {
+    font-size: 0.875rem;
+  }
+
+  .slot-box {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 577px) and (max-width: 991px) {
+  .doctor-img {
+    height: 220px;
+  }
+}
