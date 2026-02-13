@@ -1,4 +1,4 @@
-/* .doctor-card {
+.doctor-card {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
@@ -62,7 +62,7 @@
   color: #fff;
   border-color: #0d6efd;
 } */
-/* General Body */
+/* General Body
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f8f9fa;
@@ -164,7 +164,7 @@ body {
   transition: all 0.3s;
   font-size: 0.9rem;
   background-color: #fff;
-  user-select: none;
+  /* user-select: none; */
 }
 
 .slot-box.active,

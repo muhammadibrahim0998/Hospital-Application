@@ -6,7 +6,6 @@ const AppointmentContext = createContext();
 export function AppointmentProvider({ children }) {
   const [appointments, setAppointments] = useState([]);
 
-  // GET all appointments (assume fetched from backend)
   const fetchAppointments = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/appointments`);
@@ -17,7 +16,6 @@ export function AppointmentProvider({ children }) {
     }
   };
 
-  // POST / add new appointment
   const bookAppointment = async (appointment) => {
     try {
       await fetch(`${API_BASE_URL}/api/appointments`, {
@@ -31,7 +29,6 @@ export function AppointmentProvider({ children }) {
     }
   };
 
-  // DELETE appointment
   const deleteAppointment = async (id) => {
     try {
       await fetch(`${API_BASE_URL}/api/appointments/${id}`, {
@@ -43,10 +40,9 @@ export function AppointmentProvider({ children }) {
     }
   };
 
-  // ✅ FRONTEND-ONLY UPDATE (no backend call)
   const updateAppointment = (id, updatedData) => {
     setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...updatedData } : a))
+      prev.map((a) => (a.id === id ? { ...a, ...updatedData } : a)),
     );
   };
 

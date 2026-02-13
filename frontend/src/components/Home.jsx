@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDoctors } from "../context/DoctorContext";
 import { useDepartments } from "../context/DepartmentContext";
-import axios from "axios";
-import { API_BASE_URL } from "../config";
 import "../css/Home.css";
 
 export default function Home() {
@@ -29,59 +27,18 @@ export default function Home() {
     },
   ];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [formData, setFormData] = useState({
-    Patient: "",
-    Doctor: "",
-    Date: "",
-    Time: "",
-    Phone: "",
-    Fee: 1000,
-  });
+  const [currentIndex, setCurrentIndex] = React.useState(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const timer = setInterval(
       () => setCurrentIndex((prev) => (prev + 1) % slides.length),
-      3000
+      3000,
     );
     return () => clearInterval(timer);
   }, []);
 
-  const openModal = (doctor = null) => {
-    setSelectedDoctor(doctor);
-    setFormData((prev) => ({ ...prev, Doctor: doctor ? doctor.name : "" }));
-    setShowModal(true);
-  };
-
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API_BASE_URL}/api/appointments`, formData);
-      alert("Appointment booked successfully!");
-      setShowModal(false);
-    } catch (err) {
-      alert("Failed to book appointment");
-    }
-  };
-
-  const timeSlots = [
-    "8:00 AM - 8:30 AM",
-    "9:00 AM - 9:30 AM",
-    "10:00 AM - 10:30 AM",
-    "11:00 AM - 11:30 AM",
-    "12:00 PM - 12:30 PM",
-    "2:00 PM - 2:30 PM",
-    "3:00 PM - 3:30 PM",
-    "4:00 PM - 4:30 PM",
-  ];
-
   return (
-    <div >
+    <div>
       {/* ================= HERO SLIDER ================= */}
       <div className="position-relative slider-container">
         {slides.map((slide, i) => (
@@ -112,7 +69,7 @@ export default function Home() {
           <div className="row g-4">
             {departments.map((dept) => {
               const count = doctors.filter(
-                (d) => d.departmentId === dept.id
+                (d) => d.departmentId === dept.id,
               ).length;
               return (
                 <div
@@ -148,7 +105,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= DOCTORS ================= */}
+      {/* ================= DOCTORS PREVIEW ================= */}
       <div className="container my-5">
         <h3 className="fw-bold text-center mb-4 text-danger">Our Doctors</h3>
         <div className="row g-4">
@@ -157,19 +114,13 @@ export default function Home() {
               <div className="card h-100 shadow-sm text-center">
                 <img
                   src={doc.image}
-                  className="card-img-top"
                   alt={doc.name}
+                  className="card-img-top"
                   style={{ height: "220px", objectFit: "cover" }}
                 />
                 <div className="card-body">
                   <h6 className="fw-bold">{doc.name}</h6>
                   <p className="text-muted small">{doc.specialty}</p>
-                  <button
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => openModal(doc)}
-                  >
-                    Book Appointment
-                  </button>
                 </div>
               </div>
             </div>
@@ -177,128 +128,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ================= MODAL ================= */}
-      {showModal && (
-        <>
-          <div className="modal show d-block" tabIndex="-1">
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <form onSubmit={handleSubmit}>
-                  <div className="modal-header">
-                    <h5 className="modal-title">
-                      {selectedDoctor
-                        ? `Book Appointment with ${selectedDoctor.name}`
-                        : "Book Appointment"}
-                    </h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={() => setShowModal(false)}
-                    ></button>
-                  </div>
-
-                  <div className="modal-body">
-                    <div className="mb-3">
-                      <label className="form-label">Patient</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="Patient"
-                        required
-                        value={formData.Patient}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Doctor</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="Doctor"
-                        value={formData.Doctor}
-                        readOnly
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Date</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="Date"
-                        required
-                        value={formData.Date}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label fw-bold">
-                        Select Time Slot
-                      </label>
-                      <div className="row g-2">
-                        {timeSlots.map((slot, index) => (
-                          <div className="col-6" key={index}>
-                            <input
-                              type="radio"
-                              name="Time"
-                              id={`slot-${index}`}
-                              value={slot}
-                              checked={formData.Time === slot}
-                              onChange={handleChange}
-                              className="d-none"
-                              required
-                            />
-                            <label
-                              htmlFor={`slot-${index}`}
-                              className={`slot-box ${formData.Time === slot ? "active" : ""
-                                }`}
-                            >
-                              {slot}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Phone</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="Phone"
-                        required
-                        value={formData.Phone}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn btn-primary">
-                      Confirm Booking
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div className="modal-backdrop fade show"></div>
-        </>
-      )}
-      {/* ================= ABOUT HOSPITAL & DOCTORS ================= */}
+      {/* ================= ABOUT HOSPITAL ================= */}
       <section className="py-5 bg-light">
         <div className="container">
           <div className="row align-items-center">
-            {/* Hospital Image */}
             <div className="col-md-6 mb-4 mb-md-0">
               <img
                 src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3"
@@ -306,18 +139,11 @@ export default function Home() {
                 className="img-fluid rounded shadow"
               />
             </div>
-
-            {/* About Hospital Text */}
             <div className="col-md-6">
               <h3 className="fw-bold text-danger mb-3">About Our Hospital</h3>
               <p className="text-muted mb-4">
-                Our hospital is committed to providing world-class healthcare
-                with state-of-the-art facilities. Our team of expert doctors
-                ensures that every patient receives personalized care.
-              </p>
-              <p className="text-muted mb-4">
-                We believe in modern treatment methods, compassionate care, and
-                complete patient satisfaction.
+                Our hospital provides world-class healthcare with expert
+                doctors.
               </p>
               <button
                 className="btn btn-danger btn-sm"
@@ -325,31 +151,6 @@ export default function Home() {
               >
                 Learn More
               </button>
-            </div>
-          </div>
-
-          {/* Doctors Preview */}
-          <div className="mt-5">
-            <h4 className="fw-bold text-center text-danger mb-4">
-              Meet Our Expert Doctors
-            </h4>
-            <div className="row g-4">
-              {doctors.slice(0, 4).map((doc) => (
-                <div className="col-md-3" key={doc.id}>
-                  <div className="card h-100 shadow-sm text-center">
-                    <img
-                      src={doc.image}
-                      alt={doc.name}
-                      className="card-img-top"
-                      style={{ height: "180px", objectFit: "cover" }}
-                    />
-                    <div className="card-body">
-                      <h6 className="fw-bold mb-0">{doc.name}</h6>
-                      <small className="text-muted">{doc.specialty}</small>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
