@@ -1,93 +1,41 @@
-// import db from "../config/db.js";
-
-// // ================= GET ALL APPOINTMENTS =================
-// export const getAppointments = async () => {
-//   const [rows] = await db.query("SELECT * FROM appointments ORDER BY id ASC");
-
-//   return rows.map((r) => ({
-//     id: r.id,
-//     Patient: r.Patient,
-//     Doctor: r.Doctor,
-//     CNIC: r.CNIC,
-//     Date: r.Date,
-//     Time: r.Time,
-//     Phone: r.Phone,
-//     Fee: r.Fee,
-//   }));
-// };
-
-// // ================= CREATE APPOINTMENT =================
-// export const createAppointment = async (data) => {
-//   const { Patient, Doctor, CNIC, Date, Time, Phone, Fee } = data;
-
-//   const [result] = await db.query(
-//     `INSERT INTO appointments 
-//      (Patient, Doctor, CNIC, Date, Time, Phone, Fee)
-//      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-//     [Patient, Doctor, CNIC, Date, Time, Phone, Fee],
-//   );
-
-//   return {
-//     id: result.insertId,
-//     Patient,
-//     Doctor,
-//     CNIC,
-//     Date,
-//     Time,
-//     Phone,
-//     Fee,
-//   };
-// };
-
-// // ================= DELETE =================
-// export const deleteAppointment = async (id) => {
-//   await db.query("DELETE FROM appointments WHERE id=?", [id]);
-// };
 import db from "../config/db.js";
 
-// ================= GET ALL APPOINTMENTS =================
-export const getAppointments = async () => {
-  const [rows] = await db.query("SELECT * FROM appointments ORDER BY id ASC");
-
-  return rows.map((r) => ({
-    id: r.id,
-    Patient: r.Patient,
-    Doctor: r.Doctor,
-    DoctorPhone: r.DoctorPhone,
-    CNIC: r.CNIC,
-    Date: r.Date,
-    Time: r.Time,
-    Phone: r.Phone,
-    Fee: r.Fee,
-    created_at: r.created_at,
-  }));
-};
-
-// ================= CREATE APPOINTMENT =================
+// Create appointment
 export const createAppointment = async (data) => {
-  const { Patient, Doctor, DoctorPhone, CNIC, Date, Time, Phone, Fee } = data;
-
-  const [result] = await db.query(
-    `INSERT INTO appointments 
-     (Patient, Doctor, DoctorPhone, CNIC, Date, Time, Phone, Fee)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [Patient, Doctor, DoctorPhone, CNIC, Date, Time, Phone, Fee],
-  );
-
-  return {
-    id: result.insertId,
-    Patient,
-    Doctor,
-    DoctorPhone,
-    CNIC,
-    Date,
-    Time,
-    Phone,
-    Fee,
-  };
+  const { Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id } = data;
+  const sql = "INSERT INTO appointments (Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id, status) VALUES (?,?,?,?,?,?,?,?,?,?, 'scheduled')";
+  return await db.query(sql, [Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id]);
 };
 
-// ================= DELETE =================
+// Get all appointments (Admin)
+export const getAllAppointments = async () => {
+  const sql = "SELECT * FROM appointments";
+  const [rows] = await db.query(sql);
+  return rows;
+};
+
+// Get appointments for a doctor (by ID)
+export const getDoctorAppointments = async (doctorId) => {
+  const sql = "SELECT * FROM appointments WHERE doctor_id = ?";
+  const [rows] = await db.query(sql, [doctorId]);
+  return rows;
+};
+
+// Get appointments for a patient (by ID)
+export const getPatientAppointments = async (patientId) => {
+  const sql = "SELECT * FROM appointments WHERE patient_id = ?";
+  const [rows] = await db.query(sql, [patientId]);
+  return rows;
+};
+
+// Update appointment status
+export const updateAppointmentStatus = async (id, status) => {
+  const sql = "UPDATE appointments SET status = ? WHERE id = ?";
+  return await db.query(sql, [status, id]);
+};
+
+// Delete appointment
 export const deleteAppointment = async (id) => {
-  await db.query("DELETE FROM appointments WHERE id=?", [id]);
+  const sql = "DELETE FROM appointments WHERE id = ?";
+  return await db.query(sql, [id]);
 };

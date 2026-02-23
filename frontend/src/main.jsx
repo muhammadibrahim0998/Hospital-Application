@@ -9,10 +9,10 @@ import { LabProvider } from "./context/LabContext"; // LabContext wrap
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-   
-      <LabProvider>
-        <App />
-      </LabProvider>
-  
+
+    <LabProvider>
+      <App />
+    </LabProvider>
+
   </React.StrictMode>
 );

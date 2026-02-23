@@ -1,73 +1,72 @@
-import { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 import { API_BASE_URL } from "../config";
 
-export default function Login() {
-  const navigate = useNavigate();
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login } = useContext(AuthContext);
-
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [error, setError] = useState("");
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, form);
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        email,
+        password,
+      });
+      login(res.data.user, res.data.token);
 
-      sessionStorage.setItem("token", res.data.token);
-      login(res.data.user);
+      // Redirect based on role
+      const role = res.data.user.role;
+      if (role === 'admin') navigate("/admin/dashboard");
+      else if (role === 'doctor') navigate("/doctor/dashboard");
+      else navigate("/patient/dashboard");
 
-      navigate("/", { replace: true }); // ✅ Home after login
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials");
-    } finally {
-      setLoading(false);
+      setError(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div className="vh-100 d-flex justify-content-center align-items-center">
-      <div className="card p-4 shadow" style={{ width: "400px" }}>
-        <h3 className="text-center mb-4">Login</h3>
-
-        {error && <div className="alert alert-danger">{error}</div>}
-
-        <form onSubmit={submit}>
+    <div className="container mt-5" style={{ maxWidth: "400px" }}>
+      <h2 className="text-center mb-4">Login</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+      <form onSubmit={handleSubmit} className="card p-4 shadow">
+        <div className="mb-3">
+          <label>Email</label>
           <input
-            className="form-control mb-3"
-            name="email"
             type="email"
-            placeholder="Email"
-            onChange={handleChange}
+            className="form-control"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
+        </div>
+        <div className="mb-3">
+          <label>Password</label>
           <input
-            className="form-control mb-3"
-            name="password"
             type="password"
-            placeholder="Password"
-            onChange={handleChange}
+            className="form-control"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
-
-          <button className="btn btn-success w-100" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-
-        <p className="text-center mt-3">
-          No account? <Link to="/register">Register</Link>
-        </p>
-      </div>
+        </div>
+        <button type="submit" className="btn btn-primary w-100">
+          Login
+        </button>
+        <div className="mt-3 text-center">
+          <p>
+            Don't have an account? <Link to="/register">Register</Link>
+          </p>
+        </div>
+      </form>
     </div>
   );
-}
+};
+
+export default Login;

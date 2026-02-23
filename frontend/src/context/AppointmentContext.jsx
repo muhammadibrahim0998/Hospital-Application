@@ -8,19 +8,32 @@ export function AppointmentProvider({ children }) {
 
   const fetchAppointments = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/appointments`);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE_URL}/api/appointments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
-      setAppointments(data);
+      if (Array.isArray(data)) {
+        setAppointments(data);
+      } else {
+        setAppointments([]);
+        console.error("Invalid appointments data:", data);
+      }
     } catch (err) {
       console.log("Fetch Error:", err);
+      setAppointments([]);
     }
   };
 
   const bookAppointment = async (appointment) => {
     try {
+      const token = localStorage.getItem("token");
       await fetch(`${API_BASE_URL}/api/appointments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(appointment),
       });
       fetchAppointments();
@@ -31,8 +44,10 @@ export function AppointmentProvider({ children }) {
 
   const deleteAppointment = async (id) => {
     try {
+      const token = localStorage.getItem("token");
       await fetch(`${API_BASE_URL}/api/appointments/${id}`, {
         method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
       });
       setAppointments((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {

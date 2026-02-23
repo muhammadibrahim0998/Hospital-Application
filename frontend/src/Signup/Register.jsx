@@ -1,91 +1,96 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
 
-export default function Register() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+const Register = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "patient",
+  });
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
     try {
-      await axios.post(`${API_BASE_URL}/api/auth/register`, form);
-      alert("Registered successfully! Please login.");
-      navigate("/login"); // Redirect to login page
+      await axios.post(`${API_BASE_URL}/api/auth/register`, formData);
+      navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
-    } finally {
-      setLoading(false);
+      setError(err.response?.data?.message || "Registration failed");
     }
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow p-4" style={{ width: "400px" }}>
-        <h3 className="text-center mb-4">Create Account</h3>
+    <div className="container mt-5" style={{ maxWidth: "400px" }}>
+      <h2 className="text-center mb-4">Register</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+      <form onSubmit={handleSubmit} className="card p-4 shadow">
+        <div className="mb-3">
+          <label>Name</label>
+          <input
+            type="text"
+            className="form-control"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Email</label>
+          <input
+            type="email"
+            className="form-control"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Password</label>
+          <input
+            type="password"
+            className="form-control"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        {/* Role Selection (Optional - defaulting to patient but good to have) */}
+        <div className="mb-3">
+          <label>Role</label>
+          <select
+            className="form-select"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+          >
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
 
-        {error && <div className="alert alert-danger">{error}</div>}
-
-        <form onSubmit={submit}>
-          <div className="mb-3 input-group">
-            <span className="input-group-text">
-              <i className="bi bi-person"></i>
-            </span>
-            <input
-              type="text"
-              name="name"
-              className="form-control"
-              placeholder="Full Name"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-3 input-group">
-            <span className="input-group-text">
-              <i className="bi bi-envelope"></i>
-            </span>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              placeholder="Email Address"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-3 input-group">
-            <span className="input-group-text">
-              <i className="bi bi-lock"></i>
-            </span>
-            <input
-              type="password"
-              name="password"
-              className="form-control"
-              placeholder="Password"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <button className="btn btn-primary w-100" disabled={loading}>
-            {loading ? "Registering..." : "Register"}
-          </button>
-        </form>
-
-        <p className="text-center mt-3 mb-0">
-          Already have an account? <a href="/login">Login</a>
-        </p>
-      </div>
+        <button type="submit" className="btn btn-primary w-100">
+          Register
+        </button>
+        <div className="mt-3 text-center">
+          <p>
+            Already have an account? <Link to="/login">Login</Link>
+          </p>
+        </div>
+      </form>
     </div>
   );
-}
+};
+
+export default Register;

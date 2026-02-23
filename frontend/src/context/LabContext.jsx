@@ -1,56 +1,33 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { API_BASE_URL } from "../config";
+import React, { createContext, useContext, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 const LabContext = createContext();
-export const useLab = () => useContext(LabContext);
 
-export const LabProvider = ({ children }) => {
+export function LabProvider({ children }) {
   const [tests, setTests] = useState([]);
 
-  const fetchTests = async (cnic = "") => {
-    const res = await fetch(
-      `${API_BASE_URL}/api/lab/tests${cnic ? "?cnic=" + cnic : ""}`,
+  const addTest = async (test) => {
+    const newTest = {
+      ...test,
+      id: uuidv4(),
+      status: "pending",
+      createdAt: new Date().toISOString(),
+    };
+    setTests((prev) => [newTest, ...prev]);
+  };
+
+  const performTest = (id, result) => {
+    setTests((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, status: "done", result } : t)),
     );
-    const data = await res.json();
-    setTests(data);
   };
-
-  const addTest = async (form) => {
-    await fetch(`${API_BASE_URL}/api/lab/tests`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    fetchTests();
-  };
-
-  const performTest = async (id, result) => {
-    await fetch(`${API_BASE_URL}/api/lab/tests/${id}/perform`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ result }),
-    });
-    fetchTests();
-  };
-
-  const giveMedication = async (id, medication) => {
-    await fetch(`${API_BASE_URL}/api/lab/tests/${id}/medication`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ medication }),
-    });
-    fetchTests();
-  };
-
-  useEffect(() => {
-    fetchTests();
-  }, []);
 
   return (
-    <LabContext.Provider
-      value={{ tests, fetchTests, addTest, performTest, giveMedication }}
-    >
+    <LabContext.Provider value={{ tests, addTest, performTest }}>
       {children}
     </LabContext.Provider>
   );
-};
+}
+
+// ✅ Named export
+export const useLab = () => useContext(LabContext);

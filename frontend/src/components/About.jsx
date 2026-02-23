@@ -1,5 +1,8 @@
 import React from "react";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import { useDoctors } from "../context/DoctorContext";
+import { useDepartments } from "../context/DepartmentContext";
+import { Link } from "react-router-dom";
 import {
   Shield,
   Clock,
@@ -7,131 +10,74 @@ import {
   HeartPulse,
   Users2,
   Building2,
+  CheckCircle2,
+  Phone,
+  ArrowRight,
 } from "lucide-react";
 
 export default function About() {
+  const { doctors } = useDoctors();
+  const { departments } = useDepartments();
+
+  // Limiting to show top 3 doctors for the About page feature
+  const topDoctors = doctors.slice(0, 3);
+
+  // Stats - using exact requested values for professional display
   const stats = [
-    { label: "OPD Visits / Year", value: "120k" },
-    { label: "Bed Capacity", value: 150 },
-    { label: "Doctors", value: 40 },
-    { label: "Years of Service", value: 10 },
-  ];
-
-  const services = [
-    { icon: "❤️", title: "Cardiology", desc: "Complete heart care & ICU" },
-    { icon: "🦴", title: "Orthopaedics", desc: "Joint & bone surgeries" },
-    {
-      icon: "🩺",
-      title: "General Medicine",
-      desc: "Adult health & chronic care",
-    },
-    { icon: "👶", title: "Paediatrics", desc: "Child health & vaccination" },
-  ];
-
-  const depts = [
-    {
-      img: "https://images.unsplash.com/photo-1551076805-e1869033e561",
-      name: "Emergency",
-      detail: "Round-the-clock trauma & critical care",
-    },
-    {
-      img: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d",
-      name: "Radiology",
-      detail: "MRI, CT, X-ray & ultrasound",
-    },
-    {
-      img: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-      name: "Lab Services",
-      detail: "WHO-grade diagnostics",
-    },
-  ];
-
-  const doctors = [
-    {
-      pic: "https://images.unsplash.com/photo-1582750433449-648ed127bb54",
-      name: "Dr Hasnain",
-      post: "Chief Cardiologist",
-    },
-    {
-      pic: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-      name: "Dr Ayesha",
-      post: "Head of Paediatrics",
-    },
-    {
-      pic: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
-      name: "Dr Tariq",
-      post: "Consultant Orthopaedic",
-    },
-  ];
-
-  const features = [
-    {
-      icon: Shield,
-      title: "Patient Safety First",
-      description: "Rigorous protocols ensure safety.",
-    },
-    {
-      icon: Clock,
-      title: "24/7 Emergency Care",
-      description: "Rapid emergency response teams.",
-    },
-    {
-      icon: Award,
-      title: "Accredited Excellence",
-      description: "Recognized for quality care.",
-    },
-    {
-      icon: HeartPulse,
-      title: "Advanced Technology",
-      description: "State-of-the-art equipment.",
-    },
-    {
-      icon: Users2,
-      title: "Expert Medical Team",
-      description: "Highly qualified specialists.",
-    },
-    {
-      icon: Building2,
-      title: "Modern Facilities",
-      description: "Comfortable healing spaces.",
-    },
+    { label: "Annual Patients", value: "120,000+", icon: <Users2 className="text-primary mb-2" />, color: "primary" },
+    { label: "Modern Beds", value: "150+", icon: <Building2 className="text-success mb-2" />, color: "success" },
+    { label: "Expert Doctors", value: "37+", icon: <Award className="text-warning mb-2" />, color: "warning" },
+    { label: "Emergency Units", value: "24/7", icon: <Clock className="text-danger mb-2" />, color: "danger" },
   ];
 
   return (
-    <>
-      {/* HERO */}
+    <div className="bg-white">
+      {/* Dynamic Hero Section */}
       <section
-        className="text-white d-flex align-items-center"
+        className="position-relative overflow-hidden text-white d-flex align-items-center"
         style={{
-          minHeight: "340px",
-          background:
-            "linear-gradient(rgba(0,0,0,.65), rgba(0,0,0,.65)), url(https://images.unsplash.com/photo-1586773860418-d37222d8fce3)",
+          minHeight: "450px",
+          background: "linear-gradient(rgba(10, 20, 50, 0.7), rgba(10, 20, 50, 0.7)), url('https://images.unsplash.com/photo-1519494026892-80bbd2d670cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          marginTop: "47px",
-          marginLeft: "5px",
+          marginTop: "-24px", // Compensating for the layout padding
+          marginRight: "-24px",
+          marginLeft: "-24px",
         }}
       >
-        <Container>
-          <h1 className="fw-bold fs-2 fs-md-1">About City Care Hospital</h1>
-          <p className="fs-6 fs-md-5 text-light opacity-75">
-            Compassionate, quality healthcare for everyone.
-          </p>
+        <Container className="py-5">
+          <Row className="z-index-2">
+            <Col lg={7} className="text-center text-lg-start">
+              <span className="badge bg-primary px-3 py-2 rounded-pill mb-3 text-uppercase fw-bold letter-spacing-1">Founded in 2014</span>
+              <h1 className="display-3 fw-bold mb-4">Dedicated to Your <span className="text-primary">Well-being</span></h1>
+              <p className="lead mb-5 opacity-90 text-light fs-4 border-start border-4 border-primary ps-4">
+                City Care Hospital provides compassionate, high-quality healthcare using state-of-the-art technology and a patient-centric approach.
+              </p>
+              <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                <Button as={Link} to="/appointments" size="lg" className="px-5 py-3 rounded-pill fw-bold shadow-lg">
+                  Book Appointment <ArrowRight className="ms-2" size={20} />
+                </Button>
+                <Button as={Link} to="/contact" variant="outline-light" size="lg" className="px-5 py-3 rounded-pill fw-bold backdrop-blur">
+                  Contact Us
+                </Button>
+              </div>
+            </Col>
+          </Row>
         </Container>
       </section>
 
-      {/* STATS */}
-      <section className="py-5">
+      {/* Modern Stats Section */}
+      <section className="py-5" style={{ marginTop: "-60px" }}>
         <Container>
-          <Row className="g-3">
+          <Row className="justify-content-center">
             {stats.map((s, i) => (
-              <Col key={i} xs={6} md={3}>
-                <Card className="text-center border-0 shadow-sm h-100">
+              <Col key={i} xs={12} sm={6} lg={3} className="mb-4">
+                <Card className="border-0 shadow-lg text-center h-100 py-4 transform-hover transition-all bg-white overflow-hidden rounded-4">
+                  <span className={`position-absolute top-0 start-0 w-100 h-2 bg-${s.color}`}></span>
                   <Card.Body>
-                    <div className="fs-4 fs-md-3 fw-bold text-danger">
-                      {s.value}
-                    </div>
-                    <div className="small text-muted">{s.label}</div>
+                    <div className="mb-3">{s.icon}</div>
+                    <h2 className={`fw-bold mb-1 text-${s.color}`}>{s.value}</h2>
+                    <div className="text-muted text-uppercase small fw-bold tracking-wider">{s.label}</div>
                   </Card.Body>
                 </Card>
               </Col>
@@ -140,92 +86,203 @@ export default function About() {
         </Container>
       </section>
 
-      {/* SERVICES */}
-      <section className="py-5 bg-light">
-        <Container>
-          <Row className="g-3">
-            {services.map((sv, i) => (
-              <Col key={i} xs={12} sm={6} md={3}>
-                <Card className="h-100 text-center border-0 shadow-sm">
-                  <Card.Body>
-                    <div className="fs-2">{sv.icon}</div>
-                    <h6 className="fw-semibold mt-2 fs-6">{sv.title}</h6>
-                    <p className="small text-muted mb-0">{sv.desc}</p>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-      </section>
-
-      {/* DEPARTMENTS */}
+      {/* Mission & Vision Section */}
       <section className="py-5">
         <Container>
-          <Row className="g-4">
-            {depts.map((d, i) => (
-              <Col key={i} xs={12} md={4}>
-                <Card className="h-100 border-0 shadow-sm">
-                  <Card.Img
-                    src={d.img}
-                    className="img-fluid"
-                    style={{ maxHeight: "200px", objectFit: "cover" }}
-                  />
-                  <Card.Body>
-                    <h6 className="fw-semibold text-danger fs-6">{d.name}</h6>
-                    <p className="small text-muted mb-0">{d.detail}</p>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-      </section>
-
-      {/* DOCTORS */}
-      <section className="py-5 bg-light">
-        <Container>
-          <Row className="g-4">
-            {doctors.map((doc, i) => (
-              <Col key={i} xs={12} sm={6} md={4}>
-                <Card className="text-center border-0 shadow-sm h-100">
-                  <Card.Img
-                    src={doc.pic}
-                    className="img-fluid"
-                    style={{ maxHeight: "240px", objectFit: "cover" }}
-                  />
-                  <Card.Body>
-                    <h6 className="fw-semibold mb-1">{doc.name}</h6>
-                    <small className="text-muted">{doc.post}</small>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-      </section>
-
-      {/* FEATURES */}
-      <section className="py-5">
-        <Container>
-          <Row className="g-3">
-            {features.map((f, i) => (
-              <Col key={i} xs={12} sm={6}>
-                <div className="d-flex align-items-start p-3 bg-white border rounded shadow-sm h-100">
-                  <f.icon
-                    size={22}
-                    className="text-danger me-3 flex-shrink-0"
-                  />
-                  <div>
-                    <h6 className="fw-semibold fs-6 mb-1">{f.title}</h6>
-                    <p className="small text-muted mb-0">{f.description}</p>
+          <Row className="align-items-center g-5">
+            <Col lg={6}>
+              <div className="pe-lg-5">
+                <h2 className="display-5 fw-bold text-dark mb-4">Our Mission & <span className="text-primary">Vision</span></h2>
+                <p className="text-muted mb-4 fs-5">
+                  At City Care Hospital, our mission is to deliver comprehensive healthcare services that exceed expectations through innovation, integrity, and clinical excellence.
+                </p>
+                <div className="space-y-4 mb-5">
+                  <div className="d-flex align-items-center mb-3">
+                    <CheckCircle2 className="text-success me-3" size={24} />
+                    <span className="fw-semibold text-dark">Patient-Centered Care Model</span>
+                  </div>
+                  <div className="d-flex align-items-center mb-3">
+                    <CheckCircle2 className="text-success me-3" size={24} />
+                    <span className="fw-semibold text-dark">Ethical Medical Practices</span>
+                  </div>
+                  <div className="d-flex align-items-center mb-3">
+                    <CheckCircle2 className="text-success me-3" size={24} />
+                    <span className="fw-semibold text-dark">Advanced Diagnostic Facilities</span>
                   </div>
                 </div>
+                <div className="p-4 bg-light rounded-4 border-start border-primary border-4 shadow-sm">
+                  <blockquote className="mb-0 italic fs-5 text-dark font-italic">
+                    "Health is a state of complete physical, mental and social well-being and not merely the absence of disease."
+                  </blockquote>
+                </div>
+              </div>
+            </Col>
+            <Col lg={6}>
+              <div className="position-relative">
+                <img
+                  src="https://images.unsplash.com/photo-1551076805-e1869033e561?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                  alt="Modern Hospital Setting"
+                  className="rounded-4 shadow-2xl img-fluid"
+                />
+                <div className="position-absolute bottom-0 end-0 bg-primary p-4 rounded-4 shadow-lg d-none d-md-block transform-translate-x-1/4 translate-y-1/4">
+                  <div className="text-white">
+                    <h4 className="fw-bold mb-0">10+</h4>
+                    <p className="small mb-0 opacity-80">Years Excellence</p>
+                  </div>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
+      {/* Expertise / Departments Section */}
+      <section className="py-5 bg-light">
+        <Container>
+          <div className="text-center mb-5">
+            <h2 className="fw-bold display-6 mb-3">Our Medical <span className="text-primary">Expertise</span></h2>
+            <p className="text-muted mx-auto" style={{ maxWidth: "600px" }}>
+              We provide specialized care across multiple disciplines, ensuring you receive the best treatment for your specific needs.
+            </p>
+          </div>
+          <Row className="g-4">
+            {departments.slice(0, 4).map((dept, i) => (
+              <Col key={i} md={6} lg={3}>
+                <Card className="h-100 border-0 shadow-sm rounded-4 overflow-hidden transform-hover-up transition-all">
+                  <div className="bg-primary p-4 text-center text-white">
+                    <Building2 size={40} />
+                  </div>
+                  <Card.Body className="text-center p-4">
+                    <h5 className="fw-bold mb-3">{dept.name}</h5>
+                    <ul className="list-unstyled mb-0 px-2 text-start">
+                      {dept.fields.map((field, idx) => (
+                        <li key={idx} className="small text-muted mb-2 d-flex align-items-center">
+                          <CheckCircle2 size={14} className="text-primary me-2 flex-shrink-0" />
+                          {field.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+          <div className="text-center mt-5">
+            <Button variant="outline-primary" as={Link} to="/doctors" className="px-4 py-2 rounded-pill fw-bold">
+              View All Specialties
+            </Button>
+          </div>
+        </Container>
+      </section>
+
+      {/* Experts Section */}
+      <section className="py-5">
+        <Container>
+          <Row className="align-items-center mb-5">
+            <Col md={7}>
+              <h2 className="fw-bold display-6 mb-3">Meet Our <span className="text-primary">Top Experts</span></h2>
+              <p className="text-muted">Our team consists of highly qualified and experienced healthcare professionals.</p>
+            </Col>
+            <Col md={5} className="text-md-end">
+              <Link to="/doctors" className="text-primary fw-bold text-decoration-none d-flex align-items-center justify-content-md-end mb-3">
+                See all doctors <ArrowRight size={18} className="ms-2" />
+              </Link>
+            </Col>
+          </Row>
+          <Row className="g-4">
+            {topDoctors.map((doc, i) => (
+              <Col key={i} sm={6} lg={4}>
+                <Card className="border-0 shadow-lg rounded-4 overflow-hidden h-100 transform-hover transition-all">
+                  <div className="overflow-hidden" style={{ height: "300px" }}>
+                    <Card.Img
+                      variant="top"
+                      src={doc.image}
+                      className="img-fluid w-100 h-100 object-fit-cover transition-all"
+                      style={{ transition: "transform 0.5s" }}
+                    />
+                  </div>
+                  <Card.Body className="p-4">
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h5 className="fw-bold text-dark mb-0">{doc.name}</h5>
+                        <p className="text-primary fw-semibold small mb-0">{doc.specialty}</p>
+                      </div>
+                      <div className="bg-primary-subtle rounded-3 p-2">
+                        <HeartPulse className="text-primary" size={20} />
+                      </div>
+                    </div>
+                    <hr className="my-3 opacity-10" />
+                    <div className="d-grid">
+                      <Button as={Link} to={`/doctor/${doc.id}`} variant="outline-primary" className="rounded-pill fw-bold btn-sm">
+                        View Profile
+                      </Button>
+                    </div>
+                  </Card.Body>
+                </Card>
               </Col>
             ))}
           </Row>
         </Container>
       </section>
-    </>
+
+      {/* CTA Section */}
+      <section className="py-5">
+        <Container>
+          <div
+            className="rounded-4 p-5 text-center text-white shadow-2xl overflow-hidden position-relative"
+            style={{
+              background: "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)",
+            }}
+          >
+            <div className="position-absolute top-0 end-0 p-5 opacity-10 rotate-12 d-none d-lg-block">
+              <HeartPulse size={120} />
+            </div>
+            <div className="position-absolute bottom-0 start-0 p-5 opacity-10 rotate-n12 d-none d-lg-block">
+              <Building2 size={120} />
+            </div>
+
+            <div className="z-index-2 position-relative py-4">
+              <h2 className="display-5 fw-bold mb-4">Your Health is Our Priority</h2>
+              <p className="lead mb-5 opacity-90 mx-auto" style={{ maxWidth: "700px" }}>
+                Ready to experience the best healthcare? Join thousands of satisfied patients who trust City Care Hospital for their medical needs.
+              </p>
+              <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                <Button as={Link} to="/appointments" variant="light" size="lg" className="px-5 py-3 rounded-pill fw-bold text-primary shadow-lg border-0">
+                  Book Appointment Now
+                </Button>
+                <a href="tel:+1234567890" className="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold d-flex align-items-center justify-content-center backdrop-blur">
+                  <Phone size={18} className="me-2" /> Call Helpdesk
+                </a>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* Footer Info / Accreditation */}
+      <section className="py-5 bg-white border-top">
+        <Container>
+          <Row className="justify-content-center align-items-center text-center g-4 opacity-50">
+            <Col xs={6} md={3} className="px-4">
+              <Award size={40} className="mb-2" />
+              <p className="small fw-bold text-uppercase mb-0">ISO Accredited</p>
+            </Col>
+            <Col xs={6} md={3} className="px-4">
+              <Shield size={40} className="mb-2" />
+              <p className="small fw-bold text-uppercase mb-0">Health Certified</p>
+            </Col>
+            <Col xs={6} md={3} className="px-4">
+              <HeartPulse size={40} className="mb-2" />
+              <p className="small fw-bold text-uppercase mb-0">Patient First</p>
+            </Col>
+            <Col xs={6} md={3} className="px-4">
+              <Users2 size={40} className="mb-2" />
+              <p className="small fw-bold text-uppercase mb-0">Community Rated</p>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+    </div>
   );
 }
+

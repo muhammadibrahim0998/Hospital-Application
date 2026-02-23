@@ -1,16 +1,21 @@
 import express from "express";
-import {
-  getTests,
-  createTest,
-  performLabTest,
-  addMedication,
-} from "../controllers/labController.js";
+import { addReport, fetchReports, performLabTest, giveMedicationToPatient } from "../controllers/LabResultController.js";
+import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/tests", getTests); // GET all or by CNIC
-router.post("/tests", createTest); // CREATE test
-router.put("/tests/:id/perform", performLabTest); // UPDATE result
-router.put("/tests/:id/medication", addMedication); // UPDATE medication
+// Get all test reports (filtered by role)
+router.get("/reports", verifyToken, fetchReports);
+router.get("/tests", verifyToken, fetchReports); // Aliasing for frontend context
+
+// Add a new lab test
+router.post("/reports", verifyToken, authorizeRoles("admin", "doctor"), addReport);
+router.post("/tests", verifyToken, authorizeRoles("admin", "doctor"), addReport);
+
+// Perform test (update result)
+router.put("/tests/:id/perform", verifyToken, authorizeRoles("admin", "doctor"), performLabTest);
+
+// Give medication
+router.put("/tests/:id/medication", verifyToken, authorizeRoles("admin", "doctor"), giveMedicationToPatient);
 
 export default router;

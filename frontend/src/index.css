@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    /* SKMCH Inspired Professional Palette */
+    --sk-primary: #003366;
+    --sk-secondary: #004b93;
+    --sk-accent: #00a0dc;
+    --sk-bg-light: #f4f7fa;
+    --sk-text-main: #1a202c;
+    --sk-text-muted: #718096;
+    --sk-border: #e2e8f0;
+    --sk-success: #38a169;
+    --sk-warning: #ecc94b;
+    --sk-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--sk-bg-light);
+    color: var(--sk-text-main);
+    letter-spacing: -0.01em;
+}
+
+/* SKMCH Professional Utilities */
+.sk-header {
+    background: linear-gradient(to right, var(--sk-primary), var(--sk-secondary));
+    color: white;
+}
+
+.sk-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--sk-border);
+    box-shadow: var(--sk-card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sk-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.sk-btn-primary {
+    background-color: var(--sk-primary);
+    border-color: var(--sk-primary);
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+.sk-btn-primary:hover {
+    background-color: var(--sk-secondary);
+    border-color: var(--sk-secondary);
+}
+
+.sk-table {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.sk-table thead {
+    background-color: var(--sk-primary);
+    color: white;
+}
+
+.sk-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 15px !important;
+}
+
+.sk-input {
+    border: 1px solid var(--sk-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    transition: border-color 0.2s ease;
+}
+
+.sk-input:focus {
+    border-color: var(--sk-accent);
+    box-shadow: 0 0 0 3px rgba(0, 160, 220, 0.1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Form Styles */
+.premium-input {
+    border: 2px solid transparent !important;
+    background: #f1f5f9 !important;
+    transition: all 0.3s ease !important;
+}
+
+.premium-input:focus {
+    background: white !important;
+    border-color: var(--premium-blue) !important;
+    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1) !important;
+}

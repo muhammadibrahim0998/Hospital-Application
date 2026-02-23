@@ -74,7 +74,7 @@ export default function Home() {
               return (
                 <div
                   key={dept.id}
-                  className="col-md-4"
+                  className="col-6 col-md-4"
                   onClick={() => navigate(`/department/${dept.id}`)}
                   style={{ cursor: "pointer" }}
                 >
@@ -110,7 +110,7 @@ export default function Home() {
         <h3 className="fw-bold text-center mb-4 text-danger">Our Doctors</h3>
         <div className="row g-4">
           {doctors.slice(0, 8).map((doc) => (
-            <div className="col-md-3" key={doc.id}>
+            <div className="col-6 col-md-3" key={doc.id}>
               <div className="card h-100 shadow-sm text-center">
                 <img
                   src={doc.image}

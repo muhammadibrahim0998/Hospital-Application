@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLab } from "../context/LabContext";
 
 export default function DoctorLab() {
-  const { tests, addTest, performTest, giveMedication } = useLab();
+  const { tests, addTest } = useLab();
 
   const [form, setForm] = useState({
     patient_name: "",
@@ -14,10 +14,9 @@ export default function DoctorLab() {
     category: "",
   });
 
-  const [medication, setMedication] = useState({});
-  const [result, setResult] = useState({});
-
-  const handleAddTest = () => {
+  const handleAddTest = (e) => {
+    e.preventDefault();
+    if (!form.patient_name || !form.test_name) return;
     addTest(form);
     setForm({
       patient_name: "",
@@ -32,234 +31,159 @@ export default function DoctorLab() {
 
   return (
     <div className="container mt-5">
-      <h3 className="mb-4 text-center text-md-start">Add Lab Test</h3>
-
-      {/* Add Test Form */}
-      <div className="row g-2 mb-3">
-        {[
-          "patient_name",
-          "cnic",
-          "test_name",
-          "description",
-          "normal_range",
-          "price",
-          "category",
-        ].map((f) => (
-          <div key={f} className="col-12 col-sm-6 col-md-4 col-lg-3">
-            <input
-              className="form-control"
-              placeholder={f.replace("_", " ")}
-              value={form[f]}
-              onChange={(e) => setForm({ ...form, [f]: e.target.value })}
-            />
-          </div>
-        ))}
-      </div>
-
-      <button className="btn btn-primary mb-4 " onClick={handleAddTest}>
-        Add Test
-      </button>
-
-      <h4 className="mb-3">All Tests</h4>
-
-      {/* ===== Desktop Table ===== */}
-      <div className="d-none d-lg-block table-responsive">
-        <table className="table table-bordered table-hover">
-          <thead className="table-dark text-center">
-            <tr>
-              <th>#</th>
-              <th>Patient</th>
-              <th>CNIC</th>
-              <th>Test</th>
-              <th>Status</th>
-              <th>Result</th>
-              <th>Medication</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tests.map((t, i) => (
-              <tr key={t.id} className="text-center align-middle">
-                <td>{i + 1}</td>
-                <td>{t.patient_name}</td>
-                <td>{t.cnic}</td>
-                <td>{t.test_name}</td>
-                <td>{t.status}</td>
-                <td>
-                  {t.status === "done" ? (
-                    t.result
-                  ) : (
+      <div className="row">
+        <div className="col-12">
+          <div className="card shadow-sm border-0 mb-5">
+            <div className="card-body p-4">
+              <h3 className="mb-4">New Laboratory Requisition</h3>
+              <form onSubmit={handleAddTest}>
+                <div className="row g-3">
+                  <div className="col-md-4">
+                    <label className="form-label small fw-bold text-muted">Patient Name</label>
                     <input
                       className="form-control"
-                      value={result[t.id] || ""}
-                      onChange={(e) =>
-                        setResult({ ...result, [t.id]: e.target.value })
-                      }
-                      placeholder="Result"
+                      placeholder="Enter patient full name"
+                      value={form.patient_name}
+                      onChange={(e) => setForm({ ...form, patient_name: e.target.value })}
+                      required
                     />
-                  )}
-                </td>
-                <td>{t.medicationGiven || "-"}</td>
-                <td>
-                  {t.status !== "done" && (
-                    <button
-                      className="btn btn-primary btn-sm mb-1"
-                      onClick={() => performTest(t.id, result[t.id])}
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small fw-bold text-muted">CNIC / ID</label>
+                    <input
+                      className="form-control"
+                      placeholder="00000-0000000-0"
+                      value={form.cnic}
+                      onChange={(e) => setForm({ ...form, cnic: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small fw-bold text-muted">Test Name</label>
+                    <input
+                      className="form-control"
+                      placeholder="e.g. CBC, Serum Glucose"
+                      value={form.test_name}
+                      onChange={(e) => setForm({ ...form, test_name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-8">
+                    <label className="form-label small fw-bold text-muted">Clinical Notes / Description</label>
+                    <input
+                      className="form-control"
+                      placeholder="Additional instructions for the lab"
+                      value={form.description}
+                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small fw-bold text-muted">Category</label>
+                    <select
+                      className="form-select"
+                      value={form.category}
+                      onChange={(e) => setForm({ ...form, category: e.target.value })}
                     >
-                      Perform
+                      <option value="">Select Category</option>
+                      <option value="Blood">Blood</option>
+                      <option value="Urine">Urine</option>
+                      <option value="Imaging">Imaging</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div className="col-12 text-end mt-4">
+                    <button type="submit" className="btn btn-primary px-5">
+                      Authorize Lab Test
                     </button>
-                  )}
-                  <input
-                    className="form-control mb-1"
-                    placeholder="Medication"
-                    value={medication[t.id] || ""}
-                    onChange={(e) =>
-                      setMedication({ ...medication, [t.id]: e.target.value })
-                    }
-                  />
-                  <button
-                    className="btn btn-success btn-sm"
-                    onClick={() => giveMedication(t.id, medication[t.id])}
-                  >
-                    Give
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ===== Tablet / iPad Cards ===== */}
-      <div className="d-none d-md-block d-lg-none">
-        <div className="row">
-          {tests.map((t, i) => (
-            <div key={t.id} className="col-12 col-sm-6 mb-3">
-              <div className="card shadow-sm h-100">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 className="mb-0">All Diagnostic Requisitions</h4>
+        <div className="text-muted small">Total: {tests.length} tests</div>
+      </div>
+
+      {/* ===== Desktop Table ===== */}
+      <div className="d-none d-lg-block">
+        <div className="card shadow-sm border-0 overflow-hidden">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="table-dark">
+                <tr>
+                  <th className="ps-4">Patient</th>
+                  <th>Test</th>
+                  <th>Status</th>
+                  <th>Clinical Findings</th>
+                  <th className="pe-4 text-center">Category</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tests.length === 0 ? (
+                  <tr><td colSpan={5} className="text-center py-4">No tests ordered yet.</td></tr>
+                ) : (
+                  tests.map((t) => (
+                    <tr key={t.id}>
+                      <td className="ps-4">
+                        <div className="fw-bold">{t.patient_name}</div>
+                        <small className="text-muted">{t.cnic || 'No CNIC'}</small>
+                      </td>
+                      <td>{t.test_name}</td>
+                      <td>
+                        <span className={`badge bg-${t.status === 'done' ? 'success' : 'warning text-dark'}`}>
+                          {t.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        {t.status === "done" ? (
+                          <div className="text-primary fw-bold">{t.result}</div>
+                        ) : (
+                          <span className="text-muted italic small">Pending laboratory processing</span>
+                        )}
+                      </td>
+                      <td className="pe-4 text-center">
+                        <span className="badge bg-light text-dark border">{t.category || 'N/A'}</span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Tablet / Mobile Cards ===== */}
+      <div className="d-lg-none">
+        <div className="row g-3">
+          {tests.map((t) => (
+            <div key={t.id} className="col-md-6 col-12">
+              <div className="card shadow-sm h-100 border-0">
                 <div className="card-body">
-                  <h5 className="card-title">
-                    #{i + 1} - {t.test_name}
-                  </h5>
-                  <p>
-                    <strong>Patient:</strong> {t.patient_name}
-                  </p>
-                  <p>
-                    <strong>CNIC:</strong> {t.cnic}
-                  </p>
-                  <p>
-                    <strong>Status:</strong> {t.status}
-                  </p>
-                  <p>
-                    <strong>Result:</strong>
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <h5 className="card-title mb-0">{t.patient_name}</h5>
+                    <span className={`badge bg-${t.status === 'done' ? 'success' : 'warning text-dark'}`}>
+                      {t.status}
+                    </span>
+                  </div>
+                  <p className="text-muted small mb-3">{t.test_name}</p>
+
+                  <div>
+                    <label className="small fw-bold text-muted mb-1">Result Finding</label>
                     {t.status === "done" ? (
-                      t.result
+                      <div className="p-2 bg-light rounded text-primary fw-bold">{t.result}</div>
                     ) : (
-                      <input
-                        className="form-control"
-                        value={result[t.id] || ""}
-                        onChange={(e) =>
-                          setResult({ ...result, [t.id]: e.target.value })
-                        }
-                        placeholder="Result"
-                      />
+                      <div className="p-2 border rounded small bg-light text-muted italic">Awaiting technician entry...</div>
                     )}
-                  </p>
-                  <p>
-                    <strong>Medication:</strong> {t.medicationGiven || "-"}
-                  </p>
-                  {t.status !== "done" && (
-                    <button
-                      className="btn btn-primary btn-sm mb-1"
-                      onClick={() => performTest(t.id, result[t.id])}
-                    >
-                      Perform
-                    </button>
-                  )}
-                  <input
-                    className="form-control mb-1"
-                    value={medication[t.id] || ""}
-                    placeholder="Medication"
-                    onChange={(e) =>
-                      setMedication({ ...medication, [t.id]: e.target.value })
-                    }
-                  />
-                  <button
-                    className="btn btn-success btn-sm w-100"
-                    onClick={() => giveMedication(t.id, medication[t.id])}
-                  >
-                    Give
-                  </button>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* ===== Mobile Cards (280px) ===== */}
-      <div className="d-md-none">
-        {tests.map((t, i) => (
-          <div
-            key={t.id}
-            className="card mb-3 shadow-sm"
-            style={{ minWidth: "280px" }}
-          >
-            <div className="card-body">
-              <h5 className="card-title">
-                #{i + 1} - {t.test_name}
-              </h5>
-              <p>
-                <strong>Patient:</strong> {t.patient_name}
-              </p>
-              <p>
-                <strong>CNIC:</strong> {t.cnic}
-              </p>
-              <p>
-                <strong>Status:</strong> {t.status}
-              </p>
-              <p>
-                <strong>Result:</strong>
-                {t.status === "done" ? (
-                  t.result
-                ) : (
-                  <input
-                    className="form-control"
-                    value={result[t.id] || ""}
-                    onChange={(e) =>
-                      setResult({ ...result, [t.id]: e.target.value })
-                    }
-                    placeholder="Result"
-                  />
-                )}
-              </p>
-              <p>
-                <strong>Medication:</strong> {t.medicationGiven || "-"}
-              </p>
-              {t.status !== "done" && (
-                <button
-                  className="btn btn-primary btn-sm mb-1 w-100"
-                  onClick={() => performTest(t.id, result[t.id])}
-                >
-                  Perform
-                </button>
-              )}
-              <input
-                className="form-control mb-1"
-                value={medication[t.id] || ""}
-                placeholder="Medication"
-                onChange={(e) =>
-                  setMedication({ ...medication, [t.id]: e.target.value })
-                }
-              />
-              <button
-                className="btn btn-success btn-sm w-100"
-                onClick={() => giveMedication(t.id, medication[t.id])}
-              >
-                Give
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
