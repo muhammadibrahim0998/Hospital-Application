@@ -5,13 +5,20 @@ import { getPatientByUserId } from "../models/PatientModel.js";
 // Add a new lab test
 export const addReport = async (req, res) => {
     try {
-        const { patient_name, test_name, cnic, description, normal_range, price, category } = req.body;
+        const { patient_name, patient_id, test_name, cnic, description, normal_range, price, category } = req.body;
 
-        // Use doctor name from token or request
-        const doctor_name = req.body.doctor_name || "Admin/System";
+        // Use doctor name / ID from token
+        const doctor_id = req.userId;
+        const hospital_id = req.hospitalId;
+
+        // We could fetch the doctor's name from DB if wanted, or just trust req.body.doctor_name
+        const doctor_name = req.body.doctor_name || "Physician";
 
         await createReport({
             patient_name,
+            patient_id, // If provided by frontend
+            doctor_id,
+            hospital_id,
             doctor_name,
             test_name,
             cnic,
@@ -53,25 +60,27 @@ export const giveMedicationToPatient = async (req, res) => {
     }
 };
 
-// Fetch reports based on user role
+// Fetch reports based on user role and hospital scope
 export const fetchReports = async (req, res) => {
     try {
         const role = req.userRole ? req.userRole.toLowerCase() : '';
         const userId = req.userId;
-        const { cnic } = req.query;
+        const hospitalId = req.hospitalId;
 
         let reports = [];
 
-        if (role === 'admin') {
+        if (role === 'super_admin') {
             reports = await getAllReports();
+        } else if (role === 'hospital_admin') {
+            reports = await getAllReports(hospitalId);
         } else if (role === 'doctor') {
-            // Doctors can see all for now or filter by their name
-            reports = await getAllReports();
+            // Doctors usually order tests; they see what they ordered or within their hospital
+            reports = await getDoctorReports(userId);
         } else if (role === 'patient') {
-            const patient = await getPatientByUserId(userId);
-            if (!patient) return res.status(404).json({ message: "Patient profile not found" });
-
-            reports = await getPatientReports(patient.name, cnic);
+            reports = await getPatientReports(userId);
+        } else if (role === 'admin') {
+            // Legacy / Generic admin
+            reports = await getAllReports(hospitalId);
         }
 
         res.json(reports);

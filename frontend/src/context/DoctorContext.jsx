@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
+import { AuthContext } from "./AuthContext";
 
 const DoctorContext = createContext();
 
@@ -8,29 +9,38 @@ export const useDoctors = () => useContext(DoctorContext);
 
 export const DoctorProvider = ({ children }) => {
   const [doctors, setDoctors] = useState([]);
+  const { user } = useContext(AuthContext);
 
   const fetchDoctors = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     const headers = { Authorization: `Bearer ${token}` };
+    const role = user?.role?.toLowerCase();
 
     try {
-      // First try the admin endpoint
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/admin/doctors`, { headers });
-        setDoctors(res.data || []);
-      } catch (adminErr) {
-        if (adminErr.response?.status === 401 || adminErr.response?.status === 403) {
-          // If admin fails, try the patient endpoint
-          const res = await axios.get(`${API_BASE_URL}/api/patient/doctors`, { headers });
-          setDoctors(res.data || []);
-        } else {
-          throw adminErr;
-        }
+      let endpoint = `${API_BASE_URL}/api/patient/doctors`;
+
+      if (role === 'admin') {
+        endpoint = `${API_BASE_URL}/api/admin/doctors`;
       }
+
+      const res = await axios.get(endpoint, { headers });
+      setDoctors(res.data || []);
     } catch (err) {
       console.error("Fetch doctors error:", err);
+      // Fallback if role detection failed or endpoint mismatched
+      if (err.response?.status === 403 || err.response?.status === 401) {
+        try {
+          const fallbackEndpoint = role === 'admin'
+            ? `${API_BASE_URL}/api/patient/doctors`
+            : `${API_BASE_URL}/api/admin/doctors`;
+          const res = await axios.get(fallbackEndpoint, { headers });
+          setDoctors(res.data || []);
+        } catch (fallbackErr) {
+          console.error("Fallback fetch error:", fallbackErr);
+        }
+      }
     }
   };
 

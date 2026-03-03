@@ -1,5 +1,5 @@
 import { createPatient, getPatientByUserId } from "../models/PatientModel.js";
-import { getAllDoctors } from "../models/DoctorModel.js";
+import { getAllDoctors, getDoctorByUserId } from "../models/DoctorModel.js";
 import { createAppointment, getPatientAppointments } from "../models/AppointmentModel.js";
 
 export const bookAppointment = async (req, res) => {
@@ -7,6 +7,10 @@ export const bookAppointment = async (req, res) => {
     try {
         const patient = await getPatientByUserId(req.userId);
         if (!patient) return res.status(404).json({ message: "Patient profile not found" });
+
+        // Retrieve the doctor's hospital_id to scope the appointment
+        const doctor = await getDoctorByUserId(doctor_id);
+        const hospital_id = doctor ? doctor.hospital_id : null;
 
         // data for the model
         const apptData = {
@@ -19,7 +23,8 @@ export const bookAppointment = async (req, res) => {
             Date: appointment_date,
             Time: time,
             patient_id: req.userId,
-            doctor_id: doctor_id // This should be the USER_ID of the doctor
+            doctor_id: doctor_id, // This should be the USER_ID of the doctor
+            hospital_id: hospital_id
         };
 
         await createAppointment(apptData);

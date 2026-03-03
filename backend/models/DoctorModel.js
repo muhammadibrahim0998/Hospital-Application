@@ -2,7 +2,7 @@ import db from "../config/db.js";
 
 // Create doctor profile
 export const createDoctor = async (data) => {
-    const sql = "INSERT INTO doctors (user_id, specialization, contact_info, image, department_id, field_id, phone) VALUES (?,?,?,?,?,?,?)";
+    const sql = "INSERT INTO doctors (user_id, specialization, contact_info, image, department_id, field_id, phone, fee, whatsapp_number) VALUES (?,?,?,?,?,?,?,?,?)";
     return await db.query(sql, data);
 };
 
@@ -50,7 +50,7 @@ export const updateDoctorStatus = async (id, status) => {
 export const updateDoctor = async (id, data) => {
     const sql = `
         UPDATE doctors 
-        SET specialization = ?, contact_info = ?, image = IFNULL(?, image), department_id = ?, field_id = ?, phone = ? 
+        SET specialization = ?, contact_info = ?, image = IFNULL(?, image), department_id = ?, field_id = ?, phone = ?, fee = ?, whatsapp_number = ? 
         WHERE id = ?
     `;
     return await db.query(sql, [...data, id]);

@@ -2,23 +2,50 @@ import React, { useContext } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+/**
+ * PrivateRoute
+ * allowedRoles — optional array of roles that may access the route.
+ * If not provided, any authenticated user is allowed.
+ *
+ * Role hierarchy:
+ *   super_admin  — bypasses ALL role restrictions.
+ *   hospital_admin — must be in allowedRoles explicitly.
+ *   admin / doctor / patient — standard behaviour.
+ */
 const PrivateRoute = ({ allowedRoles }) => {
   const { user } = useContext(AuthContext);
   const location = useLocation();
   const token = localStorage.getItem("token");
 
-  // Wait for user to be loaded from localStorage (if AuthContext handles it, 
-  // but better to check directly if token exists but user is null initially)
-  // For simplicity, assuming user is loaded or we check localStorage directly if context is pending
-  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const currentUser = user || storedUser;
+  // Fall back to localStorage while context is still hydrating
+  let currentUser = user;
+  if (!currentUser) {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) currentUser = JSON.parse(stored);
+    } catch {/* ignore */ }
+  }
 
-  if (!token) {
+  // Not logged in → redirect to login
+  if (!token || !currentUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && (!currentUser || !allowedRoles.map(r => r.toLowerCase()).includes(currentUser.role?.toLowerCase()))) {
-    return <Navigate to="/login" replace />; // Or unauthorized page
+  const role = currentUser.role?.toLowerCase();
+
+  // super_admin bypasses every role check
+  if (role === "super_admin") return <Outlet />;
+
+  // Role restriction check
+  if (allowedRoles) {
+    const allowed = allowedRoles.map((r) => r.toLowerCase());
+    if (!allowed.includes(role)) {
+      // Redirect to their correct dashboard instead of login
+      if (role === "hospital_admin") return <Navigate to="/hospital-admin/dashboard" replace />;
+      if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
+      if (role === "doctor") return <Navigate to="/doctor/dashboard" replace />;
+      return <Navigate to="/patient/dashboard" replace />;
+    }
   }
 
   return <Outlet />;

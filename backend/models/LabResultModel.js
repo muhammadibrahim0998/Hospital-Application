@@ -2,19 +2,31 @@ import db from "../config/db.js";
 
 // Create a new lab test/report
 export const createReport = async (data) => {
-    const { patient_name, doctor_name, test_name, cnic, description, normal_range, price, category } = data;
+    const {
+        patient_name, doctor_name, test_name, cnic, description,
+        normal_range, price, category, hospital_id, patient_id, doctor_id
+    } = data;
     const sql = `
         INSERT INTO lab_results 
-        (patient_name, doctor_name, test_name, cnic, description, normal_range, price, category, status, date) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURDATE())
+        (patient_name, doctor_name, test_name, cnic, description, normal_range, price, category, status, date, hospital_id, patient_id, doctor_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?)
     `;
-    return await db.query(sql, [patient_name, doctor_name, test_name, cnic, description, normal_range, price, category]);
+    return await db.query(sql, [
+        patient_name, doctor_name, test_name, cnic, description,
+        normal_range, price, category, hospital_id, patient_id, doctor_id
+    ]);
 };
 
-// Get all tests/reports
-export const getAllReports = async () => {
-    const sql = "SELECT * FROM lab_results ORDER BY created_at DESC";
-    const [rows] = await db.query(sql);
+// Get all tests/reports (optionally filtered by hospital)
+export const getAllReports = async (hospitalId = null) => {
+    let sql = "SELECT * FROM lab_results";
+    let params = [];
+    if (hospitalId) {
+        sql += " WHERE hospital_id = ?";
+        params.push(hospitalId);
+    }
+    sql += " ORDER BY created_at DESC";
+    const [rows] = await db.query(sql, params);
     return rows;
 };
 
@@ -30,22 +42,16 @@ export const giveMedication = async (id, medication) => {
     return await db.query(sql, [medication, id]);
 };
 
-// Get reports for a specific patient by name or CNIC
-export const getPatientReports = async (patientName, cnic = "") => {
-    let sql = "SELECT * FROM lab_results WHERE patient_name = ?";
-    let params = [patientName];
-    if (cnic) {
-        sql += " OR cnic = ?";
-        params.push(cnic);
-    }
-    sql += " ORDER BY created_at DESC";
-    const [rows] = await db.query(sql, params);
+// Get reports for a specific patient by ID or identifier
+export const getPatientReports = async (patientId) => {
+    const sql = "SELECT * FROM lab_results WHERE patient_id = ? ORDER BY created_at DESC";
+    const [rows] = await db.query(sql, [patientId]);
     return rows;
 };
 
-// Get reports uploaded by a specific doctor by name
-export const getDoctorReports = async (doctorName) => {
-    const sql = "SELECT * FROM lab_results WHERE doctor_name = ? ORDER BY date DESC";
-    const [rows] = await db.query(sql, [doctorName]);
+// Get reports ordered by a specific doctor
+export const getDoctorReports = async (doctorId) => {
+    const sql = "SELECT * FROM lab_results WHERE doctor_id = ? ORDER BY created_at DESC";
+    const [rows] = await db.query(sql, [doctorId]);
     return rows;
 };

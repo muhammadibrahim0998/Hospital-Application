@@ -27,6 +27,8 @@ const DoctorDashboard = () => {
         departmentId: "",
         fieldId: "",
         phone: "",
+        fee: "",
+        whatsappNumber: "",
         imageFile: null
     });
 
@@ -49,6 +51,8 @@ const DoctorDashboard = () => {
                 departmentId: profileRes.data.department_id || "",
                 fieldId: profileRes.data.field_id || "",
                 phone: profileRes.data.phone || "",
+                fee: profileRes.data.fee || "",
+                whatsappNumber: profileRes.data.whatsapp_number || "",
                 imageFile: null
             });
         } catch (err) {
@@ -73,6 +77,8 @@ const DoctorDashboard = () => {
         formData.append("departmentId", editingProfile.departmentId);
         formData.append("fieldId", editingProfile.fieldId);
         formData.append("phone", editingProfile.phone);
+        formData.append("fee", editingProfile.fee);
+        formData.append("whatsappNumber", editingProfile.whatsappNumber);
         if (editingProfile.imageFile) {
             formData.append("image", editingProfile.imageFile);
         }
@@ -214,6 +220,14 @@ const DoctorDashboard = () => {
                                 <label className="text-muted small mb-1">Consultation Contact</label>
                                 <div className="fw-bold">{profile.phone || "N/A"}</div>
                             </div>
+                            <div className="mb-3">
+                                <label className="text-muted small mb-1">WhatsApp Number</label>
+                                <div className="fw-bold">{profile.whatsapp_number || "N/A"}</div>
+                            </div>
+                            <div className="mb-3">
+                                <label className="text-muted small mb-1">Consultation Fee</label>
+                                <div className="fw-bold text-primary">Rs. {profile.fee || "500"}</div>
+                            </div>
                             <div className="mb-0">
                                 <label className="text-muted small mb-1">Office Details</label>
                                 <div className="fw-bold">{profile.contact_info || "Hospital OPD"}</div>
@@ -252,6 +266,14 @@ const DoctorDashboard = () => {
                             <Col md={12}>
                                 <Form.Label className="small fw-bold text-muted mb-1 text-uppercase">Public Phone</Form.Label>
                                 <Form.Control className="border-0 shadow-sm px-3 py-2" value={editingProfile.phone} onChange={(e) => setEditingProfile({ ...editingProfile, phone: e.target.value })} required />
+                            </Col>
+                            <Col md={6}>
+                                <Form.Label className="small fw-bold text-muted mb-1 text-uppercase">Consultation Fee</Form.Label>
+                                <Form.Control type="number" className="border-0 shadow-sm px-3 py-2" value={editingProfile.fee} onChange={(e) => setEditingProfile({ ...editingProfile, fee: e.target.value })} required />
+                            </Col>
+                            <Col md={6}>
+                                <Form.Label className="small fw-bold text-muted mb-1 text-uppercase">WhatsApp Number</Form.Label>
+                                <Form.Control className="border-0 shadow-sm px-3 py-2" value={editingProfile.whatsappNumber} onChange={(e) => setEditingProfile({ ...editingProfile, whatsappNumber: e.target.value })} />
                             </Col>
                             <Col md={12}>
                                 <Form.Label className="small fw-bold text-muted mb-1 text-uppercase">Contact / Clinic Info</Form.Label>

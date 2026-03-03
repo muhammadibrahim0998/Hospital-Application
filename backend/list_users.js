@@ -1,9 +1,8 @@
 import db from './config/db.js';
-
-async function check() {
+async function list() {
     try {
-        const [rows] = await db.query('DESCRIBE users');
-        console.log('--- USERS TABLE ---');
+        const [rows] = await db.query('SELECT name, email, role FROM users');
+        console.log('--- ALL USERS ---');
         console.table(rows);
         process.exit(0);
     } catch (err) {
@@ -11,5 +10,4 @@ async function check() {
         process.exit(1);
     }
 }
-
-check();
+list();

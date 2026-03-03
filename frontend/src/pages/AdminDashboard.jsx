@@ -53,6 +53,8 @@ const AdminDashboard = () => {
     departmentId: 1,
     fieldId: 1,
     phone: "",
+    fee: 500,
+    whatsappNumber: "",
   });
 
   const token = localStorage.getItem("token");
@@ -92,12 +94,16 @@ const AdminDashboard = () => {
     e.preventDefault();
     const formData = new FormData();
     Object.keys(newDoctor).forEach((key) => {
-      formData.append(key, newDoctor[key]);
+      if (key === 'image') {
+        formData.append("image", newDoctor.image);
+      } else {
+        formData.append(key, newDoctor[key]);
+      }
     });
 
     await addDoctor(formData);
     setShowAddModal(false);
-    setNewDoctor({ name: "", email: "", password: "", specialization: "", contact_info: "", image: null, departmentId: 1, fieldId: 1, phone: "" });
+    setNewDoctor({ name: "", email: "", password: "", specialization: "", contact_info: "", image: null, departmentId: 1, fieldId: 1, phone: "", fee: 500, whatsappNumber: "" });
   };
 
   const handleEditDoctor = async (e) => {
@@ -108,6 +114,8 @@ const AdminDashboard = () => {
     formData.append("departmentId", editingDoctor.department_id);
     formData.append("fieldId", editingDoctor.field_id);
     formData.append("phone", editingDoctor.phone);
+    formData.append("fee", editingDoctor.fee);
+    formData.append("whatsappNumber", editingDoctor.whatsapp_number || editingDoctor.whatsappNumber || "");
     if (editingDoctor.imageFile) {
       formData.append("image", editingDoctor.imageFile);
     }
@@ -235,6 +243,8 @@ const AdminDashboard = () => {
               <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Access Password</Form.Label><Form.Control type="password" className="border-0 shadow-sm px-3 py-2 bg-white" placeholder="••••••••" value={newDoctor.password} onChange={(e) => setNewDoctor({ ...newDoctor, password: e.target.value })} required /></Col>
               <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Specialization</Form.Label><Form.Control className="border-0 shadow-sm px-3 py-2 bg-white" placeholder="e.g. Cardiology" value={newDoctor.specialization} onChange={(e) => setNewDoctor({ ...newDoctor, specialization: e.target.value })} required /></Col>
               <Col md={12}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Phone</Form.Label><Form.Control className="border-0 shadow-sm px-3 py-2 bg-white" placeholder="e.g. 03001234567" value={newDoctor.phone} onChange={(e) => setNewDoctor({ ...newDoctor, phone: e.target.value, contact_info: e.target.value })} required /></Col>
+              <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Consultation Fee</Form.Label><Form.Control type="number" className="border-0 shadow-sm px-3 py-2 bg-white" value={newDoctor.fee} onChange={(e) => setNewDoctor({ ...newDoctor, fee: e.target.value })} required /></Col>
+              <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">WhatsApp Number</Form.Label><Form.Control className="border-0 shadow-sm px-3 py-2 bg-white" placeholder="e.g. +92300..." value={newDoctor.whatsappNumber} onChange={(e) => setNewDoctor({ ...newDoctor, whatsappNumber: e.target.value })} /></Col>
               <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Dept ID</Form.Label><Form.Control type="number" className="border-0 shadow-sm px-3 py-2 bg-white" value={newDoctor.departmentId} onChange={(e) => setNewDoctor({ ...newDoctor, departmentId: e.target.value })} required /></Col>
               <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Field ID</Form.Label><Form.Control type="number" className="border-0 shadow-sm px-3 py-2 bg-white" value={newDoctor.fieldId} onChange={(e) => setNewDoctor({ ...newDoctor, fieldId: e.target.value })} required /></Col>
             </Row>
@@ -258,6 +268,8 @@ const AdminDashboard = () => {
                 </Col>
                 <Col md={12}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Specialization</Form.Label><Form.Control className="border-0 shadow-sm px-3 py-2 bg-white" value={editingDoctor.specialization} onChange={(e) => setEditingDoctor({ ...editingDoctor, specialization: e.target.value })} required /></Col>
                 <Col md={12}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Phone</Form.Label><Form.Control className="border-0 shadow-sm px-3 py-2 bg-white" value={editingDoctor.phone} onChange={(e) => setEditingDoctor({ ...editingDoctor, phone: e.target.value, contact_info: e.target.value })} required /></Col>
+                <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Consultation Fee</Form.Label><Form.Control type="number" className="border-0 shadow-sm px-3 py-2 bg-white" value={editingDoctor.fee} onChange={(e) => setEditingDoctor({ ...editingDoctor, fee: e.target.value })} required /></Col>
+                <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">WhatsApp Number</Form.Label><Form.Control className="border-0 shadow-sm px-3 py-2 bg-white" value={editingDoctor.whatsapp_number || editingDoctor.whatsappNumber || ""} onChange={(e) => setEditingDoctor({ ...editingDoctor, whatsapp_number: e.target.value })} /></Col>
                 <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Dept ID</Form.Label><Form.Control type="number" className="border-0 shadow-sm px-3 py-2 bg-white" value={editingDoctor.department_id} onChange={(e) => setEditingDoctor({ ...editingDoctor, department_id: e.target.value })} required /></Col>
                 <Col md={6}><Form.Label className="small fw-bold text-muted mb-1 text-uppercase tracking-wider">Field ID</Form.Label><Form.Control type="number" className="border-0 shadow-sm px-3 py-2 bg-white" value={editingDoctor.field_id} onChange={(e) => setEditingDoctor({ ...editingDoctor, field_id: e.target.value })} required /></Col>
               </Row>

@@ -36,7 +36,7 @@ export const updateProfile = async (req, res) => {
         const doctor = await getDoctorByUserId(req.userId);
         if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
 
-        const { specialization, contact_info, departmentId, fieldId, phone } = req.body;
+        const { specialization, contact_info, departmentId, fieldId, phone, fee, whatsappNumber } = req.body;
         const image = req.file ? `/uploads/doctors/${req.file.filename}` : undefined;
 
         const updateData = {
@@ -45,6 +45,8 @@ export const updateProfile = async (req, res) => {
             department_id: departmentId,
             field_id: fieldId,
             phone,
+            fee,
+            whatsapp_number: whatsappNumber,
             ...(image && { image })
         };
 

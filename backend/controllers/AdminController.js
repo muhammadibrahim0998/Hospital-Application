@@ -10,6 +10,7 @@ import {
 import { getAllPatients } from "../models/PatientModel.js";
 import { getAllAppointments } from "../models/AppointmentModel.js";
 import bcrypt from "bcryptjs";
+import db from "../config/db.js";
 
 export const addDoctor = async (req, res) => {
   try {
@@ -22,27 +23,34 @@ export const addDoctor = async (req, res) => {
       departmentId,
       fieldId,
       phone,
+      fee,
+      whatsappNumber,
     } = req.body;
 
     const hash = await bcrypt.hash(password, 10);
-    const userResult = await createUser([name, email, hash, "doctor"]);
-    const userId = userResult[0].insertId;
+
+    // Determine hospital_id from the acting admin
+    const hospitalId = req.hospitalId || null;
+
+    // Insert user with hospital_id
+    const [userInsert] = await db.query(
+      "INSERT INTO users (name, email, password, role, hospital_id) VALUES (?,?,?,?,?)",
+      [name, email, hash, "doctor", hospitalId]
+    );
+    const userId = userInsert.insertId;
 
     const imagePath = req.file ? `/uploads/doctors/${req.file.filename}` : null;
 
-    await createDoctor([
-      userId,
-      specialization,
-      contact_info,
-      imagePath,
-      departmentId,
-      fieldId,
-      phone,
-    ]);
+    // Insert doctor with hospital_id
+    await db.query(
+      `INSERT INTO doctors (user_id, specialization, contact_info, image, department_id, field_id, phone, fee, whatsapp_number, hospital_id) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+      [userId, specialization, contact_info, imagePath, departmentId, fieldId, phone, fee || 500, whatsappNumber, hospitalId]
+    );
+
     res.status(201).json({ message: "Doctor added successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -55,6 +63,8 @@ export const editDoctor = async (req, res) => {
       departmentId,
       fieldId,
       phone,
+      fee,
+      whatsappNumber,
     } = req.body;
 
     const imagePath = req.file ? `/uploads/doctors/${req.file.filename}` : null;
@@ -66,6 +76,8 @@ export const editDoctor = async (req, res) => {
       departmentId,
       fieldId,
       phone,
+      fee,
+      whatsappNumber,
     ]);
 
     res.json({ message: "Doctor updated successfully" });
@@ -112,6 +124,7 @@ export const getAppointments = async (req, res) => {
     res.status(500).json(err);
   }
 };
+
 export const toggleDoctorStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;

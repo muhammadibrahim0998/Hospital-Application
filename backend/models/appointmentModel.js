@@ -2,9 +2,9 @@ import db from "../config/db.js";
 
 // Create appointment
 export const createAppointment = async (data) => {
-  const { Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id } = data;
-  const sql = "INSERT INTO appointments (Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id, status) VALUES (?,?,?,?,?,?,?,?,?,?, 'scheduled')";
-  return await db.query(sql, [Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id]);
+  const { Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id, hospital_id } = data;
+  const sql = "INSERT INTO appointments (Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id, hospital_id, status) VALUES (?,?,?,?,?,?,?,?,?,?,?, 'scheduled')";
+  return await db.query(sql, [Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id, hospital_id]);
 };
 
 // Get all appointments (Admin)

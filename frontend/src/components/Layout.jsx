@@ -15,6 +15,12 @@ import {
   BsHouseDoor,
   BsInfoCircle,
   BsTelephone,
+  BsHospital,
+  BsShieldLock,
+  BsPersonGear,
+  BsPeopleFill,
+  BsGrid,
+  BsPersonCircle,
 } from "react-icons/bs";
 import { FaFlask } from "react-icons/fa";
 
@@ -45,7 +51,19 @@ export default function Layout() {
   const role = user.role?.toLowerCase();
   const userName = user.name || "User";
 
-  // Check if current path matches
+  // Module permissions (for hospital_admin)
+  let modules = {};
+  try {
+    const raw = user.modules;
+    modules = typeof raw === "string" ? JSON.parse(raw) : (raw || {});
+  } catch { modules = {}; }
+
+  const hasModule = (m) => {
+    if (role === "super_admin") return true;
+    if (role === "hospital_admin") return modules[m] !== false;
+    return true;
+  };
+
   const isActive = (path) => location.pathname === path;
 
   const linkStyle = (path) => ({
@@ -62,10 +80,25 @@ export default function Layout() {
     fontWeight: isActive(path) ? "600" : "400",
   });
 
-  const iconStyle = {
-    fontSize: "1.1rem",
-    flexShrink: 0,
+  const iconStyle = { fontSize: "1.1rem", flexShrink: 0 };
+
+  const sectionLabel = {
+    color: "rgba(255,255,255,0.3)",
+    fontSize: "0.7rem",
+    fontWeight: "700",
+    letterSpacing: "1.5px",
+    padding: "16px 18px 8px",
+    textTransform: "uppercase",
   };
+
+  const firstSectionLabel = { ...sectionLabel, paddingTop: "8px" };
+
+  // Role badge color
+  const roleBadgeColor =
+    role === "super_admin" ? "#ff4757" :
+      role === "hospital_admin" ? "#ffa502" :
+        role === "admin" ? "#ff6b81" :
+          role === "doctor" ? "#17a2b8" : "#2ed573";
 
   return (
     <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
@@ -91,126 +124,218 @@ export default function Layout() {
         >
           {sidebarOpen && (
             <div className="d-flex flex-column h-100 py-3">
-              {/* User Profile Section */}
-              <div className="px-3 mb-3 pb-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+
+              {/* ── User Profile ────────────────────────────── */}
+              <div
+                className="px-3 mb-3 pb-3"
+                style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+              >
                 <div className="d-flex align-items-center gap-3">
                   <div
                     style={{
-                      width: "42px",
-                      height: "42px",
-                      borderRadius: "12px",
+                      width: "42px", height: "42px", borderRadius: "12px",
                       background: "linear-gradient(135deg, #667eea, #764ba2)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#fff",
-                      fontWeight: "700",
-                      fontSize: "1rem",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: "#fff", fontWeight: "700", fontSize: "1rem",
                     }}
                   >
                     {userName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div style={{ color: "#fff", fontWeight: "600", fontSize: "0.9rem" }}>{userName}</div>
-                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", textTransform: "capitalize" }}>{role || "User"}</div>
+                    <div style={{ color: "#fff", fontWeight: "600", fontSize: "0.9rem" }}>
+                      {userName}
+                    </div>
+                    <div style={{
+                      color: roleBadgeColor,
+                      fontSize: "0.72rem",
+                      textTransform: "capitalize",
+                      fontWeight: "600",
+                    }}>
+                      {role === "super_admin" ? "⚡ Super Admin" :
+                        role === "hospital_admin" ? "🏥 Hospital Admin" :
+                          role || "User"}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Navigation */}
+              {/* ── Navigation ──────────────────────────────── */}
               <div className="flex-grow-1 px-3" style={{ overflowY: "auto" }}>
-                <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontWeight: "700", letterSpacing: "1.5px", padding: "8px 18px", textTransform: "uppercase" }}>
-                  Main Menu
-                </div>
 
-                <Link to="/dashboard" onClick={handleLinkClick} style={linkStyle("/dashboard")}>
-                  <BsSpeedometer2 style={{ ...iconStyle, color: "#ffa502" }} />
-                  Dashboard
-                </Link>
-
-                <Link to="/" onClick={handleLinkClick} style={linkStyle("/")}>
-                  <BsHouseDoor style={{ ...iconStyle, color: "#2ed573" }} />
-                  Home
-                </Link>
-
-                {(role === "patient" || role === "admin") && (
+                {/* ══ SUPER ADMIN MENU (MATCHING SCREENSHOTS) ════════════ */}
+                {role === "super_admin" && (
                   <>
-                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontWeight: "700", letterSpacing: "1.5px", padding: "16px 18px 8px", textTransform: "uppercase" }}>
-                      Patient Services
+                    <div style={firstSectionLabel}>PLATFORM CONTROL</div>
+
+                    <Link to="/super-admin/dashboard" onClick={handleLinkClick} style={linkStyle("/super-admin/dashboard")}>
+                      <BsGrid style={iconStyle} /> Dashboard
+                    </Link>
+
+                    <div style={sectionLabel}>USER MANAGEMENT</div>
+                    <div style={{ marginLeft: "15px" }}>
+                      <Link to="/super-admin/create-roles" onClick={handleLinkClick} style={{ ...linkStyle("/super-admin/create-roles"), fontSize: "0.85rem", padding: "8px 10px" }}>
+                        <BsShieldLock style={{ marginRight: '8px' }} /> Create Roles
+                      </Link>
+                      <Link to="/super-admin/edit-roles" onClick={handleLinkClick} style={{ ...linkStyle("/super-admin/edit-roles"), fontSize: "0.85rem", padding: "8px 10px" }}>
+                        <BsPersonGear style={{ marginRight: '8px' }} /> Edit Roles
+                      </Link>
+                      <Link to="/super-admin/user-management" onClick={handleLinkClick} style={{ ...linkStyle("/super-admin/user-management"), fontSize: "0.85rem", padding: "8px 10px" }}>
+                        <BsPersonCircle style={{ marginRight: '8px' }} /> Create Users
+                      </Link>
+                      <Link to="/super-admin/view-users" onClick={handleLinkClick} style={{ ...linkStyle("/super-admin/view-users"), fontSize: "0.85rem", padding: "8px 10px" }}>
+                        <BsPeopleFill style={{ marginRight: '8px' }} /> App Users
+                      </Link>
                     </div>
 
-                    <Link to="/appointments" onClick={handleLinkClick} style={linkStyle("/appointments")}>
-                      <BsCalendarCheck style={{ ...iconStyle, color: "#2ed573" }} />
-                      My Appointments
-                    </Link>
+                    <div style={sectionLabel}>REGISTER BUSINESS</div>
+                    <div style={{ marginLeft: "15px" }}>
+                      <Link to="/super-admin/register-business" onClick={handleLinkClick} style={{ ...linkStyle("/super-admin/register-business"), fontSize: "0.85rem", padding: "8px 10px" }}>
+                        <BsBuilding style={{ marginRight: '8px' }} /> Register Business
+                      </Link>
+                      <Link to="/super-admin/dashboard" onClick={handleLinkClick} style={{ ...linkStyle("/super-admin/dashboard"), fontSize: "0.85rem", padding: "8px 10px" }}>
+                        <BsHospital style={{ marginRight: '8px' }} /> View Register Business
+                      </Link>
+                    </div>
 
-                    <Link to="/lab-results" onClick={handleLinkClick} style={linkStyle("/lab-results")}>
-                      <BsFileEarmarkText style={{ ...iconStyle, color: "#a55eea" }} />
-                      Lab Reports
-                    </Link>
-
-                    <Link to="/doctors" onClick={handleLinkClick} style={linkStyle("/doctors")}>
-                      <BsPeople style={{ ...iconStyle, color: "#eccc68" }} />
-                      Find Doctors
+                    <div style={sectionLabel}>SYSTEM</div>
+                    <Link to="/" onClick={handleLinkClick} style={linkStyle("/")}>
+                      <BsHouseDoor style={iconStyle} /> Home
                     </Link>
                   </>
                 )}
 
-                {(role === "doctor" || role === "admin") && (
+                {/* ══ HOSPITAL ADMIN MENU ═══════════════════ */}
+                {role === "hospital_admin" && (
                   <>
-                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontWeight: "700", letterSpacing: "1.5px", padding: "16px 18px 8px", textTransform: "uppercase" }}>
-                      Doctor Tools
-                    </div>
+                    <div style={firstSectionLabel}>My Hospital</div>
 
-                    <Link to="/doctor-lab" onClick={handleLinkClick} style={linkStyle("/doctor-lab")}>
-                      <FaFlask style={{ ...iconStyle, color: "#17a2b8" }} />
-                      Lab Management
+                    <Link to="/hospital-admin/dashboard" onClick={handleLinkClick}
+                      style={linkStyle("/hospital-admin/dashboard")}>
+                      <BsHospital style={{ ...iconStyle, color: "#ffa502" }} />
+                      Dashboard
                     </Link>
 
+                    <Link to="/" onClick={handleLinkClick} style={linkStyle("/")}>
+                      <BsHouseDoor style={{ ...iconStyle, color: "#2ed573" }} />
+                      Home
+                    </Link>
 
+                    {hasModule("doctors") && (
+                      <>
+                        <div style={sectionLabel}>Management</div>
+                        <Link to="/hospital-admin/dashboard" onClick={handleLinkClick}
+                          style={linkStyle("/hospital-admin/dashboard")}>
+                          <BsPersonGear style={{ ...iconStyle, color: "#17a2b8" }} />
+                          Doctors
+                        </Link>
+                      </>
+                    )}
+
+                    {hasModule("appUsers") && (
+                      <Link to="/hospital-admin/dashboard" onClick={handleLinkClick}
+                        style={linkStyle("")}>
+                        <BsPeopleFill style={{ ...iconStyle, color: "#a55eea" }} />
+                        App Users
+                      </Link>
+                    )}
+
+                    <div style={sectionLabel}>Info</div>
+                    <Link to="/about" onClick={handleLinkClick} style={linkStyle("/about")}>
+                      <BsInfoCircle style={{ ...iconStyle, color: "#74b9ff" }} />
+                      About
+                    </Link>
+                    <Link to="/contact" onClick={handleLinkClick} style={linkStyle("/contact")}>
+                      <BsTelephone style={{ ...iconStyle, color: "#55efc4" }} />
+                      Contact
+                    </Link>
                   </>
                 )}
 
-                {role === "admin" && (
+                {/* ══ STANDARD ROLES (admin, doctor, patient) ══ */}
+                {role !== "super_admin" && role !== "hospital_admin" && (
                   <>
-                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontWeight: "700", letterSpacing: "1.5px", padding: "16px 18px 8px", textTransform: "uppercase" }}>
-                      Administration
-                    </div>
+                    <div style={firstSectionLabel}>Main Menu</div>
 
-                    <Link to="/admin/dashboard" onClick={handleLinkClick} style={linkStyle("/admin/dashboard")}>
-                      <BsPersonBadge style={{ ...iconStyle, color: "#ff4757" }} />
-                      Admin Console
+                    <Link to="/dashboard" onClick={handleLinkClick} style={linkStyle("/dashboard")}>
+                      <BsSpeedometer2 style={{ ...iconStyle, color: "#ffa502" }} />
+                      Dashboard
                     </Link>
 
-                    <Link to="/laboratory-panel" onClick={handleLinkClick} style={linkStyle("/laboratory-panel")}>
-                      <BsBuilding style={{ ...iconStyle, color: "#ff6b81" }} />
-                      Lab Worklist
+                    <Link to="/" onClick={handleLinkClick} style={linkStyle("/")}>
+                      <BsHouseDoor style={{ ...iconStyle, color: "#2ed573" }} />
+                      Home
+                    </Link>
+
+                    {(role === "patient" || role === "admin") && (
+                      <>
+                        <div style={sectionLabel}>Patient Services</div>
+                        <Link to="/appointments" onClick={handleLinkClick} style={linkStyle("/appointments")}>
+                          <BsCalendarCheck style={{ ...iconStyle, color: "#2ed573" }} />
+                          My Appointments
+                        </Link>
+                        <Link to="/lab-results" onClick={handleLinkClick} style={linkStyle("/lab-results")}>
+                          <BsFileEarmarkText style={{ ...iconStyle, color: "#a55eea" }} />
+                          Lab Reports
+                        </Link>
+                        <Link to="/doctors" onClick={handleLinkClick} style={linkStyle("/doctors")}>
+                          <BsPeople style={{ ...iconStyle, color: "#eccc68" }} />
+                          Find Doctors
+                        </Link>
+                      </>
+                    )}
+
+                    {(role === "doctor" || role === "admin") && (
+                      <>
+                        <div style={sectionLabel}>Doctor Tools</div>
+                        <Link to="/doctor-lab" onClick={handleLinkClick} style={linkStyle("/doctor-lab")}>
+                          <FaFlask style={{ ...iconStyle, color: "#17a2b8" }} />
+                          Lab Management
+                        </Link>
+                      </>
+                    )}
+
+                    {role === "admin" && (
+                      <>
+                        <div style={sectionLabel}>Administration</div>
+                        <Link to="/admin/dashboard" onClick={handleLinkClick} style={linkStyle("/admin/dashboard")}>
+                          <BsPersonBadge style={{ ...iconStyle, color: "#ff4757" }} />
+                          Admin Console
+                        </Link>
+                        <Link to="/laboratory-panel" onClick={handleLinkClick} style={linkStyle("/laboratory-panel")}>
+                          <BsBuilding style={{ ...iconStyle, color: "#ff6b81" }} />
+                          Lab Worklist
+                        </Link>
+                      </>
+                    )}
+
+                    <div style={sectionLabel}>Other</div>
+                    <Link to="/about" onClick={handleLinkClick} style={linkStyle("/about")}>
+                      <BsInfoCircle style={{ ...iconStyle, color: "#74b9ff" }} />
+                      About Hospital
+                    </Link>
+                    <Link to="/contact" onClick={handleLinkClick} style={linkStyle("/contact")}>
+                      <BsTelephone style={{ ...iconStyle, color: "#55efc4" }} />
+                      Contact Us
                     </Link>
                   </>
                 )}
-
-                <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontWeight: "700", letterSpacing: "1.5px", padding: "16px 18px 8px", textTransform: "uppercase" }}>
-                  Other
-                </div>
-
-                <Link to="/about" onClick={handleLinkClick} style={linkStyle("/about")}>
-                  <BsInfoCircle style={{ ...iconStyle, color: "#74b9ff" }} />
-                  About Hospital
-                </Link>
-
-                <Link to="/contact" onClick={handleLinkClick} style={linkStyle("/contact")}>
-                  <BsTelephone style={{ ...iconStyle, color: "#55efc4" }} />
-                  Contact Us
-                </Link>
               </div>
 
-              {/* Logout */}
-              <div className="px-3 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                <Link to="/logout" onClick={handleLinkClick} style={{ ...linkStyle("/logout"), color: "#ff6b6b" }}>
+              {/* ── Logout ──────────────────────────────────── */}
+              <div
+                className="px-3 pt-2"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                <Link
+                  to="/logout"
+                  onClick={handleLinkClick}
+                  style={{ ...linkStyle("/logout"), color: "#ff6b6b" }}
+                >
                   <BsBoxArrowRight style={{ ...iconStyle, color: "#ff6b6b" }} />
                   Logout
                 </Link>
               </div>
+
             </div>
           )}
         </div>

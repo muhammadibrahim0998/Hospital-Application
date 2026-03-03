@@ -176,6 +176,12 @@ import PatientDashboard from "./pages/PatientDashboard.jsx";
 import DoctorLab from "./Lab/DoctorLab.jsx";
 import LabResults from "./Lab/LabResults.jsx";
 import LaboratoryPanel from "./Lab/LaboratoryPanel.jsx";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard.jsx";
+import HospitalAdminDashboard from "./pages/HospitalAdminDashboard.jsx";
+import UserManagement from "./pages/UserManagement.jsx";
+import RegisterBusiness from "./pages/RegisterBusiness.jsx";
+import CreateRoles from "./pages/CreateRoles.jsx";
+import ViewUsers from "./pages/ViewUsers.jsx";
 
 function AppContent() {
   // ✅ Optional: user permission control (can be used in pages)
@@ -199,6 +205,7 @@ function AppContent() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="doctors" element={<Doctors />} />
+          <Route path="find-doctor" element={<Doctors />} />
           <Route path="doctor/:id" element={<DoctorProfile />} />
           <Route path="doctor-lab" element={<DoctorLab />} />
           <Route path="lab-results" element={<LabResults />} />
@@ -213,6 +220,28 @@ function AppContent() {
       </Route>
 
       {/* Role-based Dashboards */}
+
+      {/* Super Admin — full platform control */}
+      <Route element={<PrivateRoute allowedRoles={["super_admin"]} />}>
+        <Route path="/super-admin" element={<Layout />}>
+          <Route path="dashboard" element={<SuperAdminDashboard />} />
+          <Route path="user-management" element={<UserManagement />} />
+          <Route path="create-roles" element={<CreateRoles />} />
+          <Route path="edit-roles" element={<CreateRoles />} />
+          <Route path="register-business" element={<RegisterBusiness />} />
+          <Route path="view-businesses" element={<SuperAdminDashboard />} /> {/* Fallback to dashboard */}
+          <Route path="view-users" element={<ViewUsers />} />
+        </Route>
+      </Route>
+
+      {/* Hospital Admin — scoped to one hospital */}
+      <Route element={<PrivateRoute allowedRoles={["hospital_admin"]} />}>
+        <Route path="/hospital-admin" element={<Layout />}>
+          <Route path="dashboard" element={<HospitalAdminDashboard />} />
+        </Route>
+      </Route>
+
+      {/* Legacy Admin */}
       <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
         <Route
           path="/admin/dashboard"
