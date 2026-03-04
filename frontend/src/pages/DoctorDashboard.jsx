@@ -13,12 +13,14 @@ import {
     UserX,
     Camera,
     CheckCircle,
-    Clock
+    Clock,
+    FileText
 } from "lucide-react";
-import { Modal, Button, Form, Row, Col, Badge, Card } from "react-bootstrap";
+import { Modal, Form, Row, Col, Badge, Card, Button as BootstrapButton } from "react-bootstrap";
 
 const DoctorDashboard = () => {
     const [appointments, setAppointments] = useState([]);
+    const [labReports, setLabReports] = useState([]);
     const [profile, setProfile] = useState({});
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [editingProfile, setEditingProfile] = useState({
@@ -41,18 +43,24 @@ const DoctorDashboard = () => {
 
     const fetchData = async () => {
         try {
-            const appRes = await axios.get(`${API_BASE_URL}/api/doctor/appointments`, { headers });
-            const profileRes = await axios.get(`${API_BASE_URL}/api/doctor/profile`, { headers });
-            setAppointments(appRes.data);
-            setProfile(profileRes.data);
+            const [appRes, profileRes, labRes] = await Promise.all([
+                axios.get(`${API_BASE_URL}/api/doctor/appointments`, { headers }),
+                axios.get(`${API_BASE_URL}/api/doctor/profile`, { headers }),
+                axios.get(`${API_BASE_URL}/api/lab/reports`, { headers }).catch(err => ({ data: [] }))
+            ]);
+
+            setAppointments(appRes.data || []);
+            setProfile(profileRes.data || {});
+            setLabReports(labRes.data || []);
+
             setEditingProfile({
-                specialization: profileRes.data.specialization || "",
-                contact_info: profileRes.data.contact_info || "",
-                departmentId: profileRes.data.department_id || "",
-                fieldId: profileRes.data.field_id || "",
-                phone: profileRes.data.phone || "",
-                fee: profileRes.data.fee || "",
-                whatsappNumber: profileRes.data.whatsapp_number || "",
+                specialization: profileRes.data?.specialization || "",
+                contact_info: profileRes.data?.contact_info || "",
+                departmentId: profileRes.data?.department_id || "",
+                fieldId: profileRes.data?.field_id || "",
+                phone: profileRes.data?.phone || "",
+                fee: profileRes.data?.fee || "",
+                whatsappNumber: profileRes.data?.whatsapp_number || "",
                 imageFile: null
             });
         } catch (err) {
@@ -115,26 +123,27 @@ const DoctorDashboard = () => {
                         </div>
                     </div>
                 </div>
-                <Button variant="outline-primary" className="rounded-pill px-4 py-2 d-flex align-items-center fw-bold" onClick={() => setShowProfileModal(true)}>
+                <BootstrapButton variant="outline-primary" className="rounded-pill px-4 py-2 d-flex align-items-center fw-bold" onClick={() => setShowProfileModal(true)}>
                     <Settings size={18} className="me-2" /> Manage Profile
-                </Button>
+                </BootstrapButton>
             </div>
 
             <div className="row g-4 mb-5">
-                <div className="col-lg-8">
-                    <Card className="border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                <div className="col-lg-8 d-flex flex-column gap-4">
+                    {/* Appointments Section */}
+                    <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
                         <Card.Header className="bg-white border-0 p-4 d-flex justify-content-between align-items-center">
                             <h5 className="fw-bold mb-0 d-flex align-items-center">
                                 <Calendar className="text-primary me-2" size={20} /> Upcoming Appointments
                             </h5>
                             <Badge bg="light" className="text-muted border rounded-pill px-3 py-2">
-                                {appointments.filter(a => a.status === 'scheduled').length} Scheduled
+                                {(appointments || []).filter(a => a.status === 'scheduled').length} Scheduled
                             </Badge>
                         </Card.Header>
                         <Card.Body className="p-0">
-                            <div className="table-responsive">
+                            <div className="table-responsive" style={{ maxHeight: "350px", overflowY: "auto" }}>
                                 <table className="table table-hover align-middle mb-0 custom-table">
-                                    <thead className="bg-light text-muted small text-uppercase fw-bold">
+                                    <thead className="bg-light text-muted small text-uppercase fw-bold" style={{ position: "sticky", top: 0, zIndex: 1 }}>
                                         <tr>
                                             <th className="px-4 py-3">Patient</th>
                                             <th className="py-3">Date & Time</th>
@@ -172,12 +181,12 @@ const DoctorDashboard = () => {
                                                         <div className="d-flex justify-content-end gap-2">
                                                             {app.status === 'scheduled' && (
                                                                 <>
-                                                                    <Button variant="success" size="sm" className="rounded-circle p-2 shadow-sm border-0" onClick={() => handleStatusUpdate(app.id, 'completed')}>
+                                                                    <BootstrapButton variant="success" size="sm" className="rounded-circle p-2 shadow-sm border-0" onClick={() => handleStatusUpdate(app.id, 'completed')}>
                                                                         <CheckCircle size={16} />
-                                                                    </Button>
-                                                                    <Button variant="danger" size="sm" className="rounded-circle p-2 shadow-sm border-0" onClick={() => handleStatusUpdate(app.id, 'cancelled')}>
+                                                                    </BootstrapButton>
+                                                                    <BootstrapButton variant="danger" size="sm" className="rounded-circle p-2 shadow-sm border-0" onClick={() => handleStatusUpdate(app.id, 'cancelled')}>
                                                                         <UserX size={16} />
-                                                                    </Button>
+                                                                    </BootstrapButton>
                                                                 </>
                                                             )}
                                                             <Link to={`/chat/${app.patient_id}`} className="btn btn-primary btn-sm rounded-circle p-2 shadow-sm border-0">
@@ -193,8 +202,57 @@ const DoctorDashboard = () => {
                             </div>
                         </Card.Body>
                     </Card>
+
+                    {/* Lab Results & Reports Section */}
+                    <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
+                        <Card.Header className="bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+                            <h5 className="fw-bold mb-0 d-flex align-items-center">
+                                <FileText className="text-primary me-2" size={20} /> Lab Results & Reports
+                            </h5>
+                            <Badge bg="light" className="text-muted border rounded-pill px-3 py-2">
+                                {labReports.length} Total
+                            </Badge>
+                        </Card.Header>
+                        <Card.Body className="p-0">
+                            <div className="table-responsive" style={{ maxHeight: "350px", overflowY: "auto" }}>
+                                <table className="table table-hover align-middle mb-0 custom-table">
+                                    <thead className="bg-light text-muted small text-uppercase fw-bold" style={{ position: "sticky", top: 0, zIndex: 1 }}>
+                                        <tr>
+                                            <th className="px-4 py-3">Patient</th>
+                                            <th className="py-3">Test/Report Name</th>
+                                            <th className="py-3">Status/Result</th>
+                                            <th className="py-3">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {labReports.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="4" className="text-center py-5 text-muted">No lab results or reports available for your patients.</td>
+                                            </tr>
+                                        ) : (
+                                            labReports.map((report) => (
+                                                <tr key={report.id}>
+                                                    <td className="px-4 py-3 fw-bold text-dark">{report.patient_name}</td>
+                                                    <td className="py-3">{report.test_name || "General Report"}</td>
+                                                    <td className="py-3">
+                                                        <Badge bg={report.result ? "success" : "warning"} className="px-3 py-2 rounded-pill">
+                                                            {report.result || "Pending/Awaiting"}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="py-3 text-muted small">
+                                                        {new Date(report.date || report.created_at).toLocaleDateString()}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Card.Body>
+                    </Card>
                 </div>
 
+                {/* Profile Widget Side */}
                 <div className="col-lg-4">
                     <Card className="border-0 shadow-sm rounded-4 bg-primary text-white p-2 mb-4">
                         <Card.Body className="p-4">
@@ -288,7 +346,7 @@ const DoctorDashboard = () => {
                                 <Form.Control type="number" className="border-0 shadow-sm px-3 py-2" value={editingProfile.fieldId} onChange={(e) => setEditingProfile({ ...editingProfile, fieldId: e.target.value })} required />
                             </Col>
                         </Row>
-                        <Button type="submit" variant="primary" className="w-100 py-3 rounded-pill fw-bold shadow-lg mt-4">SAVE CHANGES</Button>
+                        <BootstrapButton type="submit" variant="primary" className="w-100 py-3 rounded-pill fw-bold shadow-lg mt-4">SAVE CHANGES</BootstrapButton>
                     </Form>
                 </Modal.Body>
             </Modal>

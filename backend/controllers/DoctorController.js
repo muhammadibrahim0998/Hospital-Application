@@ -3,7 +3,10 @@ import { getDoctorAppointments, updateAppointmentStatus } from "../models/Appoin
 
 export const getMyAppointments = async (req, res) => {
     try {
-        const appointments = await getDoctorAppointments(req.userId);
+        const doctor = await getDoctorByUserId(req.userId);
+        if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
+
+        const appointments = await getDoctorAppointments(doctor.id);
         res.json(appointments);
     } catch (err) {
         res.status(500).json(err);

@@ -5,16 +5,20 @@ import {
   getDoctorAppointments,
   getPatientAppointments
 } from "../models/AppointmentModel.js";
+import { getDoctorByUserId } from "../models/DoctorModel.js";
 
 export const fetchAppointments = async (req, res) => {
   try {
-    let appointments;
+    let appointments = [];
     const role = req.userRole?.toLowerCase();
 
-    if (role === "admin") {
+    if (role === "admin" || role === "super_admin" || role === "hospital_admin") {
       appointments = await getAppointments();
     } else if (role === "doctor") {
-      appointments = await getDoctorAppointments(req.userId);
+      const doctor = await getDoctorByUserId(req.userId);
+      if (doctor) {
+        appointments = await getDoctorAppointments(doctor.id);
+      }
     } else {
       appointments = await getPatientAppointments(req.userId);
     }

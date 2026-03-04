@@ -21,9 +21,9 @@ export const register = async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
 
-    // Security: public registration can only create patient or doctor roles, never admin/super_admin
-    const safeRoles = ["patient", "doctor"];
-    const userRole = safeRoles.includes(role) ? role : "patient";
+    // Security: public registration can ONLY create patient roles.
+    // Doctors/Admins must be created securely from the backend by authorized roles.
+    const userRole = "patient";
 
     console.log("Registering user:", name, email, userRole);
 
@@ -35,13 +35,8 @@ export const register = async (req, res) => {
     const userId = userResult.insertId;
     console.log("User created with ID:", userId);
 
-    if (userRole === "doctor") {
-      await createDoctor([userId, "", "", null, 1, 1, "", 500, ""]);
-      // Scope doctor to hospital
-      if (hospitalId) {
-        await db.query("UPDATE doctors SET hospital_id = ? WHERE user_id = ?", [hospitalId, userId]);
-      }
-    } else if (userRole === "patient") {
+    // Only create patient model context
+    if (userRole === "patient") {
       await createPatient([userId, "", ""]);
       if (hospitalId) {
         await db.query("UPDATE patients SET hospital_id = ? WHERE user_id = ?", [hospitalId, userId]);

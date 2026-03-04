@@ -261,6 +261,11 @@ export default function Layout() {
                       Dashboard
                     </Link>
 
+                    <Link to="/appointments" onClick={handleLinkClick} style={linkStyle("/appointments")}>
+                      <BsCalendarCheck style={{ ...iconStyle, color: "#2ed573" }} />
+                      {role === "doctor" ? "Appointments" : "My Appointments"}
+                    </Link>
+
                     <Link to="/" onClick={handleLinkClick} style={linkStyle("/")}>
                       <BsHouseDoor style={{ ...iconStyle, color: "#2ed573" }} />
                       Home
@@ -269,10 +274,6 @@ export default function Layout() {
                     {(role === "patient" || role === "admin") && (
                       <>
                         <div style={sectionLabel}>Patient Services</div>
-                        <Link to="/appointments" onClick={handleLinkClick} style={linkStyle("/appointments")}>
-                          <BsCalendarCheck style={{ ...iconStyle, color: "#2ed573" }} />
-                          My Appointments
-                        </Link>
                         <Link to="/lab-results" onClick={handleLinkClick} style={linkStyle("/lab-results")}>
                           <BsFileEarmarkText style={{ ...iconStyle, color: "#a55eea" }} />
                           Lab Reports
