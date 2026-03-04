@@ -1,14 +1,16 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { API_BASE_URL } from "../config";
+import { AuthContext } from "./AuthContext";
 
 const AppointmentContext = createContext();
 
 export function AppointmentProvider({ children }) {
   const [appointments, setAppointments] = useState([]);
+  const { token } = useContext(AuthContext);
 
   const fetchAppointments = async () => {
+    if (!token) return;
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/api/appointments`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -17,7 +19,6 @@ export function AppointmentProvider({ children }) {
         setAppointments(data);
       } else {
         setAppointments([]);
-        console.error("Invalid appointments data:", data);
       }
     } catch (err) {
       console.log("Fetch Error:", err);
@@ -25,9 +26,13 @@ export function AppointmentProvider({ children }) {
     }
   };
 
+  useEffect(() => {
+    fetchAppointments();
+  }, [token]);
+
   const bookAppointment = async (appointment) => {
+    if (!token) return;
     try {
-      const token = localStorage.getItem("token");
       await fetch(`${API_BASE_URL}/api/appointments`, {
         method: "POST",
         headers: {
@@ -43,8 +48,8 @@ export function AppointmentProvider({ children }) {
   };
 
   const deleteAppointment = async (id) => {
+    if (!token) return;
     try {
-      const token = localStorage.getItem("token");
       await fetch(`${API_BASE_URL}/api/appointments/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },

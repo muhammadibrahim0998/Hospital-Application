@@ -1,194 +1,13 @@
-// import React, { useState } from "react";
-// import { Link, useNavigate } from "react-router-dom";
-// import { BsList, BsBell } from "react-icons/bs";
-
-// export default function Navbar({ sidebarOpen, setSidebarOpen }) {
-//   const navigate = useNavigate();
-//   const isLoggedIn = !!sessionStorage.getItem("token");
-//   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-
-//   const [menuOpen, setMenuOpen] = useState(false);
-//   const [dropdownOpen, setDropdownOpen] = useState(false);
-
-//   const logout = () => {
-//     sessionStorage.removeItem("user");
-//     sessionStorage.removeItem("token");
-//     navigate("/login");
-//     setDropdownOpen(false);
-//     setMenuOpen(false);
-//   };
-
-//   const goHome = () => {
-//     navigate("/");
-//     setMenuOpen(false);
-//     setSidebarOpen(false);
-//     setDropdownOpen(false);
-//   };
-
-//   return (
-//     <nav
-//       className="navbar navbar-expand-lg shadow-sm position-fixed w-100"
-//       style={{
-//         zIndex: 1100,
-//         background: "#1a1f37",
-//         borderBottom: "1px solid rgba(255,255,255,0.05)",
-//         height: "56px",
-//       }}
-//     >
-//       <div className="container-fluid d-flex align-items-center justify-content-between px-3">
-//         {/* Left side */}
-//         <div className="d-flex align-items-center">
-//           {/* Sidebar toggle */}
-//           <button
-//             className="btn me-3 d-flex align-items-center justify-content-center"
-//             onClick={() => setSidebarOpen(!sidebarOpen)}
-//             style={{
-//               width: "36px",
-//               height: "36px",
-//               borderRadius: "10px",
-//               border: "1px solid rgba(255,255,255,0.1)",
-//               color: "rgba(255,255,255,0.7)",
-//               background: "rgba(255,255,255,0.05)",
-//             }}
-//           >
-//             <BsList style={{ fontSize: "1.2rem" }} />
-//           </button>
-
-//           {/* Logo */}
-//           <span
-//             className="fw-bold"
-//             onClick={goHome}
-//             style={{
-//               cursor: "pointer",
-//               color: "#fff",
-//               fontSize: "1.1rem",
-//               letterSpacing: "0.5px",
-//             }}
-//           >
-//             <span style={{ color: "#667eea" }}>🏥</span> CityCare Hospital
-//           </span>
-//         </div>
-
-//         {/* Mobile toggle */}
-//         <button
-//           className="navbar-toggler border-0"
-//           type="button"
-//           onClick={() => setMenuOpen(!menuOpen)}
-//           style={{ color: "rgba(255,255,255,0.7)" }}
-//         >
-//           <span className="navbar-toggler-icon" style={{ filter: "invert(1)" }}></span>
-//         </button>
-
-//         {/* Menu */}
-//         <div className={`collapse navbar-collapse ${menuOpen ? "show" : ""}`}>
-//           <ul className="navbar-nav ms-auto align-items-center gap-1">
-//             <li className="nav-item">
-//               <span
-//                 className="nav-link"
-//                 onClick={goHome}
-//                 style={{ cursor: "pointer", color: "rgba(255,255,255,0.7)", fontSize: "0.9rem" }}
-//               >
-//                 Home
-//               </span>
-//             </li>
-
-//             <li className="nav-item">
-//               <Link
-//                 to="/contact"
-//                 className="nav-link"
-//                 onClick={() => { setMenuOpen(false); setSidebarOpen(false); setDropdownOpen(false); }}
-//                 style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.9rem" }}
-//               >
-//                 Contact
-//               </Link>
-//             </li>
-
-//             <li className="nav-item">
-//               <Link
-//                 to="/about"
-//                 className="nav-link"
-//                 onClick={() => { setMenuOpen(false); setSidebarOpen(false); setDropdownOpen(false); }}
-//                 style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.9rem" }}
-//               >
-//                 About
-//               </Link>
-//             </li>
-
-//             {/* Account dropdown */}
-//             <li className="nav-item dropdown ms-2">
-//               <button
-//                 className="btn dropdown-toggle d-flex align-items-center gap-2"
-//                 onClick={() => setDropdownOpen(!dropdownOpen)}
-//                 style={{
-//                   background: "linear-gradient(135deg, #667eea, #764ba2)",
-//                   color: "#fff",
-//                   border: "none",
-//                   borderRadius: "10px",
-//                   padding: "6px 16px",
-//                   fontSize: "0.85rem",
-//                   fontWeight: "500",
-//                 }}
-//               >
-//                 {isLoggedIn ? (user.name || "My Account") : "Account"}
-//               </button>
-
-//               <ul
-//                 className={`dropdown-menu dropdown-menu-end shadow border-0 ${dropdownOpen ? "show" : ""}`}
-//                 style={{ borderRadius: "12px", marginTop: "8px" }}
-//               >
-//                 {!isLoggedIn && (
-//                   <>
-//                     <li>
-//                       <Link className="dropdown-item py-2" to="/login" onClick={() => setDropdownOpen(false)}>Login</Link>
-//                     </li>
-//                     <li>
-//                       <Link className="dropdown-item py-2" to="/register" onClick={() => setDropdownOpen(false)}>Register</Link>
-//                     </li>
-//                   </>
-//                 )}
-
-//                 {isLoggedIn && (
-//                   <>
-//                     <li className="px-3 py-2">
-//                       <small className="text-muted">Signed in as</small>
-//                       <div className="fw-bold small">{user.name || "User"}</div>
-//                       <small className="text-muted text-capitalize">{user.role || ""}</small>
-//                     </li>
-//                     <li><hr className="dropdown-divider" /></li>
-//                     <li>
-//                       <Link className="dropdown-item py-2" to="/dashboard" onClick={() => setDropdownOpen(false)}>
-//                         Dashboard
-//                       </Link>
-//                     </li>
-//                     <li>
-//                       <Link className="dropdown-item py-2" to="/register" onClick={() => setDropdownOpen(false)}>
-//                         Register
-//                       </Link>
-//                     </li>
-//                     <li><hr className="dropdown-divider" /></li>
-//                     <li>
-//                       <button className="dropdown-item py-2 text-danger" onClick={logout}>
-//                         Logout
-//                       </button>
-//                     </li>
-//                   </>
-//                 )}
-//               </ul>
-//             </li>
-//           </ul>
-//         </div>
-//       </div>
-//     </nav>
-//   );
-// }
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsList, BsBell, BsSearch } from "react-icons/bs";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { user, logout } = useContext(AuthContext);
+
+  const isLoggedIn = !!user;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [theme, setTheme] = useState("black");
@@ -221,10 +40,10 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
       searchText: "#000",
     },
     dark: {
-      navBg: "#ffffff", // inside white
+      navBg: "#ffffff",
       text: "#000000",
       box: "#ffffff",
-      border: "#000000", // black border
+      border: "#000000",
       searchBg: "#ffffff",
       searchText: "#000",
     },
@@ -245,8 +64,9 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     }
   };
 
-  const logout = () => {
-    localStorage.clear();
+  const handleLogout = () => {
+    logout();
+    setDropdownOpen(false);
     navigate("/login");
   };
 
@@ -335,7 +155,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               }}
             />
 
-            {/* Small Search Button */}
             <button
               onClick={handleSearch}
               style={{
@@ -353,7 +172,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
         {/* RIGHT */}
         <div className="d-flex align-items-center gap-3">
-          {/* Theme Switcher */}
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
@@ -372,7 +190,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
             <option value="dark">Dark</option>
           </select>
 
-          {/* Notification */}
           <div
             style={{
               width: "36px",
@@ -390,7 +207,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
             <BsBell size={18} />
           </div>
 
-          {/* Profile */}
           <div className="position-relative">
             <div
               onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -424,7 +240,8 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               >
                 <div className="px-3 py-2 border-bottom">
                   <small>Signed in as</small>
-                  <div className="fw-bold small">{user.name || "User"}</div>
+                  <div className="fw-bold small">{user?.name || "User"}</div>
+                  <div className="text-muted small text-capitalize">{user?.role?.replace('_', ' ')}</div>
                 </div>
 
                 <Link
@@ -437,7 +254,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
                 <button
                   className="dropdown-item py-2 text-danger"
-                  onClick={logout}
+                  onClick={handleLogout}
                 >
                   Logout
                 </button>
@@ -449,4 +266,3 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     </nav>
   );
 }
-

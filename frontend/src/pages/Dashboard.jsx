@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import AdminDashboard from "./AdminDashboard";
 import DoctorDashboard from "./DoctorDashboard";
 import PatientDashboard from "./PatientDashboard";
 
 export default function Dashboard() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const role = user.role?.toLowerCase();
+  const { user } = useContext(AuthContext);
+  const role = user?.role?.toLowerCase();
 
   if (role === "admin") {
     return <AdminDashboard />;

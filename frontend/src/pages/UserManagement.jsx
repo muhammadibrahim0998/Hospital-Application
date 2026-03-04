@@ -11,9 +11,6 @@ import {
     RefreshCw, Hospital, Settings, Users,
 } from "lucide-react";
 
-const authHeaders = () => ({
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-});
 const api = (path) => `${API_BASE_URL}/api/super-admin${path}`;
 
 const DEFAULT_MODULES = {
@@ -25,7 +22,11 @@ const DEFAULT_MODULES = {
 };
 
 const UserManagement = () => {
-    const { user } = useContext(AuthContext);
+    const { user, token } = useContext(AuthContext);
+
+    const authHeaders = () => ({
+        Authorization: `Bearer ${token}`,
+    });
 
     const [admins, setAdmins] = useState([]);
     const [hospitals, setHospitals] = useState([]);
@@ -50,6 +51,7 @@ const UserManagement = () => {
     };
 
     const fetchAll = async () => {
+        if (!token) return;
         setLoading(true);
         try {
             const [h, a] = await Promise.all([
@@ -65,7 +67,9 @@ const UserManagement = () => {
         }
     };
 
-    useEffect(() => { fetchAll(); }, []);
+    useEffect(() => {
+        if (token) fetchAll();
+    }, [token]);
 
     /* ── Open add / edit ─── */
     const openAdd = () => {

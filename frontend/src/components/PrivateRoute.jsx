@@ -13,25 +13,15 @@ import { AuthContext } from "../context/AuthContext";
  *   admin / doctor / patient — standard behaviour.
  */
 const PrivateRoute = ({ allowedRoles }) => {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const location = useLocation();
-  const token = localStorage.getItem("token");
-
-  // Fall back to localStorage while context is still hydrating
-  let currentUser = user;
-  if (!currentUser) {
-    try {
-      const stored = localStorage.getItem("user");
-      if (stored) currentUser = JSON.parse(stored);
-    } catch {/* ignore */ }
-  }
 
   // Not logged in → redirect to login
-  if (!token || !currentUser) {
+  if (!token || !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  const role = currentUser.role?.toLowerCase();
+  const role = user.role?.toLowerCase();
 
   // super_admin bypasses every role check
   if (role === "super_admin") return <Outlet />;

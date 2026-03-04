@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
 import { Container, Row, Col, Card, Button, Table, Badge, Form, Modal, Alert } from "react-bootstrap";
 import { Users, Search, Filter, Download, MoreVertical, Globe, MapPin, Edit, Trash2, Save, UserCog } from "lucide-react";
+import { AuthContext } from "../context/AuthContext";
 
-/**
- * ViewUsers Component
- * Displays a table with Client Name, Contact, Gender, Age - Matching user screenshots
- */
 const ViewUsers = () => {
+    const { token } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
     const [hospitals, setHospitals] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -23,15 +21,18 @@ const ViewUsers = () => {
     });
     const [roleFilter, setRoleFilter] = useState("All");
 
+    const authHeaders = { Authorization: `Bearer ${token}` };
+
     const fetchData = async () => {
+        if (!token) return;
         setLoading(true);
         try {
             const [userRes, hospRes] = await Promise.all([
                 axios.get(`${API_BASE_URL}/api/super-admin/app-users`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                    headers: authHeaders
                 }),
                 axios.get(`${API_BASE_URL}/api/super-admin/hospitals`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                    headers: authHeaders
                 })
             ]);
             setUsers(userRes.data);
@@ -43,7 +44,9 @@ const ViewUsers = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => {
+        if (token) fetchData();
+    }, [token]);
 
     const handleEdit = (u) => {
         setEditForm({
@@ -63,7 +66,7 @@ const ViewUsers = () => {
         e.preventDefault();
         try {
             await axios.put(`${API_BASE_URL}/api/super-admin/app-users/${editForm.id}`, editForm, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                headers: authHeaders
             });
             setShowEdit(false);
             setAlert({ type: "success", msg: "User updated successfully!" });
@@ -77,7 +80,7 @@ const ViewUsers = () => {
         if (!window.confirm("Are you sure you want to delete this user?")) return;
         try {
             await axios.delete(`${API_BASE_URL}/api/super-admin/app-users/${id}?role=${role}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                headers: authHeaders
             });
             setAlert({ type: "success", msg: "User removed successfully" });
             fetchData();

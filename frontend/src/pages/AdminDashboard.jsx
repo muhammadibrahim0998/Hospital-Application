@@ -32,8 +32,11 @@ import {
   Edit,
   Trash2
 } from "lucide-react";
+import { AuthContext } from "../context/AuthContext";
+import { useContext } from "react";
 
 const AdminDashboard = () => {
+  const { token } = useContext(AuthContext);
   const { doctors: ctxDoctors, updateDoctor, removeDoctor, addDoctor, toggleStatus, fetchDoctors: refreshDoctors } = useDoctors();
   const [patients, setPatients] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -57,12 +60,11 @@ const AdminDashboard = () => {
     whatsappNumber: "",
   });
 
-  const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (token) fetchData();
+  }, [token]);
 
   const fetchData = async () => {
     setLoading(true);

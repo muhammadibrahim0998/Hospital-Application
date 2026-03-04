@@ -26,13 +26,18 @@ ChartJS.register(
   Legend,
 );
 
+import { AuthContext } from "../context/AuthContext";
+import { useContext } from "react";
+
+// ... (imports remain)
+
 const PatientDashboard = () => {
   const [appointments, setAppointments] = useState([]);
-  const token = localStorage.getItem("token");
+  const { token } = useContext(AuthContext);
 
   useEffect(() => {
-    fetchAppointments();
-  }, []);
+    if (token) fetchAppointments();
+  }, [token]);
 
   const fetchAppointments = async () => {
     try {
@@ -169,13 +174,12 @@ const PatientDashboard = () => {
                   </div>
 
                   <span
-                    className={`badge bg-${
-                      appt.status === "completed"
+                    className={`badge bg-${appt.status === "completed"
                         ? "success"
                         : appt.status === "scheduled"
                           ? "info"
                           : "danger"
-                    }`}
+                      }`}
                   >
                     {appt.status}
                   </span>

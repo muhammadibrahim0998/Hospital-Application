@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { API_BASE_URL } from "../config";
@@ -17,6 +17,7 @@ import {
     FileText
 } from "lucide-react";
 import { Modal, Form, Row, Col, Badge, Card, Button as BootstrapButton } from "react-bootstrap";
+import { AuthContext } from "../context/AuthContext";
 
 const DoctorDashboard = () => {
     const [appointments, setAppointments] = useState([]);
@@ -34,12 +35,12 @@ const DoctorDashboard = () => {
         imageFile: null
     });
 
-    const token = localStorage.getItem("token");
+    const { token } = useContext(AuthContext);
     const headers = { Authorization: `Bearer ${token}` };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (token) fetchData();
+    }, [token]);
 
     const fetchData = async () => {
         try {

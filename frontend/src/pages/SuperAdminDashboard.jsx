@@ -12,10 +12,6 @@ import {
     Globe, LayoutDashboard, Database,
 } from "lucide-react";
 
-/* ─── tiny helpers ─────────────────────────────────── */
-const authHeaders = () => ({
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-});
 const api = (path) => `${API_BASE_URL}/api/super-admin${path}`;
 
 const DEFAULT_MODULES = {
@@ -26,9 +22,12 @@ const DEFAULT_MODULES = {
     appUsers: true,
 };
 
-/* ─── Component ────────────────────────────────────── */
 const SuperAdminDashboard = () => {
-    const { user } = useContext(AuthContext);
+    const { user, token } = useContext(AuthContext);
+
+    const authHeaders = () => ({
+        Authorization: `Bearer ${token}`,
+    });
 
     /* data */
     const [hospitals, setHospitals] = useState([]);
@@ -59,6 +58,7 @@ const SuperAdminDashboard = () => {
 
     /* fetch all */
     const fetchAll = async () => {
+        if (!token) return;
         setLoading(true);
         try {
             const [h, a, u, s] = await Promise.all([
@@ -72,13 +72,15 @@ const SuperAdminDashboard = () => {
             setAppUsers(u.data);
             setProjectStats(s.data);
         } catch (err) {
-            showAlert("danger", err.response?.data?.message || "Failed to load current data. Please ensure backend is running.");
+            showAlert("danger", err.response?.data?.message || "Failed to load current data.");
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => { fetchAll(); }, []);
+    useEffect(() => {
+        if (token) fetchAll();
+    }, [token]);
 
     const showAlert = (type, msg) => {
         setAlert({ type, msg });

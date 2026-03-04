@@ -1,7 +1,7 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
+import { AuthContext } from "../context/AuthContext";
 
 // Icons
 import {
@@ -25,7 +25,9 @@ import {
 import { FaFlask } from "react-icons/fa";
 
 export default function Layout() {
+  const { user, hasModule: authHasModule } = useContext(AuthContext);
   const location = useLocation();
+
   const isHome = location.pathname === "/";
 
   const [sidebarOpen, setSidebarOpen] = useState(
@@ -36,31 +38,33 @@ export default function Layout() {
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
-      setSidebarOpen(window.innerWidth > 768);
+      if (window.innerWidth <= 768) {
+        setSidebarOpen(false);
+      } else if (!isHome) {
+        setSidebarOpen(true);
+      }
     };
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isHome]);
 
   const handleLinkClick = () => {
     if (windowWidth <= 768) setSidebarOpen(false);
   };
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const role = user.role?.toLowerCase();
-  const userName = user.name || "User";
-
-  // Module permissions (for hospital_admin)
-  let modules = {};
-  try {
-    const raw = user.modules;
-    modules = typeof raw === "string" ? JSON.parse(raw) : (raw || {});
-  } catch { modules = {}; }
+  const role = user?.role?.toLowerCase();
+  const userName = user?.name || "User";
 
   const hasModule = (m) => {
+    if (authHasModule) return authHasModule(m);
+    // Fallback if not provided by context
     if (role === "super_admin") return true;
-    if (role === "hospital_admin") return modules[m] !== false;
+    if (role === "hospital_admin") {
+      const raw = user?.modules;
+      const modules = typeof raw === "string" ? JSON.parse(raw) : (raw || {});
+      return modules[m] !== false;
+    }
     return true;
   };
 

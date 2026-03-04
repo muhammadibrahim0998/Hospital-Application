@@ -1,20 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
+import { AuthContext } from "./AuthContext";
 
 const LabContext = createContext();
 
 export function LabProvider({ children }) {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const token = localStorage.getItem("token");
-  const headers = { Authorization: `Bearer ${token}` };
+  const { token } = useContext(AuthContext);
 
   const fetchTests = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/lab/tests`, { headers });
+      const res = await axios.get(`${API_BASE_URL}/api/lab/tests`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setTests(res.data || []);
     } catch (err) {
       console.error("Error fetching lab tests:", err);
@@ -24,13 +26,16 @@ export function LabProvider({ children }) {
   };
 
   useEffect(() => {
-    if (token) fetchTests();
+    fetchTests();
   }, [token]);
 
   const addTest = async (testData) => {
+    if (!token) return;
     try {
-      await axios.post(`${API_BASE_URL}/api/lab/tests`, testData, { headers });
-      fetchTests(); // Refresh
+      await axios.post(`${API_BASE_URL}/api/lab/tests`, testData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTests();
     } catch (err) {
       console.error("Error adding lab test:", err);
       throw err;
@@ -38,9 +43,12 @@ export function LabProvider({ children }) {
   };
 
   const performTest = async (id, result) => {
+    if (!token) return;
     try {
-      await axios.put(`${API_BASE_URL}/api/lab/tests/${id}/perform`, { result }, { headers });
-      fetchTests(); // Refresh
+      await axios.put(`${API_BASE_URL}/api/lab/tests/${id}/perform`, { result }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTests();
     } catch (err) {
       console.error("Error performing lab test:", err);
     }

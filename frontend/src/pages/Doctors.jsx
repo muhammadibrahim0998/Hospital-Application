@@ -1,16 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDoctors } from "../context/DoctorContext";
 import DoctorList from "../components/DoctorList";
 import { Search } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 export default function Doctors() {
   const { doctors } = useDoctors();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredDoctors = doctors.filter((doc) =>
-    doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (doc.specialization || doc.specialty || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    const q = searchParams.get("search");
+    if (q) setSearchTerm(q);
+  }, [searchParams]);
+
+  const filteredDoctors = (doctors || []).filter((doc) => {
+    const name = doc?.name || "";
+    const spec = doc?.specialization || doc?.specialty || "";
+    const term = searchTerm.toLowerCase();
+
+    return name.toLowerCase().includes(term) || spec.toLowerCase().includes(term);
+  });
 
   return (
     <div className="container mt-5 pt-4">

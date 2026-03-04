@@ -9,10 +9,9 @@ export const useDoctors = () => useContext(DoctorContext);
 
 export const DoctorProvider = ({ children }) => {
   const [doctors, setDoctors] = useState([]);
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
 
   const fetchDoctors = async () => {
-    const token = localStorage.getItem("token");
     if (!token) return;
 
     const headers = { Authorization: `Bearer ${token}` };
@@ -21,7 +20,7 @@ export const DoctorProvider = ({ children }) => {
     try {
       let endpoint = `${API_BASE_URL}/api/patient/doctors`;
 
-      if (role === 'admin') {
+      if (role === 'admin' || role === 'hospital_admin' || role === 'super_admin') {
         endpoint = `${API_BASE_URL}/api/admin/doctors`;
       }
 
@@ -32,7 +31,7 @@ export const DoctorProvider = ({ children }) => {
       // Fallback if role detection failed or endpoint mismatched
       if (err.response?.status === 403 || err.response?.status === 401) {
         try {
-          const fallbackEndpoint = role === 'admin'
+          const fallbackEndpoint = (role === 'admin' || role === 'hospital_admin' || role === 'super_admin')
             ? `${API_BASE_URL}/api/patient/doctors`
             : `${API_BASE_URL}/api/admin/doctors`;
           const res = await axios.get(fallbackEndpoint, { headers });
@@ -45,7 +44,6 @@ export const DoctorProvider = ({ children }) => {
   };
 
   const addDoctor = async (formData) => {
-    const token = localStorage.getItem("token");
     if (!token) {
       alert("You are not logged in!");
       return;
@@ -67,7 +65,7 @@ export const DoctorProvider = ({ children }) => {
   };
 
   const updateDoctor = async (id, formData) => {
-    const token = localStorage.getItem("token");
+    if (!token) return;
     try {
       await axios.put(`${API_BASE_URL}/api/admin/doctors/${id}`, formData, {
         headers: {
@@ -84,7 +82,7 @@ export const DoctorProvider = ({ children }) => {
   };
 
   const removeDoctor = async (id) => {
-    const token = localStorage.getItem("token");
+    if (!token) return;
     if (!window.confirm("Are you sure you want to delete this doctor?")) return;
     try {
       await axios.delete(`${API_BASE_URL}/api/admin/doctors/${id}`, {
@@ -99,7 +97,7 @@ export const DoctorProvider = ({ children }) => {
   };
 
   const toggleStatus = async (id, currentStatus) => {
-    const token = localStorage.getItem("token");
+    if (!token) return;
     const newStatus = currentStatus === "active" ? "inactive" : "active";
     try {
       await axios.put(`${API_BASE_URL}/api/admin/doctors/${id}/status`,
@@ -114,7 +112,7 @@ export const DoctorProvider = ({ children }) => {
 
   useEffect(() => {
     fetchDoctors();
-  }, []);
+  }, [token, user?.role]);
 
   return (
     <DoctorContext.Provider value={{ doctors, addDoctor, updateDoctor, removeDoctor, toggleStatus, fetchDoctors }}>

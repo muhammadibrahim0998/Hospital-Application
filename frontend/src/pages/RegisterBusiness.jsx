@@ -10,7 +10,7 @@ import { Building2, Save, Upload } from "lucide-react";
  * Matches the "REGISTER BUSINESS" form from user screenshots
  */
 const RegisterBusiness = () => {
-    const { user } = useContext(AuthContext);
+    const { user, token } = useContext(AuthContext);
     const [alert, setAlert] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -25,7 +25,7 @@ const RegisterBusiness = () => {
         logo: null
     });
 
-    const headers = { Authorization: `Bearer ${localStorage.getItem("token")}` };
+    const headers = { Authorization: `Bearer ${token}` };
 
     const handleSubmit = async (e) => {
         e.preventDefault();

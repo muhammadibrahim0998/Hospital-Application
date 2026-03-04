@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
+import { AuthContext } from "../context/AuthContext";
 
 const Chat = () => {
     const { userId } = useParams(); // ID of the person we are chatting with
+    const { user: currentUser, token } = useContext(AuthContext);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
-    const currentUser = JSON.parse(localStorage.getItem("user"));
-    const token = localStorage.getItem("token");
 
     const fetchMessages = async () => {
         try {

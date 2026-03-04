@@ -12,12 +12,11 @@ import {
 } from "lucide-react";
 import { useDoctors } from "../context/DoctorContext";
 
-/* ─── helpers ───────────────────────────────────────── */
-const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
-
 const HospitalAdminDashboard = () => {
-    const { user, hasModule } = useContext(AuthContext);
+    const { user, token, hasModule } = useContext(AuthContext);
     const { addDoctor, updateDoctor, removeDoctor, toggleStatus, fetchDoctors: refreshDoctors } = useDoctors();
+
+    const authHeaders = { Authorization: `Bearer ${token}` };
 
     /* state */
     const [doctors, setDoctors] = useState([]);
@@ -44,14 +43,15 @@ const HospitalAdminDashboard = () => {
     };
 
     const fetchData = async () => {
+        if (!token) return;
         setLoading(true);
         try {
             const results = await Promise.allSettled([
-                hasModule("doctors") ? axios.get(`${API_BASE_URL}/api/admin/doctors`, { headers: authHeaders() }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
-                hasModule("patients") ? axios.get(`${API_BASE_URL}/api/admin/patients`, { headers: authHeaders() }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
-                hasModule("appointments") ? axios.get(`${API_BASE_URL}/api/admin/appointments`, { headers: authHeaders() }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
-                hasModule("appUsers") ? axios.get(`${API_BASE_URL}/api/admin/app-users`, { headers: authHeaders() }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
-                hasModule("lab") ? axios.get(`${API_BASE_URL}/api/lab/tests`, { headers: authHeaders() }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
+                hasModule("doctors") ? axios.get(`${API_BASE_URL}/api/admin/doctors`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
+                hasModule("patients") ? axios.get(`${API_BASE_URL}/api/admin/patients`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
+                hasModule("appointments") ? axios.get(`${API_BASE_URL}/api/admin/appointments`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
+                hasModule("appUsers") ? axios.get(`${API_BASE_URL}/api/admin/app-users`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
+                hasModule("lab") ? axios.get(`${API_BASE_URL}/api/lab/tests`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
             ]);
 
             const [d, p, a, u, l] = results;
@@ -73,7 +73,9 @@ const HospitalAdminDashboard = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => {
+        if (token) fetchData();
+    }, [token]);
 
     /* ── Doctor CRUD ─────────────────────────────────── */
     const handleAddDoctor = async (e) => {
