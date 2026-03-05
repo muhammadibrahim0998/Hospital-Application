@@ -1,0 +1,145 @@
+/* RegisterBusiness.css */
+
+/* ───── Base Container ───── */
+.register-business-container {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background-color: #f8f9fa;
+}
+
+/* ───── Card Styling ───── */
+.register-business-card {
+  border-radius: 1.5rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  overflow: hidden;
+  border: none;
+}
+
+.register-business-card .card-header {
+  background-color: #fff;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1.5rem 2rem;
+}
+
+.register-business-card .card-body {
+  padding: 2rem;
+}
+
+/* ───── Form Inputs ───── */
+.register-business-card input,
+.register-business-card textarea,
+.register-business-card select {
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0.6rem 1rem !important;
+  background-color: #f1f3f5 !important;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.register-business-card input:focus,
+.register-business-card textarea:focus,
+.register-business-card select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(13,110,253,0.2);
+  background-color: #fff;
+}
+
+/* ───── File Upload Button ───── */
+.register-business-card .file-upload-btn {
+  border: 1px solid #ced4da;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.register-business-card .file-upload-btn:hover {
+  background-color: #e9ecef;
+}
+
+/* ───── Buttons ───── */
+.register-business-card .btn {
+  border-radius: 0.75rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+.register-business-card .btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ───── Section Titles ───── */
+.register-business-card h5 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #495057;
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+/* ───── Alerts ───── */
+.register-business-card .alert {
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ───── Responsive Layout ───── */
+@media (max-width: 1200px) {
+  .register-business-card .card-body {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .register-business-card .card-body {
+    padding: 1.25rem;
+  }
+  .register-business-card h5 {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .register-business-card .card-body {
+    padding: 1rem;
+  }
+  .register-business-card .file-upload-btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+  .register-business-card .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .register-business-card {
+    border-radius: 1rem;
+  }
+  .register-business-card h5 {
+    font-size: 0.85rem;
+  }
+  .register-business-card .card-body {
+    padding: 0.75rem 0.5rem;
+  }
+  .register-business-card input,
+  .register-business-card textarea,
+  .register-business-card select {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem !important;
+  }
+  .register-business-card .btn {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.75rem;
+  }
+}
+
+/* ───── Small Screens Stack Form Fields ───── */
+@media (max-width: 576px) {
+  .register-business-card .row > [class*="col-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}

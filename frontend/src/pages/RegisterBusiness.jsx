@@ -4,6 +4,7 @@ import { API_BASE_URL } from "../config";
 import { AuthContext } from "../context/AuthContext";
 import { Container, Row, Col, Card, Button, Form, Alert } from "react-bootstrap";
 import { Building2, Save, Upload } from "lucide-react";
+import "../css/RegisterBusiness.css";
 
 /**
  * RegisterBusiness Component
@@ -37,7 +38,7 @@ const RegisterBusiness = () => {
                 address: form.address,
                 phone: form.phone,
                 email: form.email,
-                // These extras can be stored in a JSON column or separate table if needed, 
+                // These extras can be stored in a JSON column or separate table if needed,
                 // but for now we'll match the main hospitals table
             };
 

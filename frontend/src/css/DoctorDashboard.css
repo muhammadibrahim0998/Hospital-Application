@@ -1,0 +1,103 @@
+/* GENERAL */
+.dashboard-container {
+  padding: 20px;
+}
+
+/* TABLE HOVER */
+.custom-table tr {
+  transition: 0.2s;
+}
+
+.custom-table tr:hover {
+  background: #f9f9f9;
+}
+
+/* BUTTON WHITE */
+.btn-white {
+  background: white;
+}
+
+.btn-white:hover {
+  background: #f1f1f1;
+}
+
+/* PROFILE CARD MOBILE */
+@media (max-width: 992px) {
+  .profile-widget {
+    margin-top: 20px;
+  }
+}
+
+/* MOBILE TABLE → CARD */
+@media (max-width: 768px) {
+
+  .custom-table thead {
+    display: none;
+  }
+
+  .custom-table,
+  .custom-table tbody,
+  .custom-table tr,
+  .custom-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .custom-table tr {
+    background: white;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  }
+
+  .custom-table td {
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+
+  .custom-table td::before {
+    font-weight: bold;
+    color: #6c757d;
+  }
+
+  /* Appointment labels */
+
+  .custom-table td:nth-child(1)::before {
+    content: "Patient";
+  }
+
+  .custom-table td:nth-child(2)::before {
+    content: "Date";
+  }
+
+  .custom-table td:nth-child(3)::before {
+    content: "Status";
+  }
+
+  .custom-table td:nth-child(4)::before {
+    content: "Actions";
+  }
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .table-responsive {
+    max-height: none !important;
+  }
+
+  .rounded-4 {
+    border-radius: 12px !important;
+  }
+
+  .card-body {
+    padding: 15px !important;
+  }
+}

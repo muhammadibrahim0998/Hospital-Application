@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { API_BASE_URL } from "../config";
+import "../css/DoctorDashboard.css";
 import {
     User,
     Settings,
