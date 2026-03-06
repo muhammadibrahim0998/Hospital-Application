@@ -1,96 +1,226 @@
-/* ───── Tabs ───────── */
-.custom-tabs .nav-link { 
-  border-radius: 50rem !important; 
-  padding: 0.6rem 1.5rem !important; 
-  color: #495057 !important; 
-  font-weight: 700 !important; 
-  border: none !important; 
-  transition: all 0.2s; 
-  margin: 0 4px; 
-  white-space: nowrap; 
-}
-.custom-tabs .nav-link.active { 
-  background: var(--bs-primary) !important; 
-  color: #fff !important; 
-  box-shadow: 0 8px 15px rgba(13,110,253,0.2) !important; 
+/* /* ===== GLOBAL ===== */
+body {
+  background: #f6f8fb;
+  font-family: "Inter", "Segoe UI", sans-serif;
 }
 
-/* ───── Spin for Refresh Button ───────── */
-.spin { animation: rotate 1s linear infinite; }
-@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-/* ───── Tables ───────── */
-.table-responsive { overflow-x: auto; }
-table th, table td { vertical-align: middle; }
-table th { white-space: nowrap; }
-table td { white-space: pre-wrap; word-wrap: break-word; }
-
-/* ───── Cards ───────── */
-.card { border-radius: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-.card-body { padding: 1.5rem; }
-.border-start.border-4 { border-left-width: 0.25rem !important; }
-
-/* ───── Buttons ───────── */
-.btn { transition: all 0.2s ease; }
-.btn-rounded-pill { border-radius: 50rem !important; }
-.btn-sm, .btn { font-weight: 600; }
-
-/* ───── Modals ───────── */
-.modal-header { border-bottom: none; }
-.modal-title { font-weight: 700; }
-.modal-body .form-control, 
-.modal-body .form-select { border-radius: 0.5rem; box-shadow: 0 1px 5px rgba(0,0,0,0.05); padding: 0.75rem 1rem; }
-.modal-body .form-check-label { font-weight: 500; font-size: 0.9rem; }
-
-/* ───── Badges ───────── */
-.badge { font-weight: 600; font-size: 0.75rem; }
-
-/* ───── Stat Cards ───────── */
-.display-6 { font-size: 2rem; }
-.opacity-50 { opacity: 0.5; }
-
-/* ───── Responsive Typography ───────── */
-h2 { font-size: 1.75rem; }
-h4 { font-size: 1.25rem; }
-h5 { font-size: 1.1rem; }
-
-/* ───── Responsive Layout ───────── */
-@media (max-width: 1200px) {
-  .table-responsive { overflow-x: auto; }
-  .display-6 { font-size: 1.75rem; }
+/* ===== SPIN ANIMATION ===== */
+.spin {
+  animation: spin 1s linear infinite;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== CUSTOM TABS ===== */
+.custom-tabs {
+  border-radius: 50px;
+}
+
+.custom-tabs .nav-link {
+  border-radius: 50px !important;
+  padding: 10px 22px !important;
+  font-weight: 600;
+  color: #6c757d !important;
+  transition: all 0.25s ease;
+}
+
+.custom-tabs .nav-link:hover {
+  background: rgba(13,110,253,0.08);
+  color: #0d6efd !important;
+}
+
+.custom-tabs .nav-link.active {
+  background: #0d6efd !important;
+  color: white !important;
+  box-shadow: 0 3px 8px rgba(13,110,253,0.3);
+}
+
+/* ===== TABLE ===== */
+.table thead th {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: #f1f6ff;
+}
+
+/* ===== BADGES ===== */
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ===== CARD ===== */
+.card {
+  border-radius: 18px !important;
+  transition: all 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* ===== STATS CARDS ===== */
+.card .display-6 {
+  font-size: 1.9rem;
+}
+
+.h-1 {
+  height: 3px;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-light {
+  border: 1px solid #e5e7eb;
+}
+
+/* ===== MODALS ===== */
+.modal-content {
+  border-radius: 20px;
+  border: none;
+}
+
+.modal-header {
+  border-bottom: none;
+}
+
+.modal-body {
+  border-radius: 0 0 20px 20px;
+}
+
+/* ===== FORMS ===== */
+.form-control,
+.form-select {
+  border-radius: 12px !important;
+  font-size: 0.9rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  box-shadow: 0 0 0 2px rgba(13,110,253,0.15);
+  border-color: #0d6efd;
+}
+
+.form-label {
+  font-size: 0.7rem;
+}
+
+/* ===== SWITCH ===== */
+.form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* ===== USER AVATAR ===== */
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+
+/* ===== PROJECT CARD ===== */
+.project-card {
+  background: white;
+  border-radius: 14px;
+  padding: 15px;
+  transition: all 0.25s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+}
+
+/* ===== ALERT ===== */
+.alert {
+  border-radius: 12px;
+}
+
+/* ===== HEADER ===== */
+.dashboard-header {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+/* ===== TABLE RESPONSIVE ===== */
+.table-responsive {
+  overflow-x: auto;
+}
+
+/* ===== SMALL TEXT ===== */
+.small {
+  font-size: 0.78rem;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
-  h2 { font-size: 1.5rem; }
-  .card-body { padding: 1rem; }
-  .btn { font-size: 0.85rem; padding: 0.5rem 0.75rem; }
-  .custom-tabs .nav-link { padding: 0.5rem 1rem !important; font-size: 0.85rem; }
+
+  .display-6 {
+    font-size: 1.5rem;
+  }
+
+  .card-body {
+    padding: 1.2rem;
+  }
+
+  .custom-tabs .nav-link {
+    padding: 8px 14px !important;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 768px) {
-  h2 { font-size: 1.25rem; }
-  .display-6 { font-size: 1.5rem; }
-  .card-body { padding: 0.75rem; }
-  .btn { width: 100%; padding: 0.5rem 0; }
-  .d-flex.justify-content-end { flex-wrap: wrap; gap: 0.5rem; }
-  table th, table td { font-size: 0.75rem; padding: 0.5rem; }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody tr {
+    display: block;
+    border-bottom: 1px solid #eee;
+    padding: 10px;
+  }
+
+  .table tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+  }
 }
 
 @media (max-width: 576px) {
-  h2 { font-size: 1.1rem; }
-  h5 { font-size: 1rem; }
-  .modal-body .form-control, 
-  .modal-body .form-select { font-size: 0.85rem; padding: 0.5rem; }
-  .custom-tabs .nav-link { padding: 0.4rem 0.8rem !important; font-size: 0.8rem; }
-  .badge { font-size: 0.65rem; padding: 0.25rem 0.5rem; }
-  .display-6 { font-size: 1.25rem; }
+
+  .dashboard-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .btn {
+    font-size: 0.8rem;
+  }
+
 }
-
-/* ───── Utility Classes ───────── */
-.ls-1 { letter-spacing: 1px; }
-.fw-extrabold { font-weight: 800; }
-.shadow-xs { box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-
-/* ───── Small Cards for App Users ───────── */
-.bg-white.rounded-4.shadow-sm { border-radius: 1rem !important; box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important; }
-.bg-opacity-10 { opacity: 0.1 !important; }

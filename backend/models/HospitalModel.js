@@ -123,7 +123,7 @@ export const getPatientsByHospital = async (hospitalId) => {
     SELECT p.*, u.name, u.email 
     FROM patients p 
     JOIN users u ON p.user_id = u.id
-    WHERE p.hospital_id = ?
+    WHERE u.hospital_id = ?
   `;
     const [rows] = await db.query(sql, [hospitalId]);
     return rows;

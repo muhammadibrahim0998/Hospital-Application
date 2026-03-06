@@ -294,7 +294,7 @@ export default function Layout() {
                         <div style={sectionLabel}>Doctor Tools</div>
                         <Link to="/doctor-lab" onClick={handleLinkClick} style={linkStyle("/doctor-lab")}>
                           <FaFlask style={{ ...iconStyle, color: "#17a2b8" }} />
-                          Lab Management
+                          Laboratory Services
                         </Link>
                       </>
                     )}

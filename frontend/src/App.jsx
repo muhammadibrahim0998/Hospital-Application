@@ -33,6 +33,7 @@ import PatientDashboard from "./pages/PatientDashboard.jsx";
 import DoctorLab from "./Lab/DoctorLab.jsx";
 import LabResults from "./Lab/LabResults.jsx";
 import LaboratoryPanel from "./Lab/LaboratoryPanel.jsx";
+import LaboratoryServices from "./Lab/LaboratoryServices.jsx";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard.jsx";
 import HospitalAdminDashboard from "./pages/HospitalAdminDashboard.jsx";
 import UserManagement from "./pages/UserManagement.jsx";
@@ -64,7 +65,7 @@ function AppContent() {
           <Route path="doctors" element={<Doctors />} />
           <Route path="find-doctor" element={<Doctors />} />
           <Route path="doctor/:id" element={<DoctorProfile />} />
-          <Route path="doctor-lab" element={<DoctorLab />} />
+          <Route path="doctor-lab" element={<LaboratoryServices />} />
           <Route path="lab-results" element={<LabResults />} />
           <Route path="laboratory-panel" element={<LaboratoryPanel />} />
           <Route path="/admin/add-doctor" element={<AddDoctor />} />

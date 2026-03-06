@@ -86,7 +86,7 @@ export const scopeToHospital = (req, res, next) => {
     return next();
   }
 
-  if (role === "hospital_admin") {
+  if (role === "hospital_admin" || role === "doctor" || role === "admin") {
     if (!req.hospitalId) {
       return res.status(403).json({ message: "Hospital binding missing from token" });
     }

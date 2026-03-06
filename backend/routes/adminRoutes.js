@@ -37,9 +37,9 @@ router.put("/doctors/:id/status", toggleDoctorStatus);
   Scoped read endpoints — hospital_admin gets only their hospital,
   super_admin gets everything (no scope filter).
 */
-router.get("/doctors", scopeToHospital, getScopedDoctors);
-router.get("/patients", scopeToHospital, getScopedPatients);
-router.get("/appointments", scopeToHospital, getScopedAppointments);
-router.get("/app-users", scopeToHospital, getScopedAppUsers);
+router.get("/doctors", authorizeRoles("admin", "hospital_admin", "doctor"), scopeToHospital, getScopedDoctors);
+router.get("/patients", authorizeRoles("admin", "hospital_admin", "doctor"), scopeToHospital, getScopedPatients);
+router.get("/appointments", authorizeRoles("admin", "hospital_admin", "doctor"), scopeToHospital, getScopedAppointments);
+router.get("/app-users", authorizeRoles("admin", "hospital_admin", "doctor"), scopeToHospital, getScopedAppUsers);
 
 export default router;
