@@ -1,7 +1,10 @@
+/* ================= SLIDER ================= */
+
 .slider-container {
-  height: 80vh;
+  height: 85vh;
   overflow: hidden;
   position: relative;
+  background: #000;
 }
 
 .slider-img {
@@ -9,48 +12,215 @@
   height: 100%;
   object-fit: cover;
   position: absolute;
-  top: 0;
-  left: 0;
   opacity: 0;
-  transition: opacity 0.7s ease-in-out;
-  margin-top: 45px;
-  border-radius: 5px;
+  transition: opacity 1.2s ease-in-out, transform 8s linear;
+  margin-top: 0;
+  filter: brightness(0.65);
 }
 
 .slider-img.active {
   opacity: 1;
+  transform: scale(1.1);
 }
 
-.carousel-caption.center-caption {
+.center-caption {
   position: absolute;
-  top: 70%;
+  top: 55%;
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
   text-align: center;
-  background-color: rgba(0, 0, 0, 0.4);
-  /* transparent black */
-  padding: 20px 30px;
-  border-radius: 10px;
-  max-width: 500px;
+  width: 100%;
+  max-width: 800px;
+  z-index: 10;
+  padding: 0 20px;
 }
+
+.fw-extrabold {
+  font-weight: 800;
+}
+
+/* ================= DEPARTMENTS ================= */
 
 .dept-section {
-  margin-top: -50px;
-  /* slightly overlay slider bottom */
+  position: relative;
+  margin-top: -60px;
+  z-index: 20;
 }
 
 .dept-card {
-  background-color: rgba(255, 255, 255, 0.9);
-  /* slightly transparent */
-}
-
-.dept-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  background: #ffffff;
 }
 
 .dept-card:hover {
-  transform: translateY(-10px) scale(1.05);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.25);
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+.dept-count {
+  width: 70px;
+  height: 70px;
+  color: white;
+  border-radius: 18px;
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ================= DOCTOR CARD ================= */
+
+.doctor-card {
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  background: #fff;
+}
+
+.doctor-img-container {
+  height: 280px;
+  position: relative;
+  overflow: hidden;
+}
+
+.doctor-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.doctor-card:hover .doctor-img {
+  transform: scale(1.1);
+}
+
+.doctor-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.doctor-card:hover .doctor-overlay {
+  opacity: 1;
+}
+
+.doctor-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ================= ABOUT SECTION ================= */
+
+.about-img-wrapper {
+  padding: 20px;
+}
+
+.main-about-img {
+  transition: all 0.5s ease;
+  border: 10px solid white;
+}
+
+.about-img-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80%;
+  height: 80%;
+  background: #dc3545;
+  border-radius: 20px;
+  z-index: -1;
+  opacity: 0.1;
+}
+
+.experience-badge {
+  bottom: 40px;
+  left: -20px;
+  min-width: 160px;
+  z-index: 5;
+}
+
+.letter-spacing-2 {
+  letter-spacing: 2px;
+}
+
+.shadow-lg {
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important;
+}
+
+/* ================= ANIMATIONS ================= */
+
+.animate__fadeIn {
+  animation: fadeIn 1.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 992px) {
+  .slider-container {
+    height: 70vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .slider-container {
+    height: 60vh;
+  }
+
+  .display-4 {
+    font-size: 2.2rem;
+  }
+
+  .lead {
+    font-size: 1.1rem;
+  }
+
+  .dept-section {
+    margin-top: -30px;
+  }
+
+  .doctor-img-container {
+    height: 220px;
+  }
+}
+
+@media (max-width: 576px) {
+  .slider-container {
+    height: 50vh;
+  }
+
+  .display-4 {
+    font-size: 1.8rem;
+  }
+
+  .dept-count {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
 }

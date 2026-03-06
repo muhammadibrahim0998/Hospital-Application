@@ -1,0 +1,132 @@
+/* Navbar.css */
+
+/* Navbar container */
+.navbar-custom {
+  z-index: 1100;
+  height: 60px;
+  transition: 0.3s;
+}
+
+/* Sidebar button */
+.navbar-btn {
+  border-radius: 8px;
+  border: 1px solid;
+  cursor: pointer;
+}
+
+/* Logo container */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* Logo icon */
+.navbar-logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background: #00c6ff;
+  color: #000;
+}
+
+/* Center search container */
+/* د سرچ بار لپاره خالص CSS - یوازې د سرچ بار */
+
+/* د سرچ بار کانټینر - ګرد شکل */
+.navbar-search-container {
+  max-width: 420px;
+  width: 100%;
+  border-radius: 50px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  transition: 0.3s;
+}
+
+/* د سرچ انپټ - کیڼ اړخ ګرد */
+.navbar-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 8px 15px;
+  border-radius: 50px 0 0 50px;
+  font-size: 14px;
+}
+
+/* د سرچ تڼۍ - ښي اړخ ګرد */
+.navbar-search-btn {
+  border: none;
+  cursor: pointer;
+  padding: 8px 18px;
+  border-radius: 0 50px 50px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+/* د سرچ تڼۍ هور اغېز */
+.navbar-search-btn:hover {
+  opacity: 0.8;
+}
+
+/* د سرچ انپټ پلیس هولډر رنګ */
+.navbar-search-input::placeholder {
+  color: #999;
+  font-size: 14px;
+}
+
+/* د سرچ انپټ فوکس حالت */
+.navbar-search-input:focus {
+  outline: none;
+}
+
+/* Right-side icons */
+.navbar-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 4px solid;
+  transition: 0.3s;
+}
+
+/* Notification bell */
+.navbar-bell {
+  border: 5px solid;
+}
+
+/* User dropdown */
+.navbar-dropdown {
+  width: 150px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 5px solid;
+}
+
+/* Dropdown content */
+.navbar-dropdown-header {
+  padding: 3px 16px;
+  border-bottom: 3px solid;
+}
+
+.navbar-dropdown-button {
+  width: 100%;
+  text-align: center;
+  padding: 4px 16px;
+  cursor: pointer;
+  color: red;
+  ;
+  border: none;
+  background: transparent;
+}

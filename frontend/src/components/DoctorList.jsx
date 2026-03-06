@@ -103,6 +103,7 @@
 import React, { useState } from "react";
 import AppointmentModal from "../pages/AppointmentModal";
 import { useAppointments } from "../context/AppointmentContext";
+import { useDepartments } from "../context/DepartmentContext";
 import { API_BASE_URL } from "../config";
 
 const Badge = ({ children, bg, className }) => (
@@ -111,6 +112,7 @@ const Badge = ({ children, bg, className }) => (
 
 export default function DoctorList({ doctors }) {
   const { bookAppointment } = useAppointments();
+  const { departments } = useDepartments();
 
   const [showModal, setShowModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -158,9 +160,14 @@ export default function DoctorList({ doctors }) {
                       style={{ objectFit: "cover" }}
                     />
                     <div className="position-absolute bottom-0 start-0 w-100 p-3 bg-gradient-dark text-white text-start">
+                      {doc.department_id && (
+                        <div className="text-uppercase xsmall fw-bold text-light mb-1 opacity-75">
+                          {departments.find(d => Number(d.id) === Number(doc.department_id))?.name}
+                        </div>
+                      )}
                       <Badge
                         bg="primary"
-                        className="rounded-pill px-3 py-2 mb-2"
+                        className="rounded-pill px-3 py-1 mb-2"
                       >
                         {doc.specialization ||
                           doc.specialty ||
@@ -180,12 +187,11 @@ export default function DoctorList({ doctors }) {
                     {/* ===== Buttons Row ===== */}
                     <div className="mt-auto d-flex gap-2 doctor-buttons">
                       <a
-                        href={`https://wa.me/${
-                          (doc.phone || "").replace(/\D/g, "").startsWith("0")
-                            ? "92" +
-                              (doc.phone || "").replace(/\D/g, "").substring(1)
-                            : (doc.phone || "").replace(/\D/g, "")
-                        }`}
+                        href={`https://wa.me/${(doc.phone || "").replace(/\D/g, "").startsWith("0")
+                          ? "92" +
+                          (doc.phone || "").replace(/\D/g, "").substring(1)
+                          : (doc.phone || "").replace(/\D/g, "")
+                          }`}
                         target="_blank"
                         rel="noreferrer"
                         className="btn btn-success rounded-pill flex-grow-1 fw-bold d-flex align-items-center justify-content-center gap-2"

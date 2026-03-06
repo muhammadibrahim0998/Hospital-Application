@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { useDoctors } from "../context/DoctorContext";
 import { useDepartments } from "../context/DepartmentContext";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 import {
   Shield,
   Clock,
@@ -22,11 +23,11 @@ export default function About() {
   // Limiting to show top 3 doctors for the About page feature
   const topDoctors = doctors.slice(0, 3);
 
-  // Stats - using exact requested values for professional display
+  // Stats - dynamically calculating doctor count
   const stats = [
-    { label: "Annual Patients", value: "120,000+", icon: <Users2 className="text-primary mb-2" />, color: "primary" },
-    { label: "Modern Beds", value: "150+", icon: <Building2 className="text-success mb-2" />, color: "success" },
-    { label: "Expert Doctors", value: "37+", icon: <Award className="text-warning mb-2" />, color: "warning" },
+    { label: "Annual Patients", value: "10,000+", icon: <Users2 className="text-primary mb-2" />, color: "primary" },
+    { label: "Modern Beds", value: "100+", icon: <Building2 className="text-success mb-2" />, color: "success" },
+    { label: "Expert Doctors", value: `${doctors.length}+`, icon: <Award className="text-warning mb-2" />, color: "warning" },
     { label: "Emergency Units", value: "24/7", icon: <Clock className="text-danger mb-2" />, color: "danger" },
   ];
 
@@ -196,7 +197,13 @@ export default function About() {
                   <div className="overflow-hidden" style={{ height: "300px" }}>
                     <Card.Img
                       variant="top"
-                      src={doc.image}
+                      src={
+                        doc.image
+                          ? doc.image.startsWith("http")
+                            ? doc.image
+                            : `${API_BASE_URL}${doc.image}`
+                          : "https://img.icons8.com/color/96/doctor-male.png"
+                      }
                       className="img-fluid w-100 h-100 object-fit-cover transition-all"
                       style={{ transition: "transform 0.5s" }}
                     />

@@ -10,18 +10,26 @@ export default function DepartmentDetails() {
   const { departments } = useDepartments();
   const { doctors } = useDoctors();
 
-  const department = departments?.find((d) => d.id === parseInt(id));
+  const department = departments?.find((d) => Number(d.id) === Number(id));
   if (!department)
-    return <p className="text-danger mt-5">Department not found</p>;
+    return (
+      <div className="container mt-5 pt-5 text-center">
+        <p className="text-danger h4">Department not found</p>
+        <Link to="/" className="btn btn-primary mt-3">Back to Home</Link>
+      </div>
+    );
 
-  // Filter doctors for this department
-  const departmentDoctors = doctors.filter(
-    (d) => d.departmentId === department.id,
+  // Filter doctors for this department using robust comparison
+  const departmentDoctors = (doctors || []).filter(
+    (d) => Number(d.department_id) === Number(department.id)
   );
 
   return (
-    <div className="container mt-5">
-      <h2 className="mb-4">{department.name} Doctors</h2>
+    <div className="container mt-5 pt-4">
+      <div className="text-center mb-5">
+        <h2 className="fw-bold text-dark display-5 mb-2">{department.name} Specialists</h2>
+        <p className="text-muted">Expert doctors available in our {department.name} department</p>
+      </div>
 
       {departmentDoctors.length > 0 ? (
         <DoctorList doctors={departmentDoctors} showImages={true} />
