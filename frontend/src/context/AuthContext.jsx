@@ -5,20 +5,23 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true); // true until session is restored
 
   // Map backend roles to the requested storage keys
   const getRoleKey = (role) => {
     const r = role?.toLowerCase();
     if (r === "super_admin") return "superadmin";
     if (r === "hospital_admin") return "hospitaladmin";
-    return r; // doctor, patient
+    return r; // admin, doctor, patient
   };
 
   // Detect which role session should be active based on current URL path
+  // NOTE: /hospital-admin MUST be checked before /admin to avoid prefix collision
   const detectActiveRole = useCallback(() => {
     const path = window.location.pathname.toLowerCase();
     if (path.includes("/super-admin")) return "super_admin";
-    if (path.includes("/hospital-admin")) return "hospital_admin";
+    if (path.includes("/hospital-admin")) return "hospital_admin"; // must be before /admin
+    if (path.includes("/admin")) return "admin";
     if (path.includes("/doctor")) return "doctor";
     if (path.includes("/patient")) return "patient";
     return sessionStorage.getItem("activeRole");
@@ -28,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     const activeRole = detectActiveRole();
     if (!activeRole) {
       // If no path match, check if ANY session exists (first found wins as default)
-      const allRoles = ["super_admin", "hospital_admin", "doctor", "patient"];
+      const allRoles = ["super_admin", "hospital_admin", "admin", "doctor", "patient"];
       const foundRole = allRoles.find(r => localStorage.getItem(`${getRoleKey(r)}_token`));
 
       if (foundRole) {
@@ -36,6 +39,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
         setToken(null);
+        setLoading(false);
       }
       return;
     }
@@ -55,11 +59,14 @@ export const AuthProvider = ({ children }) => {
         sessionStorage.setItem("activeRole", role);
       } catch (e) {
         console.error("Session load error", e);
+        setUser(null);
+        setToken(null);
       }
     } else {
       setUser(null);
       setToken(null);
     }
+    setLoading(false); // session restore complete
   };
 
   const login = (userData, userToken) => {
@@ -84,6 +91,7 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem("activeRole");
     setToken(null);
     setUser(null);
+    setLoading(false);
   };
 
   const hasModule = (moduleName) => {
@@ -105,7 +113,7 @@ export const AuthProvider = ({ children }) => {
   }, [refreshAuth]);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, hasModule }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, hasModule }}>
       {children}
     </AuthContext.Provider>
   );

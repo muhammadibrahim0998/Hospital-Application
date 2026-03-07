@@ -1,10 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useContext } from "react";
 
 import { AppointmentProvider } from "./context/AppointmentContext.jsx";
 import { DoctorProvider } from "./context/DoctorContext.jsx";
 import { DepartmentProvider } from "./context/DepartmentContext.jsx";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { LabProvider } from "./context/LabContext.jsx";
 
 import AddDoctor from "./pages/AddDoctor";
@@ -41,14 +41,63 @@ import RegisterBusiness from "./pages/RegisterBusiness.jsx";
 import CreateRoles from "./pages/CreateRoles.jsx";
 import ViewUsers from "./pages/ViewUsers.jsx";
 
+// ─── Global Auth Guard ────────────────────────────────────────────────────────
+// Single source of truth for authentication.
+// Routes only render AFTER session restore is done — no flash, no race condition.
 function AppContent() {
-  // ✅ Optional: user permission control (can be used in pages)
-  const [userPermissions, setUserPermissions] = useState({
-    viewAppointments: true,
-    bookAppointments: true,
-    requestLabTests: true,
-    viewLabResults: true,
-  });
+  const { user, token, loading } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (loading) return; // wait for session restore
+
+    const PUBLIC_PATHS = ["/login", "/register"];
+    const isPublicPath = PUBLIC_PATHS.includes(location.pathname.toLowerCase());
+    const isRootPath = location.pathname === "/";
+
+    // Not logged in on any protected page → go to login
+    if (!token && !isPublicPath) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    // Logged in but on login / register / root → go to own dashboard
+    if (token && user && (isPublicPath || isRootPath)) {
+      const role = user.role?.toLowerCase();
+      if (role === "super_admin") navigate("/super-admin/dashboard", { replace: true });
+      else if (role === "hospital_admin") navigate("/hospital-admin/dashboard", { replace: true });
+      else if (role === "admin") navigate("/admin/dashboard", { replace: true });
+      else if (role === "doctor") navigate("/doctor/dashboard", { replace: true });
+      else navigate("/patient/dashboard", { replace: true });
+    }
+  }, [loading, token, user, location.pathname, navigate]);
+
+  // ── Show spinner while session is being restored ──────────────────────────
+  // Routes are NOT rendered until loading is done — prevents any page flash.
+  if (loading) {
+    return (
+      <div style={{
+        height: "100vh", display: "flex", alignItems: "center",
+        justifyContent: "center", background: "#0f1128",
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{
+            width: "48px", height: "48px", borderRadius: "50%",
+            border: "4px solid rgba(102,126,234,0.3)",
+            borderTop: "4px solid #667eea",
+            animation: "spin 0.8s linear infinite",
+            margin: "0 auto 1rem",
+          }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.9rem", margin: 0 }}>
+            Verifying session…
+          </p>
+        </div>
+      </div>
+    );
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <Routes>
@@ -87,7 +136,7 @@ function AppContent() {
           <Route path="create-roles" element={<CreateRoles />} />
           <Route path="edit-roles" element={<CreateRoles />} />
           <Route path="register-business" element={<RegisterBusiness />} />
-          <Route path="view-businesses" element={<SuperAdminDashboard />} /> {/* Fallback to dashboard */}
+          <Route path="view-businesses" element={<SuperAdminDashboard />} />
           <Route path="view-users" element={<ViewUsers />} />
         </Route>
       </Route>
@@ -101,54 +150,26 @@ function AppContent() {
 
       {/* Legacy Admin */}
       <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
-        <Route
-          path="/admin/dashboard"
-          element={
-            <Layout>
-              <AdminDashboard />
-            </Layout>
-          }
-        />
+        <Route path="/admin/dashboard" element={<Layout><AdminDashboard /></Layout>} />
       </Route>
 
       <Route element={<PrivateRoute allowedRoles={["doctor"]} />}>
-        <Route
-          path="/doctor/dashboard"
-          element={
-            <Layout>
-              <DoctorDashboard />
-            </Layout>
-          }
-        />
+        <Route path="/doctor/dashboard" element={<Layout><DoctorDashboard /></Layout>} />
       </Route>
 
       <Route element={<PrivateRoute allowedRoles={["patient"]} />}>
-        <Route
-          path="/patient/dashboard"
-          element={
-            <Layout>
-              <PatientDashboard />
-            </Layout>
-          }
-        />
+        <Route path="/patient/dashboard" element={<Layout><PatientDashboard /></Layout>} />
       </Route>
 
       {/* Chat Route */}
-      <Route
-        element={<PrivateRoute allowedRoles={["patient", "doctor", "admin"]} />}
-      >
-        <Route
-          path="/chat/:userId"
-          element={
-            <Layout>
-              <Chat />
-            </Layout>
-          }
-        />
+      <Route element={<PrivateRoute allowedRoles={["patient", "doctor", "admin"]} />}>
+        <Route path="/chat/:userId" element={<Layout><Chat /></Layout>} />
       </Route>
     </Routes>
   );
 }
+// ─────────────────────────────────────────────────────────────────────────────
+
 
 function App() {
   return (

@@ -26,6 +26,8 @@ const Login = () => {
         navigate("/super-admin/dashboard");
       } else if (role === "hospital_admin") {
         navigate("/hospital-admin/dashboard");
+      } else if (role === "admin") {
+        navigate("/admin/dashboard");
       } else if (role === "doctor") {
         navigate("/doctor/dashboard");
       } else if (role === "patient") {

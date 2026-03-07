@@ -13,8 +13,11 @@ import { AuthContext } from "../context/AuthContext";
  *   admin / doctor / patient — standard behaviour.
  */
 const PrivateRoute = ({ allowedRoles }) => {
-  const { user, token } = useContext(AuthContext);
+  const { user, token, loading } = useContext(AuthContext);
   const location = useLocation();
+
+  // Wait for session restore before making any auth decisions
+  if (loading) return null;
 
   // Not logged in → redirect to login
   if (!token || !user) {
@@ -30,7 +33,7 @@ const PrivateRoute = ({ allowedRoles }) => {
   if (allowedRoles) {
     const allowed = allowedRoles.map((r) => r.toLowerCase());
     if (!allowed.includes(role)) {
-      // Redirect to their correct dashboard instead of login
+      // Redirect each role back to their own dashboard
       if (role === "hospital_admin") return <Navigate to="/hospital-admin/dashboard" replace />;
       if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
       if (role === "doctor") return <Navigate to="/doctor/dashboard" replace />;
