@@ -148,22 +148,32 @@ function AppContent() {
         </Route>
       </Route>
 
-      {/* Legacy Admin */}
+      {/* Admin Dashboard */}
       <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
-        <Route path="/admin/dashboard" element={<Layout><AdminDashboard /></Layout>} />
+        <Route path="/admin" element={<Layout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+        </Route>
       </Route>
 
+      {/* Doctor Dashboard */}
       <Route element={<PrivateRoute allowedRoles={["doctor"]} />}>
-        <Route path="/doctor/dashboard" element={<Layout><DoctorDashboard /></Layout>} />
+        <Route path="/doctor" element={<Layout />}>
+          <Route path="dashboard" element={<DoctorDashboard />} />
+        </Route>
       </Route>
 
+      {/* Patient Dashboard */}
       <Route element={<PrivateRoute allowedRoles={["patient"]} />}>
-        <Route path="/patient/dashboard" element={<Layout><PatientDashboard /></Layout>} />
+        <Route path="/patient" element={<Layout />}>
+          <Route path="dashboard" element={<PatientDashboard />} />
+        </Route>
       </Route>
 
       {/* Chat Route */}
       <Route element={<PrivateRoute allowedRoles={["patient", "doctor", "admin"]} />}>
-        <Route path="/chat/:userId" element={<Layout><Chat /></Layout>} />
+        <Route path="/chat" element={<Layout />}>
+          <Route path=":userId" element={<Chat />} />
+        </Route>
       </Route>
     </Routes>
   );

@@ -79,6 +79,7 @@ export const AuthProvider = ({ children }) => {
 
     setToken(userToken);
     setUser(userData);
+    setLoading(false); // session is live — stop spinner, allow routes to render
   };
 
   const logout = () => {
