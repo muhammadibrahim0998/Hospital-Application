@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useContext } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useContext } from "react";
 
 import { AppointmentProvider } from "./context/AppointmentContext.jsx";
 import { DoctorProvider } from "./context/DoctorContext.jsx";
@@ -41,40 +41,25 @@ import RegisterBusiness from "./pages/RegisterBusiness.jsx";
 import CreateRoles from "./pages/CreateRoles.jsx";
 import ViewUsers from "./pages/ViewUsers.jsx";
 
+// ─── Helper: map a role to its home dashboard path ───────────────────────────
+function getDashboardPath(role) {
+  const r = role?.toLowerCase();
+  if (r === "super_admin") return "/super-admin/dashboard";
+  if (r === "hospital_admin") return "/hospital-admin/dashboard";
+  if (r === "admin") return "/admin/dashboard";
+  if (r === "doctor") return "/doctor/dashboard";
+  return "/patient/dashboard";
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ─── Global Auth Guard ────────────────────────────────────────────────────────
-// Single source of truth for authentication.
-// Routes only render AFTER session restore is done — no flash, no race condition.
+// All decisions are made at RENDER TIME (no useEffect, no flash).
+// Routes are only mounted after session restore completes.
 function AppContent() {
   const { user, token, loading } = useContext(AuthContext);
-  const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    if (loading) return; // wait for session restore
-
-    const PUBLIC_PATHS = ["/login", "/register"];
-    const isPublicPath = PUBLIC_PATHS.includes(location.pathname.toLowerCase());
-    const isRootPath = location.pathname === "/";
-
-    // Not logged in on any protected page → go to login
-    if (!token && !isPublicPath) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
-    // Logged in but on login / register / root → go to own dashboard
-    if (token && user && (isPublicPath || isRootPath)) {
-      const role = user.role?.toLowerCase();
-      if (role === "super_admin") navigate("/super-admin/dashboard", { replace: true });
-      else if (role === "hospital_admin") navigate("/hospital-admin/dashboard", { replace: true });
-      else if (role === "admin") navigate("/admin/dashboard", { replace: true });
-      else if (role === "doctor") navigate("/doctor/dashboard", { replace: true });
-      else navigate("/patient/dashboard", { replace: true });
-    }
-  }, [loading, token, user, location.pathname, navigate]);
-
   // ── Show spinner while session is being restored ──────────────────────────
-  // Routes are NOT rendered until loading is done — prevents any page flash.
   if (loading) {
     return (
       <div style={{
@@ -96,6 +81,19 @@ function AppContent() {
         </div>
       </div>
     );
+  }
+
+  const PUBLIC_PATHS = ["/login", "/register"];
+  const isPublicPath = PUBLIC_PATHS.includes(location.pathname.toLowerCase());
+
+  // Not logged in + trying to access any non-public page → go to login
+  if (!token && !isPublicPath) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  // Logged in + on a public page or bare root → go to own dashboard
+  if (token && user && (isPublicPath || location.pathname === "/")) {
+    return <Navigate to={getDashboardPath(user.role)} replace />;
   }
   // ─────────────────────────────────────────────────────────────────────────
 
