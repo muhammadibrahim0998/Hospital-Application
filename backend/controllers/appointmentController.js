@@ -3,7 +3,8 @@ import {
   createAppointment,
   deleteAppointment,
   getDoctorAppointments,
-  getPatientAppointments
+  getPatientAppointments,
+  updateAppointment
 } from "../models/AppointmentModel.js";
 import { getDoctorByUserId } from "../models/DoctorModel.js";
 
@@ -42,6 +43,15 @@ export const removeAppointment = async (req, res) => {
   try {
     await deleteAppointment(req.params.id);
     res.json({ message: "Deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const editAppointment = async (req, res) => {
+  try {
+    await updateAppointment(req.params.id, req.body);
+    res.json({ message: "Updated successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

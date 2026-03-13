@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config";
 import "../css/DoctorDashboard.css";
 import {
@@ -12,15 +12,21 @@ import {
     ShieldCheck,
     ClipboardCheck,
     UserX,
-    Camera,
+    Plus,
     CheckCircle,
     Clock,
-    FileText
+    FileText,
+    Eye,
+    Edit,
+    Trash2,
+    Phone,
+    Camera
 } from "lucide-react";
 import { Modal, Form, Row, Col, Badge, Card, Button as BootstrapButton } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
 
 const DoctorDashboard = () => {
+    const navigate = useNavigate();
     const [appointments, setAppointments] = useState([]);
     const [labReports, setLabReports] = useState([]);
     const [profile, setProfile] = useState({});
@@ -34,6 +40,16 @@ const DoctorDashboard = () => {
         fee: "",
         whatsappNumber: "",
         imageFile: null
+    });
+
+    // Modals
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedApp, setSelectedApp] = useState(null);
+    const [editFormData, setEditFormData] = useState({
+        Date: "",
+        Time: "",
+        status: ""
     });
 
     const { token } = useContext(AuthContext);
@@ -80,6 +96,7 @@ const DoctorDashboard = () => {
     };
 
     const handleProfileUpdate = async (e) => {
+        // ... (existing code, I'll keep it simple)
         e.preventDefault();
         const formData = new FormData();
         formData.append("specialization", editingProfile.specialization);
@@ -104,6 +121,49 @@ const DoctorDashboard = () => {
         }
     };
 
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this appointment?")) return;
+        try {
+            await axios.delete(`${API_BASE_URL}/api/appointments/${id}`, { headers });
+            fetchData();
+        } catch (err) {
+            alert("Error deleting appointment");
+        }
+    };
+
+    const handleEditClick = (app) => {
+        if (!app) return;
+        setSelectedApp(app);
+        const appDate = app.Date || app.appointment_date || new Date().toISOString();
+        setEditFormData({
+            Date: appDate.split('T')[0],
+            Time: app.Time || "10:00",
+            status: app.status || "scheduled"
+        });
+        setShowEditModal(true);
+    };
+
+    const handleUpdateAppointment = async (e) => {
+        if (e) e.preventDefault();
+        if (!selectedApp || !selectedApp.id) {
+            alert("No appointment selected");
+            return;
+        }
+        try {
+            await axios.put(`${API_BASE_URL}/api/appointments/${selectedApp.id}`, editFormData, { headers });
+            setShowEditModal(false);
+            fetchData();
+        } catch (err) {
+            console.error("Update error:", err);
+            alert("Error updating appointment");
+        }
+    };
+
+    const handleViewClick = (app) => {
+        setSelectedApp(app);
+        setShowViewModal(true);
+    };
+
     return (
         <div className="container-fluid py-4 px-md-5 bg-light min-vh-100">
             {/* Top Bar / Welcome */}
@@ -125,9 +185,20 @@ const DoctorDashboard = () => {
                         </div>
                     </div>
                 </div>
-                <BootstrapButton variant="outline-primary" className="rounded-pill px-4 py-2 d-flex align-items-center fw-bold" onClick={() => setShowProfileModal(true)}>
-                    <Settings size={18} className="me-2" /> Manage Profile
-                </BootstrapButton>
+                <div className="d-flex align-items-center gap-2 flex-wrap">
+                    <BootstrapButton variant="outline-primary" size="sm" className="rounded-pill px-3 fw-bold shadow-sm" onClick={() => navigate("/doctor-lab")}>
+                        <FlaskConical size={16} className="me-1" /> Lab Panel
+                    </BootstrapButton>
+                    <BootstrapButton variant="outline-info" size="sm" className="rounded-pill px-3 fw-bold shadow-sm" onClick={() => navigate("/laboratory-panel")}>
+                        <ClipboardCheck size={16} className="me-1" /> Laboratory Panel
+                    </BootstrapButton>
+                    <BootstrapButton variant="outline-success" size="sm" className="rounded-pill px-3 fw-bold shadow-sm" onClick={() => navigate("/lab-results")}>
+                        <FileText size={16} className="me-1" /> Lab Results
+                    </BootstrapButton>
+                    <BootstrapButton variant="outline-secondary" size="sm" className="rounded-pill px-3 fw-bold shadow-sm" onClick={() => setShowProfileModal(true)}>
+                        <Settings size={16} className="me-1" /> Profile
+                    </BootstrapButton>
+                </div>
             </div>
 
             <div className="row g-4 mb-5">
@@ -144,13 +215,13 @@ const DoctorDashboard = () => {
                         </Card.Header>
                         <Card.Body className="p-0">
                             <div className="table-responsive" style={{ maxHeight: "350px", overflowY: "auto" }}>
-                                <table className="table table-hover align-middle mb-0 custom-table">
-                                    <thead className="bg-light text-muted small text-uppercase fw-bold" style={{ position: "sticky", top: 0, zIndex: 1 }}>
-                                        <tr>
-                                            <th className="px-4 py-3">Patient</th>
-                                            <th className="py-3">Date & Time</th>
-                                            <th className="py-3">Status</th>
-                                            <th className="py-3 text-end px-4">Actions</th>
+                                <table className="table table-hover align-middle mb-0 custom-table bg-white table-sm">
+                                    <thead className="bg-light border-bottom border-light">
+                                        <tr className="text-muted text-uppercase fw-bold tracking-wider" style={{ fontSize: '11px' }}>
+                                            <th className="px-4 py-3 border-0">Patient Info</th>
+                                            <th className="py-2 border-0">Schedule</th>
+                                            <th className="py-2 border-0">Status</th>
+                                            <th className="py-2 border-0 text-end px-4">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -160,40 +231,109 @@ const DoctorDashboard = () => {
                                             </tr>
                                         ) : (
                                             appointments.map((app) => (
-                                                <tr key={app.id}>
-                                                    <td className="px-4 py-3">
-                                                        <div className="fw-bold text-dark">{app.Patient || app.patient_name}</div>
-                                                        <div className="small text-muted">ID: #{app.patient_id || 'N/A'}</div>
-                                                    </td>
-                                                    <td className="py-3">
-                                                        <div className="d-flex align-items-center text-muted small">
-                                                            <Clock size={14} className="me-1" />
-                                                            {new Date(app.Date || app.appointment_date).toLocaleString()}
+                                                <tr key={app.id} className="border-bottom border-light">
+                                                    <td className="px-4 py-2">
+                                                        <div className="fw-bold text-dark" style={{ fontSize: '14px' }}>{app.Patient || app.patient_name}</div>
+                                                        <div className="d-flex align-items-center gap-1 mt-n1">
+                                                            <Badge bg="secondary" className="bg-opacity-10 text-secondary border-0 fw-normal" style={{ fontSize: '10px' }}>
+                                                                ID: {app.patient_id || 'N/A'}
+                                                            </Badge>
                                                         </div>
                                                     </td>
-                                                    <td className="py-3">
+                                                    <td className="py-2">
+                                                        <div className="d-flex flex-column" style={{ fontSize: '12px' }}>
+                                                            <div className="d-flex align-items-center text-dark fw-medium">
+                                                                <Calendar size={12} className="me-2 text-primary" />
+                                                                {app.Date ? app.Date.split('T')[0] : 'No Date'}
+                                                            </div>
+                                                            <div className="d-flex align-items-center text-muted">
+                                                                <Clock size={12} className="me-2" />
+                                                                {app.Time || 'No Time'}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-2">
                                                         <Badge
                                                             bg={app.status === 'completed' ? 'success' : app.status === 'cancelled' ? 'danger' : 'warning'}
-                                                            className="rounded-pill px-3 py-2 fw-medium opacity-75"
+                                                            className="rounded-pill px-2 py-1 fw-medium opacity-75"
+                                                            style={{ fontSize: '10px' }}
                                                         >
                                                             {app.status?.toUpperCase()}
                                                         </Badge>
                                                     </td>
-                                                    <td className="py-3 text-end px-4">
-                                                        <div className="d-flex justify-content-end gap-2">
+                                                    <td className="py-2 text-end px-4">
+                                                        <div className="d-flex justify-content-end gap-1">
+                                                            {/* Lab Button */}
                                                             {app.status === 'scheduled' && (
-                                                                <>
-                                                                    <BootstrapButton variant="success" size="sm" className="rounded-circle p-2 shadow-sm border-0" onClick={() => handleStatusUpdate(app.id, 'completed')}>
-                                                                        <CheckCircle size={16} />
-                                                                    </BootstrapButton>
-                                                                    <BootstrapButton variant="danger" size="sm" className="rounded-circle p-2 shadow-sm border-0" onClick={() => handleStatusUpdate(app.id, 'cancelled')}>
-                                                                        <UserX size={16} />
-                                                                    </BootstrapButton>
-                                                                </>
+                                                                <BootstrapButton 
+                                                                    variant="info" 
+                                                                    size="sm" 
+                                                                    className="rounded-circle p-1 shadow-sm border-0 text-white action-btn" 
+                                                                    title="Open Lab"
+                                                                    style={{ width: '28px', height: '28px' }}
+                                                                    onClick={() => navigate("/doctor-lab", { 
+                                                                        state: { 
+                                                                            patient_id: app.patient_id, 
+                                                                            patient_name: app.Patient || app.patient_name,
+                                                                            appointment_id: app.id,
+                                                                            doctor_name: profile.name,
+                                                                            appointment_date: (app.Date || app.appointment_date || "").split('T')[0]
+                                                                        } 
+                                                                    })}
+                                                                >
+                                                                    <FlaskConical size={14} />
+                                                                </BootstrapButton>
                                                             )}
-                                                            <Link to={`/chat/${app.patient_id}`} className="btn btn-primary btn-sm rounded-circle p-2 shadow-sm border-0">
-                                                                <MessageSquare size={16} />
-                                                            </Link>
+                                                            
+                                                            {/* WhatsApp Button */}
+                                                            {(app.Phone || app.PatientPhone) && (
+                                                                <a 
+                                                                    href={`https://wa.me/${(app.Phone || app.PatientPhone).replace(/[^0-9]/g, '')}`} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                    className="btn btn-success btn-sm rounded-circle p-1 shadow-sm border-0 action-btn"
+                                                                    title="WhatsApp"
+                                                                    style={{ width: '28px', height: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                >
+                                                                    <Phone size={14} />
+                                                                </a>
+                                                            )}
+
+                                                            {/* View Button */}
+                                                            <BootstrapButton 
+                                                                variant="secondary" 
+                                                                size="sm" 
+                                                                className="rounded-circle p-1 shadow-sm border-0 text-white action-btn"
+                                                                title="View Details"
+                                                                style={{ width: '28px', height: '28px' }}
+                                                                onClick={() => handleViewClick(app)}
+                                                            >
+                                                                <Eye size={14} />
+                                                            </BootstrapButton>
+
+                                                            {/* Edit Button */}
+                                                            <BootstrapButton 
+                                                                variant="warning" 
+                                                                size="sm" 
+                                                                className="rounded-circle p-1 shadow-sm border-0 text-white action-btn"
+                                                                title="Edit"
+                                                                style={{ width: '28px', height: '28px' }}
+                                                                onClick={() => handleEditClick(app)}
+                                                            >
+                                                                <Edit size={14} />
+                                                            </BootstrapButton>
+
+                                                            {/* Delete Button */}
+                                                            <BootstrapButton 
+                                                                variant="danger" 
+                                                                size="sm" 
+                                                                className="rounded-circle p-1 shadow-sm border-0 text-white action-btn"
+                                                                title="Delete"
+                                                                style={{ width: '28px', height: '28px' }}
+                                                                onClick={() => handleDelete(app.id)}
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </BootstrapButton>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -206,7 +346,7 @@ const DoctorDashboard = () => {
                     </Card>
 
                     {/* Lab Results & Reports Section */}
-                    <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
+                    <Card id="lab-reports-section" className="border-0 shadow-sm rounded-4 overflow-hidden">
                         <Card.Header className="bg-white border-0 p-4 d-flex justify-content-between align-items-center">
                             <h5 className="fw-bold mb-0 d-flex align-items-center">
                                 <FileText className="text-primary me-2" size={20} /> Lab Results & Reports
@@ -256,41 +396,35 @@ const DoctorDashboard = () => {
 
                 {/* Profile Widget Side */}
                 <div className="col-lg-4">
-                    <Card className="border-0 shadow-sm rounded-4 bg-primary text-white p-2 mb-4">
-                        <Card.Body className="p-4">
-                            <div className="bg-white bg-opacity-25 rounded-3 p-3 mb-3 d-inline-block">
-                                <FlaskConical size={24} />
+                    <Card className="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                        <Card.Body className="p-0">
+                            <div className="bg-primary p-4 text-white text-center">
+                                <div className="bg-white bg-opacity-25 rounded-circle p-3 d-inline-block mb-3">
+                                    <User size={32} />
+                                </div>
+                                <h5 className="fw-bold mb-0">Professional Summary</h5>
                             </div>
-                            <h4 className="fw-bold mb-2">Clinical Diagnostics</h4>
-                            <p className="small mb-4 opacity-75">Access lab panels, diagnostic tools, and medication systems for your patients.</p>
-                            <Link to="/doctor-lab" className="btn btn-white text-primary fw-bold rounded-pill px-4 w-100 shadow-sm">
-                                Open Lab Panel
-                            </Link>
-                        </Card.Body>
-                    </Card>
-
-                    <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
-                        <Card.Body className="p-4">
-                            <h6 className="text-uppercase fw-bold text-muted small mb-4 tracking-wider">Professional Profile</h6>
-                            <div className="mb-3">
-                                <label className="text-muted small mb-1">Email Address</label>
-                                <div className="fw-bold">{profile.email || "N/A"}</div>
-                            </div>
-                            <div className="mb-3">
-                                <label className="text-muted small mb-1">Consultation Contact</label>
-                                <div className="fw-bold">{profile.phone || "N/A"}</div>
-                            </div>
-                            <div className="mb-3">
-                                <label className="text-muted small mb-1">WhatsApp Number</label>
-                                <div className="fw-bold">{profile.whatsapp_number || "N/A"}</div>
-                            </div>
-                            <div className="mb-3">
-                                <label className="text-muted small mb-1">Consultation Fee</label>
-                                <div className="fw-bold text-primary">Rs. {profile.fee || "500"}</div>
-                            </div>
-                            <div className="mb-0">
-                                <label className="text-muted small mb-1">Office Details</label>
-                                <div className="fw-bold">{profile.contact_info || "Hospital OPD"}</div>
+                            <div className="p-4">
+                                <div className="mb-4">
+                                    <label className="text-muted small mb-1 text-uppercase fw-bold">Email Address</label>
+                                    <div className="fw-bold text-dark">{profile.email || "N/A"}</div>
+                                </div>
+                                <div className="mb-4">
+                                    <label className="text-muted small mb-1 text-uppercase fw-bold">Consultation Contact</label>
+                                    <div className="fw-bold text-dark">{profile.phone || "N/A"}</div>
+                                </div>
+                                <div className="mb-4">
+                                    <label className="text-muted small mb-1 text-uppercase fw-bold">WhatsApp Number</label>
+                                    <div className="fw-bold text-dark">{profile.whatsapp_number || "N/A"}</div>
+                                </div>
+                                <div className="mb-4">
+                                    <label className="text-muted small mb-1 text-uppercase fw-bold">Consultation Fee</label>
+                                    <div className="fw-bold text-primary h5 mb-0">Rs. {profile.fee || "500"}</div>
+                                </div>
+                                <div className="mb-0">
+                                    <label className="text-muted small mb-1 text-uppercase fw-bold">Office Details</label>
+                                    <div className="fw-bold text-dark">{profile.contact_info || "Hospital OPD"}</div>
+                                </div>
                             </div>
                         </Card.Body>
                     </Card>
@@ -352,13 +486,108 @@ const DoctorDashboard = () => {
                     </Form>
                 </Modal.Body>
             </Modal>
+ 
+            {/* View Appointment Modal */}
+            <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered size="sm">
+                <Modal.Header closeButton className="border-0 bg-secondary text-white p-3">
+                    <Modal.Title className="fw-bold h6 mb-0"><Eye className="me-2" size={18} /> Appointment Details</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-3">
+                    {selectedApp && (
+                        <div className="d-flex flex-column gap-2">
+                            <div className="bg-light p-2 rounded-2">
+                                <label className="text-muted fw-bold mb-0" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Patient Name</label>
+                                <div className="fw-bold text-dark">{selectedApp.Patient || selectedApp.patient_name}</div>
+                            </div>
+                            <div className="row g-2">
+                                <div className="col-6">
+                                    <div className="bg-light p-2 rounded-2">
+                                        <label className="text-muted fw-bold mb-0" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Date</label>
+                                        <div className="fw-medium text-dark small">{selectedApp.Date ? selectedApp.Date.split('T')[0] : 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div className="col-6">
+                                    <div className="bg-light p-2 rounded-2">
+                                        <label className="text-muted fw-bold mb-0" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Time</label>
+                                        <div className="fw-medium text-dark small">{selectedApp.Time}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-light p-2 rounded-2">
+                                <label className="text-muted fw-bold mb-0" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Contact Info</label>
+                                <div className="fw-medium text-primary small">{selectedApp.Phone || selectedApp.PatientPhone || "N/A"}</div>
+                            </div>
+                            <div className="d-flex justify-content-between align-items-center bg-light p-2 rounded-2">
+                                <div>
+                                    <label className="text-muted fw-bold mb-0 d-block" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Status</label>
+                                    <Badge bg={selectedApp.status === 'completed' ? 'success' : 'warning'} className="rounded-pill px-2 py-1 fw-normal" style={{ fontSize: '9px' }}>
+                                        {selectedApp.status?.toUpperCase()}
+                                    </Badge>
+                                </div>
+                                <div className="text-end">
+                                    <label className="text-muted fw-bold mb-0 d-block" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Fee</label>
+                                    <div className="fw-bold text-success h6 mb-0">Rs. {selectedApp.Fee || "0"}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </Modal.Body>
+            </Modal>
+
+            {/* Edit Appointment Modal */}
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+                <Modal.Header closeButton className="border-0 bg-warning text-dark p-4">
+                    <Modal.Title className="fw-bold"><Edit className="me-2" /> Edit Appointment</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-4 bg-light">
+                    <Form onSubmit={handleUpdateAppointment}>
+                        <div className="mb-3">
+                            <Form.Label className="small fw-bold text-muted text-uppercase">Appointment Date</Form.Label>
+                            <Form.Control 
+                                type="date" 
+                                className="border-0 shadow-sm" 
+                                value={editFormData.Date} 
+                                onChange={e => setEditFormData({...editFormData, Date: e.target.value})}
+                                required 
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <Form.Label className="small fw-bold text-muted text-uppercase">Appointment Time</Form.Label>
+                            <Form.Control 
+                                type="time" 
+                                className="border-0 shadow-sm" 
+                                value={editFormData.Time} 
+                                onChange={e => setEditFormData({...editFormData, Time: e.target.value})}
+                                required 
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <Form.Label className="small fw-bold text-muted text-uppercase">Status</Form.Label>
+                            <Form.Select 
+                                className="border-0 shadow-sm" 
+                                value={editFormData.status} 
+                                onChange={e => setEditFormData({...editFormData, status: e.target.value})}
+                            >
+                                <option value="scheduled">Scheduled</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </Form.Select>
+                        </div>
+                        <BootstrapButton type="submit" variant="warning" className="w-100 py-3 rounded-pill fw-bold shadow-sm">
+                            UPDATE APPOINTMENT
+                        </BootstrapButton>
+                    </Form>
+                </Modal.Body>
+            </Modal>
 
             <style>{`
                 .custom-table tr { transition: all 0.2s ease; cursor: default; }
-                .custom-table tr:hover { background-color: rgba(0, 0, 0, 0.01) !important; }
+                .custom-table tr:hover { background-color: rgba(0, 0, 0, 0.02) !important; }
                 .btn-white { background-color: white !important; }
                 .btn-white:hover { background-color: #f8f9fa !important; }
                 .mb-n2 { margin-bottom: -0.5rem; }
+                .action-btn { transition: all 0.2s ease; }
+                .action-btn:hover { transform: scale(1.1); }
             `}</style>
         </div>
     );

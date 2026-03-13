@@ -1,13 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useLab } from "../context/LabContext";
+import { AuthContext } from "../context/AuthContext";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 export default function LabResults() {
+  const { user } = useContext(AuthContext);
   const { tests } = useLab();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const completedTests = tests.filter((t) => t.status === "done" && t.result);
+  const completedTests = tests.filter((t) => {
+    const isDone = t.status === "done" && t.result;
+    if (!isDone) return false;
+
+    // If patient, only show their own results
+    if (user?.role?.toLowerCase() === "patient") {
+      return String(t.patient_id) === String(user.user_id) || (t.cnic && t.cnic === user.cnic);
+    }
+    
+    // Doctors/Admins see all
+    return true;
+  });
 
   const filteredResults = completedTests.filter(t =>
     t.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||

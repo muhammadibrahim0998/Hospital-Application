@@ -292,7 +292,7 @@ export default function Layout() {
                     {(role === "doctor" || role === "admin") && (
                       <>
                         <div style={sectionLabel}>Doctor Tools</div>
-                        <Link to="/doctor-lab" onClick={handleLinkClick} style={linkStyle("/doctor-lab")}>
+                        <Link to="/doctor-lab" state={{ doctor_name: user?.name }} onClick={handleLinkClick} style={linkStyle("/doctor-lab")}>
                           <FaFlask style={{ ...iconStyle, color: "#17a2b8" }} />
                           Laboratory Services
                         </Link>

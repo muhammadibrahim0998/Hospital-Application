@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useContext } from "react";
-=======
 import {
   BrowserRouter as Router,
   Routes,
@@ -11,7 +7,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useEffect, useContext } from "react";
->>>>>>> 79a45baaace354c2876132f5d7e493e34370972d
 
 import { AppointmentProvider } from "./context/AppointmentContext.jsx";
 import { DoctorProvider } from "./context/DoctorContext.jsx";
@@ -69,10 +64,9 @@ function getDashboardPath(role) {
 // Routes are only mounted after session restore completes.
 function AppContent() {
   const { user, token, loading } = useContext(AuthContext);
+  const navigate = useNavigate();
   const location = useLocation();
 
-<<<<<<< HEAD
-=======
   useEffect(() => {
     if (loading) return; // wait for session restore
 
@@ -80,31 +74,15 @@ function AppContent() {
     const isPublicPath = PUBLIC_PATHS.includes(location.pathname.toLowerCase());
     const isRootPath = location.pathname === "/";
 
-    // --------------------------------------------------------------
-    // Unauthenticated visitors should always land on the login page.
-    //
-    // * opening a fresh tab (root or deep link) when there is no
-    //   token in storage should never render a protected component
-    //   first.  The previous implementation only redirected if the
-    //   path wasn't public, which is fine, but the root route itself
-    //   rendered <Home /> briefly before the effect ran.  This
-    //   version makes the intent explicit and guards the root path
-    //   as well.
-    // --------------------------------------------------------------
     if (!token) {
-      if (!isPublicPath) {
+      if (!isPublicPath && !isRootPath) { // allow root path (home)
         navigate("/login", { replace: true });
         return;
       }
-      // if we're already on /login or /register we can stay there.
     }
 
-    // --------------------------------------------------------------
-    // If the user *is* authenticated and they are currently sitting on
-    // a public route (login/register) or the root path, send them to
-    // their role-specific dashboard.
-    // --------------------------------------------------------------
-    if (token && user && (isPublicPath || isRootPath)) {
+    // Role-based redirection from login/register
+    if (token && user && isPublicPath) {
       const role = user.role?.toLowerCase();
       if (role === "super_admin")
         navigate("/super-admin/dashboard", { replace: true });
@@ -117,8 +95,6 @@ function AppContent() {
       else navigate("/patient/dashboard", { replace: true });
     }
   }, [loading, token, user, location.pathname, navigate]);
-
->>>>>>> 79a45baaace354c2876132f5d7e493e34370972d
   // ── Show spinner while session is being restored ──────────────────────────
   if (loading) {
     return (
@@ -174,17 +150,10 @@ function AppContent() {
 
   return (
     <Routes>
-      {/* root path: decide based on auth state, avoids flashing home while effect runs */}
-      <Route
-        path="/"
-        element={
-          token ? (
-            <Navigate to={`/${user?.role?.toLowerCase()}/dashboard`} replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+      {/* root path: now shows Home to everyone */}
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />
+      </Route>
 
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
@@ -193,15 +162,11 @@ function AppContent() {
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="doctors" element={<Doctors />} />
           <Route path="find-doctor" element={<Doctors />} />
           <Route path="doctor/:id" element={<DoctorProfile />} />
-          <Route path="doctor-lab" element={<LaboratoryServices />} />
-          <Route path="lab-results" element={<LabResults />} />
-          <Route path="laboratory-panel" element={<LaboratoryPanel />} />
           <Route path="/admin/add-doctor" element={<AddDoctor />} />
           <Route path="department/:id" element={<DepartmentDetails />} />
           <Route path="field/:id" element={<FieldDetails />} />
@@ -245,12 +210,24 @@ function AppContent() {
         <Route path="/doctor" element={<Layout />}>
           <Route path="dashboard" element={<DoctorDashboard />} />
         </Route>
+        <Route path="/" element={<Layout />}>
+          <Route path="doctor-lab" element={<LaboratoryServices />} />
+          <Route path="laboratory-panel" element={<LaboratoryPanel />} />
+        </Route>
       </Route>
 
       {/* Patient Dashboard */}
       <Route element={<PrivateRoute allowedRoles={["patient"]} />}>
         <Route path="/patient" element={<Layout />}>
           <Route path="dashboard" element={<PatientDashboard />} />
+          <Route path="lab-results" element={<LabResults />} />
+        </Route>
+      </Route>
+
+      {/* Shared Lab Results for Doctors & Patients (if doctor wants to see them via direct link) */}
+      <Route element={<PrivateRoute allowedRoles={["doctor", "patient"]} />}>
+        <Route path="/" element={<Layout />}>
+          <Route path="lab-results" element={<LabResults />} />
         </Route>
       </Route>
 

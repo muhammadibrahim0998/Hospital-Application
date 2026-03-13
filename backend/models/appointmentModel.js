@@ -34,7 +34,12 @@ export const updateAppointmentStatus = async (id, status) => {
   return await db.query(sql, [status, id]);
 };
 
-// Delete appointment
+// Update appointment (full)
+export const updateAppointment = async (id, data) => {
+  const { Date, Time, status } = data;
+  const sql = "UPDATE appointments SET Date = ?, Time = ?, status = ? WHERE id = ?";
+  return await db.query(sql, [Date, Time, status, id]);
+};
 export const deleteAppointment = async (id) => {
   const sql = "DELETE FROM appointments WHERE id = ?";
   return await db.query(sql, [id]);

@@ -19,19 +19,16 @@ import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
-/*
-  Protect all admin routes.
-  Allow both "admin" (legacy), "hospital_admin", and "super_admin" (bypasses via authorizeRoles).
-*/
-router.use(verifyToken, authorizeRoles("admin", "hospital_admin"));
+// General verification for all routes
+router.use(verifyToken);
 
 /*
-  Doctor CRUD — scoped per hospital
+  Doctor CRUD — scoped per hospital. restricted to admins.
 */
-router.post("/doctors", upload.single("image"), addDoctor);
-router.put("/doctors/:id", upload.single("image"), editDoctor);
-router.delete("/doctors/:id", removeDoctor);
-router.put("/doctors/:id/status", toggleDoctorStatus);
+router.post("/doctors", authorizeRoles("admin", "hospital_admin"), upload.single("image"), addDoctor);
+router.put("/doctors/:id", authorizeRoles("admin", "hospital_admin"), upload.single("image"), editDoctor);
+router.delete("/doctors/:id", authorizeRoles("admin", "hospital_admin"), removeDoctor);
+router.put("/doctors/:id/status", authorizeRoles("admin", "hospital_admin"), toggleDoctorStatus);
 
 /*
   Scoped read endpoints — hospital_admin gets only their hospital,

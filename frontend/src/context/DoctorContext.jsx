@@ -20,7 +20,7 @@ export const DoctorProvider = ({ children }) => {
     try {
       let endpoint = `${API_BASE_URL}/api/patient/doctors`;
 
-      if (role === 'admin' || role === 'hospital_admin' || role === 'super_admin') {
+      if (role === 'admin' || role === 'hospital_admin' || role === 'super_admin' || role === 'doctor') {
         endpoint = `${API_BASE_URL}/api/admin/doctors`;
       }
 
