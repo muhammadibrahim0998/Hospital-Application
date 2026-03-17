@@ -4,16 +4,16 @@ import db from "../config/db.js";
 export const createReport = async (data) => {
     const {
         patient_name, doctor_name, test_name, cnic, description,
-        normal_range, price, category, hospital_id, patient_id, doctor_id
+        normal_range, price, category, hospital_id, patient_id, doctor_id, appointment_id
     } = data;
     const sql = `
         INSERT INTO lab_results 
-        (patient_name, doctor_name, test_name, cnic, description, normal_range, price, category, status, date, hospital_id, patient_id, doctor_id) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?)
+        (patient_name, doctor_name, test_name, cnic, description, normal_range, price, category, status, date, hospital_id, patient_id, doctor_id, appointment_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?, ?)
     `;
     return await db.query(sql, [
         patient_name, doctor_name, test_name, cnic, description,
-        normal_range, price, category, hospital_id, patient_id, doctor_id
+        normal_range, price, category, hospital_id, patient_id, doctor_id, appointment_id
     ]);
 };
 
@@ -22,7 +22,7 @@ export const getAllReports = async (hospitalId = null) => {
     let sql = "SELECT * FROM lab_results";
     let params = [];
     if (hospitalId) {
-        sql += " WHERE hospital_id = ?";
+        sql += " WHERE (hospital_id = ? OR hospital_id IS NULL)";
         params.push(hospitalId);
     }
     sql += " ORDER BY created_at DESC";
@@ -42,10 +42,18 @@ export const giveMedication = async (id, medication) => {
     return await db.query(sql, [medication, id]);
 };
 
-// Get reports for a specific patient by ID or identifier
-export const getPatientReports = async (patientId) => {
-    const sql = "SELECT * FROM lab_results WHERE patient_id = ? ORDER BY created_at DESC";
-    const [rows] = await db.query(sql, [patientId]);
+// Get reports for a specific patient by ID or CNIC
+export const getPatientReports = async (patientId, cnic = null) => {
+    let sql = "SELECT * FROM lab_results WHERE patient_id = ?";
+    let params = [patientId];
+    
+    if (cnic) {
+        sql += " OR (cnic = ? AND cnic IS NOT NULL)";
+        params.push(cnic);
+    }
+    
+    sql += " ORDER BY created_at DESC";
+    const [rows] = await db.query(sql, params);
     return rows;
 };
 

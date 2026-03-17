@@ -187,13 +187,10 @@ const DoctorDashboard = () => {
                 </div>
                 <div className="d-flex align-items-center gap-2 flex-wrap">
                     <BootstrapButton variant="outline-primary" size="sm" className="rounded-pill px-3 fw-bold shadow-sm" onClick={() => navigate("/doctor-lab")}>
-                        <FlaskConical size={16} className="me-1" /> Lab Panel
-                    </BootstrapButton>
-                    <BootstrapButton variant="outline-info" size="sm" className="rounded-pill px-3 fw-bold shadow-sm" onClick={() => navigate("/laboratory-panel")}>
-                        <ClipboardCheck size={16} className="me-1" /> Laboratory Panel
+                        <FlaskConical size={16} className="me-1" /> Order Lab Tests
                     </BootstrapButton>
                     <BootstrapButton variant="outline-success" size="sm" className="rounded-pill px-3 fw-bold shadow-sm" onClick={() => navigate("/lab-results")}>
-                        <FileText size={16} className="me-1" /> Lab Results
+                        <FileText size={16} className="me-1" /> Clinical Reports
                     </BootstrapButton>
                     <BootstrapButton variant="outline-secondary" size="sm" className="rounded-pill px-3 fw-bold shadow-sm" onClick={() => setShowProfileModal(true)}>
                         <Settings size={16} className="me-1" /> Profile
@@ -274,9 +271,10 @@ const DoctorDashboard = () => {
                                                                     onClick={() => navigate("/doctor-lab", { 
                                                                         state: { 
                                                                             patient_id: app.patient_id, 
-                                                                            patient_name: app.Patient || app.patient_name,
+                                                                            patient_name: app.Patient || app.patient_name || "Patient",
+                                                                            cnic: app.CNIC || "",
                                                                             appointment_id: app.id,
-                                                                            doctor_name: profile.name,
+                                                                            doctor_name: profile.name || user?.name || "Doctor",
                                                                             appointment_date: (app.Date || app.appointment_date || "").split('T')[0]
                                                                         } 
                                                                     })}

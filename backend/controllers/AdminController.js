@@ -4,9 +4,9 @@ import {
   getAllDoctors,
   updateDoctorStatus,
   getDoctorById,
-  updateDoctor,
   deleteDoctor,
 } from "../models/DoctorModel.js";
+import { updateUser, deleteUser } from "../models/UserModel.js";
 import { getAllPatients } from "../models/PatientModel.js";
 import { getAllAppointments } from "../models/AppointmentModel.js";
 import bcrypt from "bcryptjs";
@@ -133,5 +133,69 @@ export const toggleDoctorStatus = async (req, res) => {
     res.json({ message: `Doctor status updated to ${status}` });
   } catch (err) {
     res.status(500).json(err);
+  }
+};
+
+export const addLabTechnician = async (req, res) => {
+  try {
+    const { name, email, password, phone } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email and password are required" });
+    }
+    const hash = await bcrypt.hash(password, 10);
+    const hospitalId = req.hospitalId || null;
+    await db.query(
+      "INSERT INTO users (name, email, password, role, hospital_id, phone) VALUES (?,?,?,?,?,?)",
+      [name, email, hash, "lab_technician", hospitalId, phone || ""]
+    );
+    res.status(201).json({ message: "Lab technician added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getLabTechnicians = async (req, res) => {
+  try {
+    const hospitalId = req.hospitalId || null;
+    let rows;
+    if (hospitalId) {
+      [rows] = await db.query(
+        "SELECT id, name, email, phone, created_at FROM users WHERE role = 'lab_technician' AND hospital_id = ? ORDER BY created_at DESC",
+        [hospitalId]
+      );
+    } else {
+      [rows] = await db.query(
+        "SELECT id, name, email, phone, created_at FROM users WHERE role = 'lab_technician' ORDER BY created_at DESC"
+      );
+    }
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const editLabTechnician = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, phone } = req.body;
+    
+    await updateUser(id, [name, email, phone]);
+    
+    res.json({ message: "Lab technician updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const removeLabTechnician = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await deleteUser(id);
+    res.json({ message: "Lab technician deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

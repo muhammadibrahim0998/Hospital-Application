@@ -28,3 +28,15 @@ export const getPatientByUserId = async (userId) => {
     const [rows] = await db.query(sql, [userId]);
     return rows[0];
 };
+
+// Get patient by CNIC
+export const getPatientByCnic = async (cnic) => {
+    const sql = `
+        SELECT u.id as user_id, u.name, u.email, p.id as patient_profile_id 
+        FROM users u 
+        LEFT JOIN patients p ON u.id = p.user_id 
+        WHERE u.cnic = ? AND u.role = 'patient'
+    `;
+    const [rows] = await db.query(sql, [cnic]);
+    return rows[0];
+};

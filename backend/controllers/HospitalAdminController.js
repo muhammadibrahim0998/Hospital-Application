@@ -68,6 +68,12 @@ export const getScopedAppUsers = async (req, res) => {
         const data = hospitalId
             ? await getAppUsersByHospital(hospitalId)
             : await getAllAppUsers();
+        
+        console.log("DEBUG: getScopedAppUsers counts:", data.length);
+        if (data.length > 0) {
+            console.log("DEBUG: Sample App User:", JSON.stringify(data[0]));
+        }
+        
         res.json(data);
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });

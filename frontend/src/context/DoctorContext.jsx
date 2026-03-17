@@ -20,7 +20,7 @@ export const DoctorProvider = ({ children }) => {
     try {
       let endpoint = `${API_BASE_URL}/api/patient/doctors`;
 
-      if (role === 'admin' || role === 'hospital_admin' || role === 'super_admin' || role === 'doctor') {
+      if (role === 'admin' || role === 'hospital_admin' || role === 'super_admin' || role === 'doctor' || role === 'lab_technician') {
         endpoint = `${API_BASE_URL}/api/admin/doctors`;
       }
 
@@ -31,7 +31,7 @@ export const DoctorProvider = ({ children }) => {
       // Fallback if role detection failed or endpoint mismatched
       if (err.response?.status === 403 || err.response?.status === 401) {
         try {
-          const fallbackEndpoint = (role === 'admin' || role === 'hospital_admin' || role === 'super_admin')
+          const fallbackEndpoint = (role === 'admin' || role === 'hospital_admin' || role === 'super_admin' || role === 'lab_technician')
             ? `${API_BASE_URL}/api/patient/doctors`
             : `${API_BASE_URL}/api/admin/doctors`;
           const res = await axios.get(fallbackEndpoint, { headers });

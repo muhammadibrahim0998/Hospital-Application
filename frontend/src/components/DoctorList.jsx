@@ -254,9 +254,10 @@ export default function DoctorList({ doctors }) {
 
   .doctor-buttons a,
   .doctor-buttons button {
-    width: 140px; 
-    padding: 8px 60px; 
-    font-size: 0.95rem ; 
+    width: auto; 
+    min-width: 100px;
+    padding: 4px 12px; 
+    font-size: 0.75rem ; 
   }
 
   @media (max-width: 768px) {

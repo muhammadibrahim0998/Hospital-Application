@@ -1,11 +1,11 @@
 import { createReport, getAllReports, getPatientReports, getDoctorReports, performTest, giveMedication } from "../models/LabResultModel.js";
 import { getDoctorByUserId } from "../models/DoctorModel.js";
-import { getPatientByUserId } from "../models/PatientModel.js";
+import { getPatientByUserId, getPatientByCnic } from "../models/PatientModel.js";
 
 // Add a new lab test
 export const addReport = async (req, res) => {
     try {
-        const { patient_name, patient_id, test_name, cnic, description, normal_range, price, category } = req.body;
+        const { patient_name, patient_id, test_name, cnic, description, normal_range, price, category, appointment_id } = req.body;
 
         // Use doctor name / ID from token
         const doctor_id = req.userId;
@@ -25,7 +25,8 @@ export const addReport = async (req, res) => {
             description,
             normal_range,
             price,
-            category
+            category,
+            appointment_id
         });
         res.status(201).json({ message: "Lab test added successfully" });
     } catch (err) {
@@ -73,13 +74,22 @@ export const fetchReports = async (req, res) => {
             reports = await getAllReports();
         } else if (role === 'hospital_admin') {
             reports = await getAllReports(hospitalId);
+        } else if (role === 'lab_technician') {
+            // Lab technician sees all tests for their hospital
+            reports = await getAllReports(hospitalId);
         } else if (role === 'doctor') {
-            // Doctors usually order tests; they see what they ordered or within their hospital
-            reports = await getDoctorReports(userId);
+            // Doctors see all tests for their hospital OR tests they ordered personally
+            const hospitalReports = await getAllReports(hospitalId);
+            const orderedByMe = await getDoctorReports(userId);
+            
+            // Merge and remove duplicates
+            const allMerged = [...hospitalReports, ...orderedByMe];
+            const uniqueReports = Array.from(new Map(allMerged.map(item => [item.id, item])).values());
+            reports = uniqueReports.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         } else if (role === 'patient') {
-            reports = await getPatientReports(userId);
+            const userCnic = req.userCnic;
+            reports = await getPatientReports(userId, userCnic);
         } else if (role === 'admin') {
-            // Legacy / Generic admin
             reports = await getAllReports(hospitalId);
         }
 

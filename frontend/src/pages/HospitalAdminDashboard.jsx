@@ -8,7 +8,7 @@ import {
 } from "react-bootstrap";
 import {
     Users, UserPlus, Calendar, FlaskConical, Activity,
-    ShieldAlert, RefreshCw, Edit, Trash2, UserCheck2,
+    ShieldAlert, RefreshCw, Edit, Trash2, UserCheck2, Microscope,
 } from "lucide-react";
 import { useDoctors } from "../context/DoctorContext";
 
@@ -24,17 +24,24 @@ const HospitalAdminDashboard = () => {
     const [appointments, setAppointments] = useState([]);
     const [appUsers, setAppUsers] = useState([]);
     const [labTests, setLabTests] = useState([]);
+    const [labTechnicians, setLabTechnicians] = useState([]);
     const [labStats, setLabStats] = useState({ total: 0, pending: 0 });
     const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState(null);
 
     /* doctor modals */
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showAddTechModal, setShowAddTechModal] = useState(false);
+    const [showEditTechModal, setShowEditTechModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingDoctor, setEditingDoctor] = useState(null);
+    const [editingTech, setEditingTech] = useState(null);
     const [newDoctor, setNewDoctor] = useState({
         name: "", email: "", password: "", specialization: "", contact_info: "",
         image: null, departmentId: 1, fieldId: 1, phone: "", fee: 500, whatsappNumber: "",
+    });
+    const [newTech, setNewTech] = useState({
+        name: "", email: "", password: "", phone: ""
     });
 
     const showAlert = (type, msg) => {
@@ -52,13 +59,15 @@ const HospitalAdminDashboard = () => {
                 hasModule("appointments") ? axios.get(`${API_BASE_URL}/api/admin/appointments`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
                 hasModule("appUsers") ? axios.get(`${API_BASE_URL}/api/admin/app-users`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
                 hasModule("lab") ? axios.get(`${API_BASE_URL}/api/lab/tests`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
+                hasModule("lab") ? axios.get(`${API_BASE_URL}/api/admin/lab-technicians`, { headers: authHeaders }) : Promise.resolve({ status: "fulfilled", value: { data: [] } }),
             ]);
 
-            const [d, p, a, u, l] = results;
+            const [d, p, a, u, l, lt] = results;
             if (d.status === "fulfilled") setDoctors(d.value.data);
             if (p.status === "fulfilled") setPatients(p.value.data);
             if (a.status === "fulfilled") setAppointments(a.value.data);
             if (u.status === "fulfilled") setAppUsers(u.value.data);
+            if (lt.status === "fulfilled") setLabTechnicians(lt.value.data);
             if (l.status === "fulfilled") {
                 const tests = l.value.data || [];
                 setLabTests(tests);
@@ -118,17 +127,67 @@ const HospitalAdminDashboard = () => {
         }
     };
 
+    /* ── Lab Tech CRUD ──────────────────────────────── */
+    const handleAddTech = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post(`${API_BASE_URL}/api/admin/lab-technicians`, newTech, { headers: authHeaders });
+            setShowAddTechModal(false);
+            setNewTech({ name: "", email: "", password: "", phone: "" });
+            showAlert("success", "Lab Technician added successfully");
+            fetchData();
+        } catch (err) {
+            console.error("Add Tech Error:", err.response?.data || err.message);
+            showAlert("danger", `Failed to add lab technician: ${err.response?.data?.message || err.message}`);
+        }
+    };
+
+    const handleEditTech = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.put(`${API_BASE_URL}/api/admin/lab-technicians/${editingTech.id}`, editingTech, { headers: authHeaders });
+            setShowEditTechModal(false);
+            setEditingTech(null);
+            showAlert("success", "Lab Technician updated");
+            fetchData();
+        } catch (err) {
+            showAlert("danger", "Failed to update technician");
+        }
+    };
+
+    const handleDeleteTech = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this lab technician?")) return;
+        try {
+            await axios.delete(`${API_BASE_URL}/api/admin/lab-technicians/${id}`, { headers: authHeaders });
+            showAlert("success", "Lab Technician removed");
+            fetchData();
+        } catch (err) {
+            showAlert("danger", "Failed to delete technician");
+        }
+    };
+
     /* ── Stat Cards ──────────────────────────────────── */
     const stats = [
         { label: "Doctors", val: doctors.length, icon: <UserCheck2 size={22} />, color: "primary", bg: "rgba(13,110,253,0.1)", show: hasModule("doctors") },
         { label: "Patients", val: patients.length, icon: <Users size={22} />, color: "success", bg: "rgba(25,135,84,0.1)", show: hasModule("patients") },
         { label: "Appointments", val: appointments.length, icon: <Calendar size={22} />, color: "info", bg: "rgba(13,202,240,0.1)", show: hasModule("appointments") },
         { label: "Lab Tests", val: labStats.total, icon: <FlaskConical size={22} />, color: "warning", bg: "rgba(255,193,7,0.1)", show: hasModule("lab") },
+        { label: "Lab Techs", val: labTechnicians.length, icon: <Microscope size={22} />, color: "info", bg: "rgba(13,202,240,0.1)", show: hasModule("lab") },
     ].filter(s => s.show);
 
-    const roleColor = (role) =>
-        role === "doctor" ? "primary" :
-            role === "patient" ? "success" : "secondary";
+    const roleColor = (role) => {
+        const r = role?.toLowerCase();
+        if (r === "doctor") return "primary";
+        if (r === "patient") return "success";
+        if (r === "lab_technician") return "info";
+        if (r === "hospital_admin") return "warning";
+        return "secondary";
+    };
+
+    const formatRole = (role) => {
+        if (!role) return "—";
+        return role.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
 
     return (
         <Container fluid className="py-4 px-md-5 bg-light min-vh-100">
@@ -357,9 +416,11 @@ const HospitalAdminDashboard = () => {
                                                     <td className="px-4 py-3 text-muted small">#{u.id}</td>
                                                     <td className="fw-semibold">{u.name}</td>
                                                     <td className="text-muted small">{u.email}</td>
-                                                    <td>
-                                                        <Badge bg={roleColor(u.role)} className="rounded-pill text-capitalize">{u.role}</Badge>
-                                                    </td>
+                                                     <td>
+                                                         <Badge bg={roleColor(u.role)} className="rounded-pill">
+                                                             {formatRole(u.role)}
+                                                         </Badge>
+                                                     </td>
                                                     <td className="text-muted small">
                                                         {u.created_at ? new Date(u.created_at).toLocaleDateString("en-PK") : "—"}
                                                     </td>
@@ -411,6 +472,62 @@ const HospitalAdminDashboard = () => {
                                                         ) : (
                                                             <span className="text-muted small">Awaiting...</span>
                                                         )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Tab>
+                )}
+
+                {/* ── Lab Techs Tab ────────────────────────────── */}
+                {hasModule("lab") && (
+                    <Tab eventKey="lab-techs" title="Lab Technicians" className="mt-3">
+                        <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
+                            <Card.Header className="bg-white border-0 px-4 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                                <h5 className="fw-bold mb-0">Lab Specialization Staff</h5>
+                                <Button variant="info" size="sm" className="rounded-pill px-3 d-flex align-items-center gap-2 text-white"
+                                    onClick={() => setShowAddTechModal(true)}>
+                                    <UserPlus size={15} /> Add Technician
+                                </Button>
+                            </Card.Header>
+                            <Card.Body className="p-0 mt-2">
+                                <div className="table-responsive">
+                                    <Table hover className="align-middle mb-0">
+                                        <thead className="bg-light">
+                                            <tr>
+                                                <th className="px-4 py-3">NAME</th>
+                                                <th className="py-3">EMAIL</th>
+                                                <th className="py-3">PHONE</th>
+                                                <th className="py-3">JOINED</th>
+                                                <th className="py-3 text-end px-4">ACTIONS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {labTechnicians.length === 0 ? (
+                                                <tr><td colSpan={5} className="text-center py-5 text-muted">No lab technicians added yet.</td></tr>
+                                            ) : labTechnicians.map(tech => (
+                                                <tr key={tech.id}>
+                                                    <td className="px-4 py-3 fw-bold">{tech.name}</td>
+                                                    <td className="text-muted small">{tech.email}</td>
+                                                    <td className="text-muted small">{tech.phone || "—"}</td>
+                                                    <td className="text-muted small">
+                                                        {tech.created_at ? new Date(tech.created_at).toLocaleDateString("en-PK") : "—"}
+                                                    </td>
+                                                    <td className="text-end px-4">
+                                                        <div className="d-flex justify-content-end gap-2">
+                                                            <Button variant="light" size="sm" className="rounded-circle p-2 text-info border-0"
+                                                                onClick={() => { setEditingTech(tech); setShowEditTechModal(true); }}>
+                                                                <Edit size={14} />
+                                                            </Button>
+                                                            <Button variant="light" size="sm" className="rounded-circle p-2 text-danger border-0"
+                                                                onClick={() => handleDeleteTech(tech.id)}>
+                                                                <Trash2 size={14} />
+                                                            </Button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -502,6 +619,70 @@ const HospitalAdminDashboard = () => {
         .spin { animation:rotate 1s linear infinite; }
         @keyframes rotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
       `}</style>
+            {/* ── Add Lab Tech Modal ── */}
+            <Modal show={showAddTechModal} onHide={() => setShowAddTechModal(false)} centered>
+                <Modal.Header closeButton className="border-0 bg-info text-white p-4">
+                    <Modal.Title className="fw-bold"><Microscope className="me-2" size={18} />Add Lab Technician</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-4 bg-light">
+                    <Form onSubmit={handleAddTech}>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted text-uppercase">Full Name</Form.Label>
+                            <Form.Control className="border-0 shadow-sm" value={newTech.name}
+                                onChange={e => setNewTech({ ...newTech, name: e.target.value })} required />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted text-uppercase">Email</Form.Label>
+                            <Form.Control type="email" className="border-0 shadow-sm" value={newTech.email}
+                                onChange={e => setNewTech({ ...newTech, email: e.target.value })} required />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted text-uppercase">Password</Form.Label>
+                            <Form.Control type="password" className="border-0 shadow-sm" value={newTech.password}
+                                onChange={e => setNewTech({ ...newTech, password: e.target.value })} required />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted text-uppercase">Phone</Form.Label>
+                            <Form.Control className="border-0 shadow-sm" value={newTech.phone}
+                                onChange={e => setNewTech({ ...newTech, phone: e.target.value })} />
+                        </Form.Group>
+                        <Button type="submit" variant="info" className="w-100 py-3 rounded-pill fw-bold text-white shadow-sm mt-3">
+                            CREATE ACCOUNT
+                        </Button>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+
+            {/* ── Edit Lab Tech Modal ── */}
+            <Modal show={showEditTechModal} onHide={() => setShowEditTechModal(false)} centered>
+                <Modal.Header closeButton className="border-0 bg-info text-white p-4">
+                    <Modal.Title className="fw-bold"><Edit className="me-2" size={18} />Edit Lab Technician</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-4 bg-light">
+                    {editingTech && (
+                        <Form onSubmit={handleEditTech}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="small fw-bold text-muted text-uppercase">Full Name</Form.Label>
+                                <Form.Control className="border-0 shadow-sm" value={editingTech.name}
+                                    onChange={e => setEditingTech({ ...editingTech, name: e.target.value })} required />
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="small fw-bold text-muted text-uppercase">Email</Form.Label>
+                                <Form.Control type="email" className="border-0 shadow-sm" value={editingTech.email}
+                                    onChange={e => setEditingTech({ ...editingTech, email: e.target.value })} required />
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="small fw-bold text-muted text-uppercase">Phone</Form.Label>
+                                <Form.Control className="border-0 shadow-sm" value={editingTech.phone || ""}
+                                    onChange={e => setEditingTech({ ...editingTech, phone: e.target.value })} />
+                            </Form.Group>
+                            <Button type="submit" variant="info" className="w-100 py-3 rounded-pill fw-bold text-white shadow-sm mt-3">
+                                UPDATE TECHNICIAN
+                            </Button>
+                        </Form>
+                    )}
+                </Modal.Body>
+            </Modal>
         </Container>
     );
 };

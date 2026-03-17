@@ -138,9 +138,6 @@ export default function Home() {
                         alt={doc.name}
                         className="doctor-img"
                       />
-                      <div className="doctor-overlay">
-                        <button className="btn btn-light btn-sm rounded-pill px-3" onClick={() => navigate('/doctors')}>View Profile</button>
-                      </div>
                     </div>
 
                     <div className="card-body text-center p-3">

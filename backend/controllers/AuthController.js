@@ -12,7 +12,7 @@ import db from "../config/db.js";
  * Accepts an optional hospitalId so the user is linked to the correct hospital.
  */
 export const register = async (req, res) => {
-  const { name, email, password, role, hospitalId, gender, age, phone } = req.body;
+  const { name, email, password, role, hospitalId, gender, age, phone, cnic } = req.body;
 
   try {
     const existingUsers = await findUserByEmail(email);
@@ -29,8 +29,8 @@ export const register = async (req, res) => {
 
     // Insert user with hospital_id and demographic info
     const [userResult] = await db.query(
-      "INSERT INTO users (name, email, password, role, hospital_id, gender, age, phone) VALUES (?,?,?,?,?,?,?,?)",
-      [name, email, hash, userRole, hospitalId || null, gender || 'Male', age || 30, phone || '03000000000']
+      "INSERT INTO users (name, email, cnic, password, role, hospital_id, gender, age, phone) VALUES (?,?,?,?,?,?,?,?,?)",
+      [name, email, cnic || null, hash, userRole, hospitalId || null, gender || 'Male', age || 30, phone || '03000000000']
     );
     const userId = userResult.insertId;
     console.log("User created with ID:", userId);
@@ -123,6 +123,7 @@ export const login = async (req, res) => {
     const tokenPayload = {
       id: user.id,
       role: user.role,
+      cnic: user.cnic || null,
     };
 
     // Attach hospitalId to token if user is scoped to a hospital
@@ -141,6 +142,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        cnic: user.cnic || null,
         hospitalId: user.hospital_id || null,
       },
     });

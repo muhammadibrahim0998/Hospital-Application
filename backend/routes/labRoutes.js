@@ -8,14 +8,14 @@ const router = express.Router();
 router.get("/reports", verifyToken, fetchReports);
 router.get("/tests", verifyToken, fetchReports); // Aliasing for frontend context
 
-// Add a new lab test
-router.post("/reports", verifyToken, authorizeRoles("admin", "doctor"), addReport);
-router.post("/tests", verifyToken, authorizeRoles("admin", "doctor"), addReport);
+// Add a new lab test (doctor or admin orders it)
+router.post("/reports", verifyToken, authorizeRoles("admin", "doctor", "hospital_admin"), addReport);
+router.post("/tests", verifyToken, authorizeRoles("admin", "doctor", "hospital_admin"), addReport);
 
-// Perform test (update result)
-router.put("/tests/:id/perform", verifyToken, authorizeRoles("admin", "doctor"), performLabTest);
+// Perform test (enter result) — lab_technician, admin, doctor can all do this
+router.put("/tests/:id/perform", verifyToken, authorizeRoles("admin", "doctor", "lab_technician", "hospital_admin"), performLabTest);
 
 // Give medication
-router.put("/tests/:id/medication", verifyToken, authorizeRoles("admin", "doctor"), giveMedicationToPatient);
+router.put("/tests/:id/medication", verifyToken, authorizeRoles("admin", "doctor", "lab_technician"), giveMedicationToPatient);
 
 export default router;

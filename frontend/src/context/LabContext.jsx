@@ -54,8 +54,20 @@ export function LabProvider({ children }) {
     }
   };
 
+  const addMedication = async (id, medication) => {
+    if (!token) return;
+    try {
+      await axios.put(`${API_BASE_URL}/api/lab/tests/${id}/medication`, { medication }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTests();
+    } catch (err) {
+      console.error("Error adding medication:", err);
+    }
+  };
+
   return (
-    <LabContext.Provider value={{ tests, addTest, performTest, loading, fetchTests }}>
+    <LabContext.Provider value={{ tests, addTest, performTest, addMedication, loading, fetchTests }}>
       {children}
     </LabContext.Provider>
   );

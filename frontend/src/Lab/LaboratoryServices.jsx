@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Container, Row, Col, Card, Form, Table, Button, Badge, Modal } from "react-bootstrap";
-import { Search, Plus, Trash2, Printer, FlaskConical, User, Calendar, Clipboard, CheckCircle, Microscope, Clock, Phone, Mail } from "lucide-react";
+import { Search, Plus, Trash2, Printer, FlaskConical, User, Calendar, Clipboard, CheckCircle, Microscope, Clock, Phone, Mail, Info } from "lucide-react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { API_BASE_URL } from "../config";
@@ -53,12 +53,15 @@ export default function LaboratoryServices() {
         fetchPatients();
     }, [token]);
 
+    const [formPatientName, setFormPatientName] = useState("");
+
     // Handle incoming state from Doctor Dashboard
     useEffect(() => {
         if (location.state) {
-            const { patient_id, appointment_id, doctor_name, appointment_date } = location.state;
+            const { patient_id, appointment_id, doctor_name, appointment_date, patient_name } = location.state;
             
             if (doctor_name) setDoctorName(doctor_name);
+            if (patient_name) setFormPatientName(patient_name);
             if (appointment_date) {
                 const datePart = appointment_date.includes('T') ? appointment_date.split('T')[0] : appointment_date;
                 setRegDate(datePart);
@@ -78,6 +81,7 @@ export default function LaboratoryServices() {
                         const filtered = allApps.filter(app => String(app.patient_id) === pIdString);
                         setAppointments(filtered);
                         
+                        // Explicitly set the appointment ID if it exists in state
                         if (appointment_id) {
                             setSelectedAppointment(appointment_id.toString());
                         }
@@ -108,7 +112,7 @@ export default function LaboratoryServices() {
             const res = await axios.get(`${API_BASE_URL}/api/admin/appointments`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            const filtered = (res.data || []).filter(app => app.patient_id === parseInt(patientId));
+            const filtered = (res.data || []).filter(app => String(app.patient_id) === String(patientId));
             setAppointments(filtered);
         } catch (err) {
             console.error("Error fetching patient appointments:", err);
@@ -161,18 +165,21 @@ export default function LaboratoryServices() {
             return;
         }
 
-        const patient = patients.find(p => p.user_id === parseInt(selectedPatient));
+        const patient = patients.find(p => String(p.user_id) === String(selectedPatient));
+        const selectedAppointmentData = appointments.find(app => String(app.id) === String(selectedAppointment));
 
         try {
             for (const test of selectedTests) {
                 await addTest({
-                    patient_name: patient?.name || "Patient",
                     patient_id: selectedPatient,
-                    cnic: patient?.cnic || "",
+                    patient_name: formPatientName || (selectedAppointmentData ? selectedAppointmentData.Patient : patient?.name || "Guest Patient"),
+                    cnic: patient?.cnic || (selectedAppointmentData ? selectedAppointmentData.CNIC : "N/A"),
                     test_name: test.name,
                     doctor_name: doctorName,
-                    price: test.fee - test.discount,
+                    doctor_id: user?.id, // Assuming user.id is the doctor_id
+                    appointment_id: selectedAppointment,
                     category: "General",
+                    price: test.fee - test.discount,
                     description: `Authorized at ${collectDate}`
                 });
             }
@@ -221,15 +228,24 @@ export default function LaboratoryServices() {
                     <div>
                         <h5 className="mb-0 fw-bold text-dark">
                             {selectedPatient 
-                                ? `${patients.find(p => String(p.user_id) === String(selectedPatient))?.name || location.state?.patient_name || "Patient"}` 
+                                ? `${patients.find(p => String(p.user_id) === String(selectedPatient))?.name || formPatientName || "Patient"}` 
                                 : "Laboratory Diagnostics"
                             }
                         </h5>
-                        {selectedPatient ? (
+                        {(selectedPatient || formPatientName) ? (
                             <div className="d-flex align-items-center gap-2" style={{ fontSize: '11px' }}>
-                                <Badge bg="info" className="bg-opacity-10 text-info fw-normal border-0 py-1">Appt: #{selectedAppointment || "N/A"}</Badge>
+                                <Badge bg="info" className="bg-opacity-10 text-info fw-normal border-0 py-1">Appt ID: #{selectedAppointment || location.state?.appointment_id || "N/A"}</Badge>
                                 <span className="text-muted">|</span>
-                                <span className="text-muted fw-bold">Dr: {doctorName}</span>
+                                <span className="text-muted fw-bold">Referring Physician: {doctorName || "N/A"}</span>
+                                <Button 
+                                    variant="link" 
+                                    size="sm" 
+                                    className="p-0 text-primary fw-bold text-decoration-none ms-2"
+                                    style={{ fontSize: '10px' }}
+                                    onClick={() => window.open('/lab-results', '_blank')}
+                                >
+                                    <Info size={12} className="me-1" /> Quick View Results
+                                </Button>
                             </div>
                         ) : (
                             <p className="text-muted mb-0" style={{ fontSize: '11px' }}>Authorize investigations and manage billing</p>
@@ -425,9 +441,9 @@ export default function LaboratoryServices() {
                                 <div className="text-muted fw-bold" style={{ fontSize: '10px' }}>PATIENT:</div>
                                 <div className="fw-bold d-flex align-items-center small">
                                     {patients.find(p => String(p.user_id) === String(selectedPatient))?.name || 
-                                     (String(selectedPatient) === String(location.state?.patient_id) ? location.state?.patient_name : "Not Selected")
+                                     formPatientName || "Not Selected"
                                     }
-                                    {selectedPatient && <CheckCircle size={12} className="ms-2 text-success" />}
+                                    {(selectedPatient || formPatientName) && <CheckCircle size={12} className="ms-2 text-success" />}
                                 </div>
                             </div>
 

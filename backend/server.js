@@ -17,6 +17,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check
+app.get("/healthz", (_req, res) => res.send("OK"));
+
+// ULTRA DIAGNOSTIC ROUTE
+app.get("/api/v2-check", (req, res) => res.json({ status: "V2_SERVER_ACTIVE", time: new Date().toISOString() }));
+
 // Static
 app.use("/uploads", express.static("uploads"));
 
@@ -36,8 +42,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api/messages", messageRoutes);
 
-// Health check
-app.get("/healthz", (_req, res) => res.send("OK"));
+// Legacy reports endpoint
 
 // Legacy reports endpoint
 app.get("/api/reports", async (req, res) => {

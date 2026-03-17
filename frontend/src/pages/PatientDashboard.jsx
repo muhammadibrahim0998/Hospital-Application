@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useContext } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Line, Doughnut } from "react-chartjs-2";
 import "../css/PatientDashboard.css";
 import {
@@ -30,6 +30,10 @@ ChartJS.register(
 );
 
 const PatientDashboard = () => {
+  const { user, token } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const displayUser = user || { name: "Guest Patient", role: "patient" };
+
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [reports, setReports] = useState([]);
@@ -38,7 +42,7 @@ const PatientDashboard = () => {
     doctors: true,
     reports: true,
   });
-  const { token } = useContext(AuthContext);
+  // const userName = user?.name || "Patient"; // This line is replaced by displayUser
 
   // ===== Fetch All Data =====
   useEffect(() => {
@@ -77,7 +81,7 @@ const PatientDashboard = () => {
 
   const fetchReports = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/patient/reports`, {
+      const res = await axios.get(`${API_BASE_URL}/api/lab/reports`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setReports(res.data || []);
@@ -109,16 +113,22 @@ const PatientDashboard = () => {
 
   // ===== Reports Stats =====
   const reportsStats = useMemo(() => {
-    const total = reports.length;
-    const recent = reports.filter((r) => {
+    // Correctly filter reports for this patient
+    const patientReports = reports.filter(r =>
+      (user?.id && String(r.patient_id) === String(user.id)) ||
+      (user?.cnic && r.cnic === user.cnic)
+    );
+
+    const total = patientReports.length;
+    const recent = patientReports.filter((r) => {
       const reportDate = new Date(r.date || r.createdAt);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       return reportDate >= thirtyDaysAgo;
     }).length;
 
-    return { total, recent };
-  }, [reports]);
+    return { total, recent, list: patientReports };
+  }, [reports, user]);
 
   // ===== Weekly Chart =====
   const weeklyData = useMemo(() => {
@@ -178,7 +188,7 @@ const PatientDashboard = () => {
     },
     {
       label: "Reports & Results",
-      path: "/reports",
+      path: "/lab-results",
       color: "warning",
       icon: "📊",
       count: reportsStats.total,
@@ -220,7 +230,7 @@ const PatientDashboard = () => {
     <div className="patient-dashboard container-fluid p-3 p-md-4 bg-light min-vh-100">
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold text-primary">👋 Welcome, Patient</h2>
+        <h2 className="fw-bold text-primary">👋 Welcome, {displayUser.name}</h2>
         <div className="text-muted">
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
@@ -359,32 +369,60 @@ const PatientDashboard = () => {
           </div>
         </div>
 
-        {/* Status Chart */}
+        {/* Recent Lab Reports */}
         <div className="col-lg-6 mb-4">
           <div className="card shadow-sm border-0 h-100">
             <div className="card-header bg-white border-0 fw-bold py-3">
-              <span className="fs-5">📊 Appointment Status</span>
+              <span className="fs-5">📊 Recent Lab Reports</span>
+              {reports.length > 0 && (
+                <Link
+                  to="/lab-results"
+                  className="small text-primary float-end mt-1"
+                >
+                  View All
+                </Link>
+              )}
             </div>
-            <div className="card-body d-flex align-items-center justify-content-center">
-              {stats.total === 0 ? (
+            <div className="card-body">
+              {loading.reports ? (
                 <div className="text-center py-4">
-                  <p className="text-muted">No data to display</p>
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : reports.length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-muted mb-2">No lab reports found</p>
+                  <p className="small text-muted">When your tests are finalized, they will appear here.</p>
                 </div>
               ) : (
-                <div style={{ maxHeight: "250px", maxWidth: "250px" }}>
-                  <Doughnut
-                    data={doughnutData}
-                    options={{
-                      cutout: "60%",
-                      plugins: {
-                        legend: {
-                          position: "bottom",
-                          labels: { boxWidth: 12 },
-                        },
-                      },
-                    }}
-                  />
-                </div>
+                reportsStats.list.slice(0, 5).map((report) => (
+                  <div
+                    key={report.id}
+                    className="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3"
+                  >
+                    <div>
+                      <h6 className="mb-1 fw-bold">
+                        {report.test_name || "General Test"}
+                      </h6>
+                      <div className="d-flex align-items-center gap-2">
+                        <small className="text-muted">
+                          Result: <span className="text-primary fw-bold">{report.result || "Pending"}</span>
+                        </small>
+                        {report.appointment_id && (
+                          <Badge bg="info" className="bg-opacity-10 text-info fw-normal border-0 py-0 px-1" style={{ fontSize: '9px' }}>
+                            APPT: #{report.appointment_id}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <span
+                      className={`badge bg-${report.status === 'done' ? 'success' : 'warning'} rounded-pill px-3 py-2`}
+                    >
+                      {report.status === 'done' ? 'Finalized' : 'Pending'}
+                    </span>
+                  </div>
+                ))
               )}
             </div>
           </div>

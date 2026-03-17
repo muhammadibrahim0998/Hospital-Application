@@ -21,6 +21,7 @@ export const verifyToken = (req, res, next) => {
 
     req.userId = decoded.id;
     req.userRole = decoded.role;
+    req.userCnic = decoded.cnic || null;
     req.hospitalId = decoded.hospitalId || null;       // for hospital_admin & scoped users
     req.hospitalAdminId = decoded.hospitalAdminId || null;  // for hospital_admin JWT
     next();
@@ -86,7 +87,7 @@ export const scopeToHospital = (req, res, next) => {
     return next();
   }
 
-  if (role === "hospital_admin" || role === "doctor" || role === "admin") {
+  if (role === "hospital_admin" || role === "doctor" || role === "admin" || role === "lab_technician") {
     if (!req.hospitalId) {
       return res.status(403).json({ message: "Hospital binding missing from token" });
     }

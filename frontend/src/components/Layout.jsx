@@ -22,7 +22,7 @@ import {
   BsGrid,
   BsPersonCircle,
 } from "react-icons/bs";
-import { FaFlask } from "react-icons/fa";
+import { FaFlask, FaMicroscope } from "react-icons/fa";
 
 export default function Layout() {
   const { user, hasModule: authHasModule } = useContext(AuthContext);
@@ -255,19 +255,64 @@ export default function Layout() {
                   </>
                 )}
 
-                {/* ══ STANDARD ROLES (admin, doctor, patient) ══ */}
-                {role !== "super_admin" && role !== "hospital_admin" && (
+                {/* ══ LAB TECHNICIAN MENU ═══════════════════ */}
+                {role === "lab_technician" && (
                   <>
                     <div style={firstSectionLabel}>Main Menu</div>
 
-                    <Link to="/dashboard" onClick={handleLinkClick} style={linkStyle("/dashboard")}>
+                    <Link to="/lab-tech/dashboard" onClick={handleLinkClick} style={linkStyle("/lab-tech/dashboard")}>
+                      <BsSpeedometer2 style={{ ...iconStyle, color: "#ffa502" }} />
+                      Dashboard
+                    </Link>
+
+                    <div style={sectionLabel}>Laboratory Control</div>
+                    <Link to="/laboratory-panel" onClick={handleLinkClick} style={linkStyle("/laboratory-panel")}>
+                      <FaMicroscope style={{ ...iconStyle, color: "#a29bfe" }} />
+                      Lab Worklist & Panel
+                    </Link>
+                    <Link to="/lab-results" onClick={handleLinkClick} style={linkStyle("/lab-results")}>
+                      <BsFileEarmarkText style={{ ...iconStyle, color: "#a55eea" }} />
+                      Completed Reports
+                    </Link>
+
+                    <div style={sectionLabel}>Other</div>
+                    <Link to="/about" onClick={handleLinkClick} style={linkStyle("/about")}>
+                      <BsInfoCircle style={{ ...iconStyle, color: "#74b9ff" }} /> About Hospital
+                    </Link>
+                  </>
+                )}
+
+                {/* ══ STANDARD ROLES (admin, doctor, patient) ══ */}
+                {role !== "super_admin" && role !== "hospital_admin" && role !== "lab_technician" && (
+                  <>
+                    <div style={firstSectionLabel}>Main Menu</div>
+
+                    <Link 
+                      to={
+                        role === "doctor" ? "/doctor/dashboard" : 
+                        role === "admin" ? "/admin/dashboard" : 
+                        role === "patient" ? "/patient/dashboard" :
+                        role === "super_admin" ? "/super-admin/dashboard" :
+                        role === "hospital_admin" ? "/hospital-admin/dashboard" :
+                        role === "lab_technician" ? "/lab-tech/dashboard" : "/patient/dashboard"
+                      } 
+                      onClick={handleLinkClick} 
+                      style={linkStyle(
+                        role === "doctor" ? "/doctor/dashboard" : 
+                        role === "admin" ? "/admin/dashboard" : 
+                        role === "patient" ? "/patient/dashboard" :
+                        role === "super_admin" ? "/super-admin/dashboard" :
+                        role === "hospital_admin" ? "/hospital-admin/dashboard" :
+                        role === "lab_technician" ? "/lab-tech/dashboard" : "/patient/dashboard"
+                      )}
+                    >
                       <BsSpeedometer2 style={{ ...iconStyle, color: "#ffa502" }} />
                       Dashboard
                     </Link>
 
                     <Link to="/appointments" onClick={handleLinkClick} style={linkStyle("/appointments")}>
                       <BsCalendarCheck style={{ ...iconStyle, color: "#2ed573" }} />
-                      {role === "doctor" ? "Appointments" : "My Appointments"}
+                      {role === "doctor" ? "Doctor Appointments" : "My Appointments"}
                     </Link>
 
                     <Link to="/" onClick={handleLinkClick} style={linkStyle("/")}>
@@ -275,12 +320,12 @@ export default function Layout() {
                       Home
                     </Link>
 
-                    {(role === "patient" || role === "admin") && (
+                    {(role === "patient" || role === "admin" || role === "doctor" || !role) && (
                       <>
-                        <div style={sectionLabel}>Patient Services</div>
+                        <div style={sectionLabel}>{(role === "doctor" || role === "admin") ? "Diagnostics" : "Patient Services"}</div>
                         <Link to="/lab-results" onClick={handleLinkClick} style={linkStyle("/lab-results")}>
                           <BsFileEarmarkText style={{ ...iconStyle, color: "#a55eea" }} />
-                          Lab Reports
+                          Lab Results
                         </Link>
                         <Link to="/doctors" onClick={handleLinkClick} style={linkStyle("/doctors")}>
                           <BsPeople style={{ ...iconStyle, color: "#eccc68" }} />
@@ -291,11 +336,17 @@ export default function Layout() {
 
                     {(role === "doctor" || role === "admin") && (
                       <>
-                        <div style={sectionLabel}>Doctor Tools</div>
+                        <div style={sectionLabel}>Diagnostic Tools</div>
                         <Link to="/doctor-lab" state={{ doctor_name: user?.name }} onClick={handleLinkClick} style={linkStyle("/doctor-lab")}>
                           <FaFlask style={{ ...iconStyle, color: "#17a2b8" }} />
                           Laboratory Services
                         </Link>
+                        {role === "admin" && (
+                          <Link to="/laboratory-panel" onClick={handleLinkClick} style={linkStyle("/laboratory-panel")}>
+                            <FaMicroscope style={{ ...iconStyle, color: "#a29bfe" }} />
+                            Worklist Lab Panel
+                          </Link>
+                        )}
                       </>
                     )}
 

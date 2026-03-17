@@ -36,6 +36,7 @@ import FieldDetails from "./pages/FieldDetails.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import DoctorDashboard from "./pages/DoctorDashboard.jsx";
 import PatientDashboard from "./pages/PatientDashboard.jsx";
+import LabTechnicianDashboard from "./pages/LabTechnicianDashboard";
 
 import DoctorLab from "./Lab/DoctorLab.jsx";
 import LabResults from "./Lab/LabResults.jsx";
@@ -54,8 +55,10 @@ function getDashboardPath(role) {
   if (r === "super_admin") return "/super-admin/dashboard";
   if (r === "hospital_admin") return "/hospital-admin/dashboard";
   if (r === "admin") return "/admin/dashboard";
+  if (r === "lab_technician") return "/lab-tech/dashboard";
   if (r === "doctor") return "/doctor/dashboard";
-  return "/patient/dashboard";
+  if (r === "patient") return "/patient/dashboard";
+  return "/patient/dashboard"; // Default to patient dashboard for guest
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -90,6 +93,8 @@ function AppContent() {
         navigate("/hospital-admin/dashboard", { replace: true });
       else if (role === "admin")
         navigate("/admin/dashboard", { replace: true });
+      else if (role === "lab_technician")
+        navigate("/lab-tech/dashboard", { replace: true });
       else if (role === "doctor")
         navigate("/doctor/dashboard", { replace: true });
       else navigate("/patient/dashboard", { replace: true });
@@ -137,13 +142,24 @@ function AppContent() {
   const PUBLIC_PATHS = ["/login", "/register"];
   const isPublicPath = PUBLIC_PATHS.includes(location.pathname.toLowerCase());
 
-  // Not logged in + trying to access any non-public page → go to login
-  if (!token && !isPublicPath) {
+  // Skip login for patient dashboard and find-doctor to allow "Direct Access"
+  const isPatientPath = location.pathname.startsWith("/patient") ||
+                        location.pathname.startsWith("/find-doctor") ||
+                        location.pathname.startsWith("/doctors") ||
+                        location.pathname === "/";
+
+  // Not logged in + trying to access any non-public page AND not a patient path → go to login
+  if (!token && !isPublicPath && !isPatientPath) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // Logged in + on a public page or bare root → go to own dashboard
-  if (token && user && (isPublicPath || location.pathname === "/")) {
+  // Logged in + on a public page (login/register) → go to own dashboard
+  if (token && user && isPublicPath) {
+    return <Navigate to={getDashboardPath(user.role)} replace />;
+  }
+
+  // Special case: If at root and logged in but NOT a patient, go to dashboard
+  if (token && user && location.pathname === "/" && user.role?.toLowerCase() !== "patient") {
     return <Navigate to={getDashboardPath(user.role)} replace />;
   }
   // ─────────────────────────────────────────────────────────────────────────
@@ -205,29 +221,37 @@ function AppContent() {
         </Route>
       </Route>
 
-      {/* Doctor Dashboard */}
+      {/* Shared Lab Routes — Ensures visibility for all relevant roles */}
+      <Route element={<PrivateRoute allowedRoles={["doctor", "lab_technician", "admin", "hospital_admin"]} />}>
+        <Route path="/" element={<Layout />}>
+          <Route path="lab-results" element={<LabResults />} />
+        </Route>
+      </Route>
+
+      {/* Public Patient Access — No PrivateRoute for these specific paths */}
+      <Route path="/" element={<Layout />}>
+        <Route path="patient/dashboard" element={<PatientDashboard />} />
+        <Route path="lab-results" element={<LabResults />} />
+        <Route path="doctors" element={<Doctors />} />
+        <Route path="find-doctor" element={<Doctors />} />
+      </Route>
+
+      <Route element={<PrivateRoute allowedRoles={["doctor", "lab_technician", "admin", "hospital_admin"]} />}>
+        <Route path="/" element={<Layout />}>
+          <Route path="laboratory-panel" element={<LaboratoryPanel />} />
+          <Route path="doctor-lab" element={<LaboratoryServices />} />
+        </Route>
+      </Route>
+
       <Route element={<PrivateRoute allowedRoles={["doctor"]} />}>
         <Route path="/doctor" element={<Layout />}>
           <Route path="dashboard" element={<DoctorDashboard />} />
         </Route>
-        <Route path="/" element={<Layout />}>
-          <Route path="doctor-lab" element={<LaboratoryServices />} />
-          <Route path="laboratory-panel" element={<LaboratoryPanel />} />
-        </Route>
       </Route>
 
-      {/* Patient Dashboard */}
-      <Route element={<PrivateRoute allowedRoles={["patient"]} />}>
-        <Route path="/patient" element={<Layout />}>
-          <Route path="dashboard" element={<PatientDashboard />} />
-          <Route path="lab-results" element={<LabResults />} />
-        </Route>
-      </Route>
-
-      {/* Shared Lab Results for Doctors & Patients (if doctor wants to see them via direct link) */}
-      <Route element={<PrivateRoute allowedRoles={["doctor", "patient"]} />}>
-        <Route path="/" element={<Layout />}>
-          <Route path="lab-results" element={<LabResults />} />
+      <Route element={<PrivateRoute allowedRoles={["lab_technician"]} />}>
+        <Route path="/lab-tech" element={<Layout />}>
+          <Route path="dashboard" element={<LabTechnicianDashboard />} />
         </Route>
       </Route>
 

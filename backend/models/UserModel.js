@@ -12,3 +12,13 @@ export const findUserByEmail = async (email) => {
   const [rows] = await db.query(sql, [email]);
   return rows;
 };
+
+export const updateUser = async (id, data) => {
+  const sql = "UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?";
+  return await db.query(sql, [...data, id]);
+};
+
+export const deleteUser = async (id) => {
+  const sql = "DELETE FROM users WHERE id = ?";
+  return await db.query(sql, [id]);
+};
