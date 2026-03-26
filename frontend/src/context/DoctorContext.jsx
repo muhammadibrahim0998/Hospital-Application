@@ -12,32 +12,31 @@ export const DoctorProvider = ({ children }) => {
   const { user, token } = useContext(AuthContext);
 
   const fetchDoctors = async () => {
-    if (!token) return;
-
-    const headers = { Authorization: `Bearer ${token}` };
     const role = user?.role?.toLowerCase();
+    const isAdminRole = ['admin', 'hospital_admin', 'super_admin', 'doctor', 'lab_technician'].includes(role);
 
     try {
-      let endpoint = `${API_BASE_URL}/api/patient/doctors`;
-
-      if (role === 'admin' || role === 'hospital_admin' || role === 'super_admin' || role === 'doctor' || role === 'lab_technician') {
-        endpoint = `${API_BASE_URL}/api/admin/doctors`;
+      // For Admins/Staff: Use the protected admin endpoint with headers
+      if (token && isAdminRole) {
+        const res = await axios.get(`${API_BASE_URL}/api/admin/doctors`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDoctors(res.data || []);
+      } else {
+        // For Patients/Guests: Always use the public endpoint WITHOUT headers
+        // This avoids 403s if a token is present but invalid/expired
+        const res = await axios.get(`${API_BASE_URL}/api/patient/doctors`);
+        setDoctors(res.data || []);
       }
-
-      const res = await axios.get(endpoint, { headers });
-      setDoctors(res.data || []);
     } catch (err) {
       console.error("Fetch doctors error:", err);
-      // Fallback if role detection failed or endpoint mismatched
-      if (err.response?.status === 403 || err.response?.status === 401) {
+      // Fallback: If admin call failed, try public one as Last Resort
+      if (isAdminRole) {
         try {
-          const fallbackEndpoint = (role === 'admin' || role === 'hospital_admin' || role === 'super_admin' || role === 'lab_technician')
-            ? `${API_BASE_URL}/api/patient/doctors`
-            : `${API_BASE_URL}/api/admin/doctors`;
-          const res = await axios.get(fallbackEndpoint, { headers });
+          const res = await axios.get(`${API_BASE_URL}/api/patient/doctors`);
           setDoctors(res.data || []);
         } catch (fallbackErr) {
-          console.error("Fallback fetch error:", fallbackErr);
+          console.error("Critical doctor fetch failure:", fallbackErr);
         }
       }
     }

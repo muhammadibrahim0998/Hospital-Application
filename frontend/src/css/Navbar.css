@@ -3,14 +3,14 @@
 /* Navbar container */
 .navbar-custom {
   z-index: 1100;
-  height: 60px;
+  height: 65px;
   transition: 0.3s;
 }
 
 /* Sidebar button */
 .navbar-btn {
   border-radius: 8px;
-  border: 1px solid;
+  border: 1px solid black;
   cursor: pointer;
 }
 
@@ -35,55 +35,63 @@
   color: #000;
 }
 
-/* Center search container */
-/* د سرچ بار لپاره خالص CSS - یوازې د سرچ بار */
 
-/* د سرچ بار کانټینر - ګرد شکل */
 .navbar-search-container {
   max-width: 420px;
   width: 100%;
   border-radius: 50px;
-  overflow: hidden;
+  background: #ffffff;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
+  padding: 4px;
   transition: 0.3s;
 }
 
-/* د سرچ انپټ - کیڼ اړخ ګرد */
+
 .navbar-search-input {
   flex: 1;
   border: none;
   outline: none;
   background: transparent;
-  padding: 8px 15px;
-  border-radius: 50px 0 0 50px;
+  padding: 8px 16px;
+  color: #333;
+  font-weight: 600;
   font-size: 14px;
 }
 
-/* د سرچ تڼۍ - ښي اړخ ګرد */
+
 .navbar-search-btn {
+  background: #0d6efd;
+  color: #ffffff;
   border: none;
-  cursor: pointer;
-  padding: 8px 18px;
-  border-radius: 0 50px 50px 0;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.2s;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
 }
 
-/* د سرچ تڼۍ هور اغېز */
+
 .navbar-search-btn:hover {
-  opacity: 0.8;
+  background: #0b5ed7;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
 }
 
-/* د سرچ انپټ پلیس هولډر رنګ */
+
 .navbar-search-input::placeholder {
   color: #999;
   font-size: 14px;
 }
 
-/* د سرچ انپټ فوکس حالت */
+
 .navbar-search-input:focus {
   outline: none;
 }

@@ -291,9 +291,6 @@ import {
   BsList,
   BsBell,
   BsSearch,
-  BsMoon,
-  BsSun,
-  BsMoonStars,
 } from "react-icons/bs";
 import { AuthContext } from "../context/AuthContext";
 import "../css/Navbar.css";
@@ -305,37 +302,16 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   const isLoggedIn = !!user;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [theme, setTheme] = useState("black");
   const [search, setSearch] = useState("");
 
-  const themes = {
-    blue: {
-      navBg: "#0d6efd",
-      text: "#ffffff",
-      box: "#0b5ed7",
-      border: "#084298",
-      searchBg: "#ffffff",
-      searchText: "#000",
-    },
-    black: {
-      navBg: "#000000",
-      text: "#ffffff",
-      box: "#111111",
-      border: "#222",
-      searchBg: "#ffffff",
-      searchText: "#000",
-    },
-    white: {
-      navBg: "#ffffff",
-      text: "#000000",
-      box: "#ffffff",
-      border: "#cccccc",
-      searchBg: "#ffffff",
-      searchText: "#000",
-    },
+  const currentTheme = {
+    navBg: "#0d6efd",
+    text: "#ffffff",
+    box: "#0b5ed7",
+    border: "#084298",
+    searchBg: "#ffffff",
+    searchText: "#000",
   };
-
-  const currentTheme = themes[theme];
 
   const handleSearch = () => {
     if (!search.trim()) return;
@@ -358,18 +334,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     setDropdownOpen(false);
   };
 
-  const getThemeIcon = () => {
-    switch (theme) {
-      case "blue":
-        return <BsMoonStars size={16} />;
-      case "black":
-        return <BsMoon size={16} />;
-      case "white":
-        return <BsSun size={16} />;
-      default:
-        return <BsMoon size={16} />;
-    }
-  };
+
 
   return (
     <nav
@@ -437,23 +402,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
         {/* RIGHT SIDE */}
         <div className="d-flex align-items-center gap-3">
-          {/* Theme switch icon */}
-          <div
-            onClick={() => {
-              if (theme === "blue") setTheme("black");
-              else if (theme === "black") setTheme("white");
-              else if (theme === "white") setTheme("blue");
-            }}
-            className="navbar-icon"
-            style={{
-              background: currentTheme.box,
-              color: currentTheme.text,
-              borderColor: currentTheme.border,
-            }}
-            title={`Current theme: ${theme}`}
-          >
-            {getThemeIcon()}
-          </div>
+
 
           {/* Notification bell */}
           <div

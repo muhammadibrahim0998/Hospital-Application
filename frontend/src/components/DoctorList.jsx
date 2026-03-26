@@ -122,7 +122,7 @@ export default function DoctorList({ doctors }) {
   };
 
   const activeDoctors = doctors.filter(
-    (doc) => doc.status === "active" || !doc.status,
+    (doc) => !doc.status || doc.status.toLowerCase() === "active",
   );
 
   return (

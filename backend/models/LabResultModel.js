@@ -62,4 +62,16 @@ export const getDoctorReports = async (doctorId) => {
     const sql = "SELECT * FROM lab_results WHERE doctor_id = ? ORDER BY created_at DESC";
     const [rows] = await db.query(sql, [doctorId]);
     return rows;
+};// Get reports for a specific appointment
+export const getReportsByAppointment = async (appointmentId) => {
+    const sql = "SELECT * FROM lab_results WHERE appointment_id = ? ORDER BY created_at DESC";
+    const [rows] = await db.query(sql, [appointmentId]);
+    return rows;
+};
+
+// Get PUBLIC reports for a patient by CNIC (ONLY 'done' results)
+export const getPublicReportsByCnic = async (cnic) => {
+    const sql = "SELECT * FROM lab_results WHERE cnic = ? AND cnic IS NOT NULL AND status = 'done' ORDER BY created_at DESC";
+    const [rows] = await db.query(sql, [cnic]);
+    return rows;
 };

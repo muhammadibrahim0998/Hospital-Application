@@ -1,4 +1,4 @@
-import { createReport, getAllReports, getPatientReports, getDoctorReports, performTest, giveMedication } from "../models/LabResultModel.js";
+import { createReport, getAllReports, getPatientReports, getDoctorReports, performTest, giveMedication, getPublicReportsByCnic, getReportsByAppointment } from "../models/LabResultModel.js";
 import { getDoctorByUserId } from "../models/DoctorModel.js";
 import { getPatientByUserId, getPatientByCnic } from "../models/PatientModel.js";
 
@@ -96,6 +96,31 @@ export const fetchReports = async (req, res) => {
         res.json(reports);
     } catch (err) {
         console.error("Error fetching reports:", err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+// Public Fetch (Search by CNIC - Guests)
+export const fetchPublicReports = async (req, res) => {
+    try {
+        const { cnic } = req.params;
+        if (!cnic) return res.status(400).json({ message: "CNIC is required" });
+        const reports = await getPublicReportsByCnic(cnic);
+        res.json(reports);
+    } catch (err) {
+        console.error("Error fetching public reports:", err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+// Fetch report for a specific appointment (Unified View)
+export const fetchAppointmentReport = async (req, res) => {
+    try {
+        const { appointmentId } = req.params;
+        const reports = await getReportsByAppointment(appointmentId);
+        res.json(reports);
+    } catch (err) {
+        console.error("Error fetching appointment report:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 };

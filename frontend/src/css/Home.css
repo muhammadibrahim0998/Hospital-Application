@@ -1,10 +1,23 @@
-/* ================= SLIDER ================= */
+/* 
+  PREMIUM MODERN DESIGN SYSTEM 
+  - Color Palette: Deep Indigo, Soft Violet, Clean Whites
+  - Glassmorphism: backdrop-filter: blur()
+  - Animations: Smooth transitions and hover effects
+*/
+
+:root {
+  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --shadow-premium: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  --transition-smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
 
 .slider-container {
-  height: 85vh;
+  height: 90vh;
   overflow: hidden;
   position: relative;
-  background: #000;
+  background: #0f172a; /* Deep slate base */
 }
 
 .slider-img {
@@ -13,214 +26,225 @@
   object-fit: cover;
   position: absolute;
   opacity: 0;
-  transition: opacity 1.2s ease-in-out, transform 8s linear;
-  margin-top: 0;
-  filter: brightness(0.65);
+  transition: opacity 1.5s ease-in-out, transform 10s linear;
+  filter: brightness(0.6) saturate(1.1);
 }
 
 .slider-img.active {
   opacity: 1;
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
+/* 
+  MODERN HERO OVERLAY 
+  - Center caption with glassmorphic backing 
+*/
 .center-caption {
   position: absolute;
-  top: 55%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
   text-align: center;
-  width: 100%;
-  max-width: 800px;
+  width: 90%;
+  max-width: 900px;
   z-index: 10;
-  padding: 0 20px;
+  padding: 3rem;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 40px;
 }
 
-.fw-extrabold {
+.display-3, .display-4 {
   font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(to bottom, #ffffff, #cbd5e1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1.5rem;
 }
 
-/* ================= DEPARTMENTS ================= */
-
-.dept-section {
+/* PREMIUM QUICK ACTIONS */
+.quick-card-container {
+  margin-top: -6rem;
   position: relative;
-  margin-top: -60px;
   z-index: 20;
 }
 
-.dept-card {
-  border-radius: 20px;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  background: #ffffff;
+.quick-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 30px;
+  padding: 2.5rem;
+  transition: var(--transition-smooth);
+  box-shadow: var(--shadow-premium);
+  text-align: center;
 }
 
-.dept-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+.quick-card:hover {
+  transform: translateY(-15px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.2);
 }
 
-.dept-count {
+.icon-box {
   width: 70px;
   height: 70px;
-  color: white;
-  border-radius: 18px;
-  font-size: 24px;
-  font-weight: 800;
-  margin: 0 auto;
+  border-radius: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  margin: 0 auto 1.5rem;
+  font-size: 1.8rem;
+  transition: var(--transition-smooth);
 }
 
-/* ================= DOCTOR CARD ================= */
+.quick-card:hover .icon-box {
+  transform: rotate(-5deg) scale(1.1);
+}
+
+/* PREMIUM DOCTOR CARDS */
+.section-title {
+  font-weight: 800;
+  color: #1e293b;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 10px;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: var(--primary-gradient);
+  border-radius: 2px;
+}
 
 .doctor-card {
-  border-radius: 20px;
+  border-radius: 32px;
   overflow: hidden;
-  transition: all 0.4s ease;
   background: #fff;
+  transition: var(--transition-smooth);
+  border: 1px solid #f1f5f9;
 }
 
-.doctor-img-container {
-  height: 280px;
+.doctor-card:hover {
+  transform: translateY(-12px);
+  box-shadow: var(--shadow-premium);
+}
+
+.doctor-img-wrapper {
+  height: 320px;
   position: relative;
   overflow: hidden;
 }
 
-.doctor-img {
+.doctor-img-wrapper img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.6s ease;
 }
 
-.doctor-card:hover .doctor-img {
-  transform: scale(1.1);
+.doctor-card:hover .doctor-img-wrapper img {
+  transform: scale(1.08);
 }
 
-.doctor-overlay {
+.doctor-info {
+  padding: 1.5rem;
+}
+
+.doctor-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 4px 12px;
+  border-radius: 100px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+/* MODERN ABOUT SECTION */
+.about-image-stack {
+  position: relative;
+  padding: 40px;
+}
+
+.about-main-img {
+  border-radius: 40px;
+  box-shadow: var(--shadow-premium);
+  border: 8px solid #fff;
+  
+}
+
+.about-floating-badge {
   position: absolute;
-  top: 0;
+  bottom: 10%;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background: var(--primary-gradient);
+  padding: 1.5rem 2rem;
+  border-radius: 25px;
+  color: white;
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.3);
 }
 
-.doctor-card:hover .doctor-overlay {
-  opacity: 1;
+/* BUTTON SYSTEM */
+.btn-premium {
+  padding: 12px 32px;
+  border-radius: 100px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: var(--transition-smooth);
+  border: none;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
 }
 
-.doctor-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1) !important;
+.btn-premium-primary {
+  background: var(--primary-gradient);
+  color: white;
+  
 }
 
-/* ================= ABOUT SECTION ================= */
-
-.about-img-wrapper {
-  padding: 20px;
+.btn-premium-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 30px -8px rgba(79, 70, 229, 0.4);
+  color: white;
+  
 }
 
-.main-about-img {
-  transition: all 0.5s ease;
-  border: 10px solid white;
+.btn-premium-outline {
+  border:2px solid #e2e8f0;
+  color: #475569;
+  
 }
 
-.about-img-wrapper::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 80%;
-  height: 80%;
-  background: #dc3545;
-  border-radius: 20px;
-  z-index: -1;
-  opacity: 0.1;
+.btn-premium-outline:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
 }
 
-.experience-badge {
-  bottom: 40px;
-  left: -20px;
-  min-width: 160px;
-  z-index: 5;
+/* RESPONSIVE ADJUSTMENTS */
+@media (max-width: 991px) {
+  .slider-container { height: 75vh; }
+  .center-caption { padding: 2rem; border-radius: 30px; }
+  .display-4 { font-size: 2.5rem; }
 }
 
-.letter-spacing-2 {
-  letter-spacing: 2px;
-}
-
-.shadow-lg {
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important;
-}
-
-/* ================= ANIMATIONS ================= */
-
-.animate__fadeIn {
-  animation: fadeIn 1.5s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -45%);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-}
-
-/* ================= RESPONSIVE ================= */
-
-@media (max-width: 992px) {
-  .slider-container {
-    height: 70vh;
-  }
-}
-
-@media (max-width: 768px) {
-  .slider-container {
-    height: 60vh;
-  }
-
-  .display-4 {
-    font-size: 2.2rem;
-  }
-
-  .lead {
-    font-size: 1.1rem;
-  }
-
-  .dept-section {
-    margin-top: -30px;
-  }
-
-  .doctor-img-container {
-    height: 220px;
-  }
-}
-
-@media (max-width: 576px) {
-  .slider-container {
-    height: 50vh;
-  }
-
-  .display-4 {
-    font-size: 1.8rem;
-  }
-
-  .dept-count {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-  }
+@media (max-width: 767px) {
+  .slider-container { height: 65vh; }
+  .quick-card-container { margin-top: -3rem; }
+  .display-4 { font-size: 1.8rem; }
+  .quick-card { padding: 1.5rem; }
+  .about-floating-badge { padding: 1rem 1.5rem; }
 }

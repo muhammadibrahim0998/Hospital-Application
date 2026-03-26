@@ -1,8 +1,12 @@
 import express from "express";
-import { addReport, fetchReports, performLabTest, giveMedicationToPatient } from "../controllers/LabResultController.js";
+import { addReport, fetchReports, performLabTest, giveMedicationToPatient, fetchPublicReports, fetchAppointmentReport } from "../controllers/LabResultController.js";
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+// Public check (No token needed)
+router.get("/public/check-result/:cnic", fetchPublicReports);
+router.get("/public/appointment-report/:appointmentId", fetchAppointmentReport);
 
 // Get all test reports (filtered by role)
 router.get("/reports", verifyToken, fetchReports);

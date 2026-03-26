@@ -38,8 +38,10 @@ export const bookAppointment = async (req, res) => {
 export const getDoctorsList = async (req, res) => {
     try {
         const doctors = await getAllDoctors();
+        console.log(`[PatientController] Found ${doctors.length} doctors`);
         res.json(doctors);
     } catch (err) {
+        console.error("[PatientController] Error loading doctors:", err);
         res.status(500).json(err);
     }
 };

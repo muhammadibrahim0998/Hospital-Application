@@ -15,6 +15,21 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { 
+  ExternalLink, 
+  Clipboard, 
+  FileText, 
+  FlaskConical, 
+  ClipboardList, 
+  Activity, 
+  Pill, 
+  Stethoscope, 
+  ChevronRight,
+  Zap,
+  CheckCircle,
+  Thermometer,
+  ShieldCheck
+} from "lucide-react";
 import { API_BASE_URL } from "../config";
 import { AuthContext } from "../context/AuthContext";
 
@@ -37,19 +52,26 @@ const PatientDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [reports, setReports] = useState([]);
+  const [searchCnic, setSearchCnic] = useState("");
+  const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState({
     appointments: true,
     doctors: true,
-    reports: true,
+    reports: false, // Don't load guest reports automatically
   });
   // const userName = user?.name || "Patient"; // This line is replaced by displayUser
 
   // ===== Fetch All Data =====
   useEffect(() => {
     if (token) {
+      setLoading(prev => ({ ...prev, reports: true }));
       fetchAppointments();
       fetchDoctors();
       fetchReports();
+    } else {
+      // Guest: only fetch doctors
+      fetchDoctors();
+      setLoading(prev => ({ ...prev, appointments: false }));
     }
   }, [token]);
 
@@ -68,9 +90,9 @@ const PatientDashboard = () => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/patient/doctors`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Fetch public doctors list without any Authorization header
+      // This prevents 403 errors if the token is invalid/expired
+      const res = await axios.get(`${API_BASE_URL}/api/patient/doctors`);
       setDoctors(res.data || []);
     } catch (err) {
       console.error("Error loading doctors", err);
@@ -84,11 +106,32 @@ const PatientDashboard = () => {
       const res = await axios.get(`${API_BASE_URL}/api/lab/reports`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setReports(res.data || []);
+      // Filter for 'done' reports if not an admin/staff (though this is patient dashboard)
+      const finalizedOnly = (res.data || []).filter(r => r.status === 'done');
+      setReports(finalizedOnly);
     } catch (err) {
       console.error("Error loading reports", err);
     } finally {
       setLoading((prev) => ({ ...prev, reports: false }));
+    }
+  };
+
+  const handlePublicSearch = async () => {
+    if (!searchCnic.trim()) return alert("Please enter your CNIC");
+    setSearching(true);
+    setLoading(prev => ({ ...prev, reports: true }));
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/lab/public/check-result/${searchCnic}`);
+      setReports(res.data || []);
+      if ((res.data || []).length === 0) {
+        alert("No finalized results found for this CNIC.");
+      }
+    } catch (err) {
+      console.error("Error searching reports", err);
+      alert("Search failed. Please try again.");
+    } finally {
+      setSearching(false);
+      setLoading(prev => ({ ...prev, reports: false }));
     }
   };
 
@@ -114,10 +157,11 @@ const PatientDashboard = () => {
   // ===== Reports Stats =====
   const reportsStats = useMemo(() => {
     // Correctly filter reports for this patient
-    const patientReports = reports.filter(r =>
+    // If guest, we already have filtered list (from search) or empty list
+    const patientReports = token ? reports.filter(r =>
       (user?.id && String(r.patient_id) === String(user.id)) ||
       (user?.cnic && r.cnic === user.cnic)
-    );
+    ) : reports;
 
     const total = patientReports.length;
     const recent = patientReports.filter((r) => {
@@ -128,7 +172,7 @@ const PatientDashboard = () => {
     }).length;
 
     return { total, recent, list: patientReports };
-  }, [reports, user]);
+  }, [reports, user, token]);
 
   // ===== Weekly Chart =====
   const weeklyData = useMemo(() => {
@@ -229,9 +273,34 @@ const PatientDashboard = () => {
   return (
     <div className="patient-dashboard container-fluid p-3 p-md-4 bg-light min-vh-100">
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold text-primary">👋 Welcome, {displayUser.name}</h2>
-        <div className="text-muted">
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+          <h2 className="fw-bold text-primary mb-1">👋 Welcome, {displayUser.name}</h2>
+          <p className="text-muted small mb-0">{token ? "Your personalized health overview" : "Access your lab results and find doctors easily"}</p>
+        </div>
+        {!token && (
+          <div className="bg-white p-3 rounded-4 shadow-sm border-start border-4 border-warning d-flex align-items-center gap-2" style={{ maxWidth: '400px', flex: '1 1 auto' }}>
+             <div className="flex-grow-1">
+               <label className="small fw-bold text-muted text-uppercase mb-1 d-block" style={{ fontSize: '10px' }}>Check Lab Results</label>
+               <input 
+                 type="text" 
+                 className="form-control form-control-sm border-0 bg-light rounded-pill" 
+                 placeholder="Enter CNIC (e.g. 1234567890123)"
+                 value={searchCnic}
+                 onChange={(e) => setSearchCnic(e.target.value)}
+                 onKeyPress={(e) => e.key === 'Enter' && handlePublicSearch()}
+               />
+             </div>
+             <button 
+               className="btn btn-warning btn-sm rounded-circle p-2 mt-3" 
+               onClick={handlePublicSearch}
+               disabled={searching}
+             >
+               {searching ? "..." : "🔍"}
+             </button>
+          </div>
+        )}
+        <div className="text-muted small">
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
             year: "numeric",
@@ -240,6 +309,37 @@ const PatientDashboard = () => {
           })}
         </div>
       </div>
+
+      {/* ===== LATEST FINALIZED REPORT ALERT ===== */}
+      {reportsStats.total > 0 && reportsStats.list.some(r => r.status === 'done' && r.appointment_id) && (
+        <div className="border-0 shadow-lg rounded-5 mb-5 overflow-hidden text-white" style={{ background: 'linear-gradient(135deg, #0d6efd 0%, #0a4da4 100%)' }}>
+           <div className="p-4 p-md-5 position-relative">
+              <div className="d-flex flex-wrap align-items-center justify-content-between gap-4 position-relative">
+                 <div className="d-flex align-items-center gap-4">
+                    <div className="p-3 bg-white bg-opacity-20 rounded-4">
+                       <ClipboardList size={40} />
+                    </div>
+                    <div>
+                        <h2 className="fw-bold mb-1" style={{ letterSpacing: '1px' }}>LATEST MEDICAL CHART IS READY!</h2>
+                        <p className="mb-0 opacity-75 fw-medium">Your tests, prescriptions, and radiology reports have been unified for your review.</p>
+                    </div>
+                 </div>
+                 <button 
+                    className="btn btn-light rounded-pill px-5 py-3 fw-bold text-primary shadow-lg"
+                    onClick={() => {
+                        const latest = reportsStats.list.find(r => r.status === 'done' && r.appointment_id);
+                        window.open(`/medical-report/${latest.appointment_id}`, '_blank');
+                    }}
+                 >
+                    VIEW FINAL CHART
+                 </button>
+              </div>
+              <div className="position-absolute top-0 end-0 p-5 opacity-10">
+                 <FlaskConical size={120} />
+              </div>
+           </div>
+        </div>
+      )}
 
       {/* ===== Stats Cards ===== */}
       <div className="row g-3 mb-4">
@@ -369,79 +469,113 @@ const PatientDashboard = () => {
           </div>
         </div>
 
-        {/* Recent Lab Reports */}
+        {/* Recent Lab Reports - Redesigned 'khkuly' Premium View */}
         <div className="col-lg-6 mb-4">
-          <div className="card shadow-sm border-0 h-100">
-            <div className="card-header bg-white border-0 fw-bold py-3">
-              <span className="fs-5">📊 Recent Lab Reports</span>
+          <div className="card shadow-2xl border-0 h-100 rounded-5 overflow-hidden">
+            <div className="card-header bg-white border-0 fw-black py-3 d-flex justify-content-between align-items-center">
+              <span className="fs-6 text-dark tracking-tight d-flex align-items-center gap-2">
+                <Activity size={18} className="text-primary" /> RECENT CLINICAL INSIGHTS
+              </span>
               {reports.length > 0 && (
                 <Link
                   to="/lab-results"
-                  className="small text-primary float-end mt-1"
+                  className="fw-black text-primary text-uppercase"
+                  style={{ fontSize: '10px', textDecoration: 'none' }}
                 >
-                  View All
+                  Archive Log <ChevronRight size={12} />
                 </Link>
               )}
             </div>
-            <div className="card-body">
+            <div className="card-body p-2">
               {loading.reports ? (
-                <div className="text-center py-4">
+                <div className="text-center py-5">
                   <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
                 </div>
               ) : reports.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-muted mb-2">No lab reports found</p>
-                  <p className="small text-muted">When your tests are finalized, they will appear here.</p>
+                <div className="text-center py-5 bg-slate-50 rounded-4 m-2 border border-dashed">
+                  <ClipboardList size={40} className="text-muted opacity-25 mb-3" />
+                  <p className="text-muted fw-bold mb-1">No reports pending</p>
+                  <p className="small text-muted px-4">When investigations are finalized, your health trace will appear here.</p>
                 </div>
               ) : (
-                reportsStats.list.slice(0, 5).map((report) => (
-                  <div
-                    key={report.id}
-                    className="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3"
-                  >
-                    <div>
-                      <h6 className="mb-1 fw-bold">
-                        {report.test_name || "General Test"}
-                      </h6>
-                      <div className="d-flex align-items-center gap-2">
-                        <small className="text-muted">
-                          Result: <span className="text-primary fw-bold">{report.result || "Pending"}</span>
-                        </small>
-                        {report.appointment_id && (
-                          <Badge bg="info" className="bg-opacity-10 text-info fw-normal border-0 py-0 px-1" style={{ fontSize: '9px' }}>
-                            APPT: #{report.appointment_id}
-                          </Badge>
+                <div className="px-2">
+                  {reportsStats.list.slice(0, 6).map((report) => (
+                    <div
+                      key={report.id}
+                      className="d-flex align-items-center mb-2 p-2 rounded-4 border border-light bg-white hover-lift transition-all shadow-sm"
+                    >
+                      <div className="flex-shrink-0 bg-primary bg-opacity-10 p-2 rounded-3 text-primary me-3">
+                         {report.test_name?.toLowerCase().includes('blood') ? <FlaskConical size={18} /> : 
+                          report.test_name?.toLowerCase().includes('temp') ? <Thermometer size={18} /> :
+                          <Activity size={18} />}
+                      </div>
+                      
+                      <div className="flex-grow-1 overflow-hidden">
+                        <div className="d-flex align-items-center gap-2 mb-0">
+                           <h6 className="mb-0 fw-black text-dark tracking-tight text-truncate" style={{ fontSize: '11px' }}>
+                             {report.test_name}
+                           </h6>
+                           {report.medication_given && (
+                             <span className="badge text-success fw-black rounded-1" style={{ fontSize: '7px', background: 'rgba(25,135,84,0.1)' }}>
+                               <Pill size={8} className="me-1" /> RX PRESCRIBED
+                             </span>
+                           )}
+                        </div>
+                        <div className="d-flex align-items-center gap-2 mt-1">
+                           <div className="fw-bold text-primary" style={{ fontSize: '10px' }}>{report.result || "Pending"}</div>
+                           <div className="bg-light rounded-pill" style={{ width: '40px', height: '4px' }}>
+                              <div className="bg-primary rounded-pill h-100" style={{ width: report.result?.includes('%') ? report.result : '60%' }}></div>
+                           </div>
+                        </div>
+                      </div>
+
+                      <div className="ms-auto d-flex align-items-center gap-2">
+                        {report.status === 'done' ? (
+                          <div className="text-success" title="Finalized">
+                            <ShieldCheck size={16} />
+                          </div>
+                        ) : (
+                          <div className="text-warning spin-slow">
+                            <Zap size={14} />
+                          </div>
+                        )}
+                        
+                        {report.status === 'done' && report.appointment_id && (
+                          <button 
+                            
+                            
+                            className="btn btn-primary btn-sm rounded-pill p-1 shadow-sm btn-premium-sky border-0 border-focus"
+                            onClick={() => window.open(`/medical-report/${report.appointment_id}`, '_blank')}
+                          >
+                            <ExternalLink size={12} className="text-white" />
+                          </button>
                         )}
                       </div>
                     </div>
-                    <span
-                      className={`badge bg-${report.status === 'done' ? 'success' : 'warning'} rounded-pill px-3 py-2`}
-                    >
-                      {report.status === 'done' ? 'Finalized' : 'Pending'}
-                    </span>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
+            {reports.length > 0 && (
+              <div className="card-footer bg-slate-50 border-0 p-3 text-center">
+                 <p className="small text-muted fw-bold mb-0" style={{ fontSize: '9px' }}>
+                    <Zap size={10} className="text-primary me-1" /> Tap the icon to view complete digital medical charts
+                 </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Weekly Chart */}
-      <div className="card shadow-sm border-0 mt-2">
-        <div className="card-header bg-white border-0 fw-bold py-3">
-          <span className="fs-5">📈 Weekly Appointment Analysis</span>
-        </div>
-        <div className="card-body">
-          {stats.total === 0 ? (
-            <div className="text-center py-4">
-              <p className="text-muted">
-                No appointment data available for chart
-              </p>
-            </div>
-          ) : (
+      {/* Weekly Chart - Only for Logged In Patients with data */}
+      {token && stats.total > 0 && (
+        <div className="card shadow-sm border-0 mt-2">
+          <div className="card-header bg-white border-0 fw-bold py-3">
+            <span className="fs-5">📈 Weekly Appointment Analysis</span>
+          </div>
+          <div className="card-body">
             <Line
               data={weeklyData}
               options={{
@@ -452,9 +586,9 @@ const PatientDashboard = () => {
                 },
               }}
             />
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -488,3 +622,42 @@ const StatCard = ({ title, value, color, icon, loading }) => (
 );
 
 export default PatientDashboard;
+
+// Add high-density styles
+const dashboardStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  
+  .patient-dashboard { font-family: 'Inter', sans-serif; }
+  .fw-black { font-weight: 900; }
+  .tracking-tight { letter-spacing: -0.5px; }
+  .shadow-2xl { box-shadow: 0 15px 35px -12px rgba(0, 0, 0, 0.08); }
+  .bg-slate-50 { background-color: #f8fafc; }
+  
+  .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+  .transition-all { transition: all 0.2s ease-in-out; }
+  
+  .btn-premium-sky {
+    background: linear-gradient(135deg, #0d6efd 0%, #0d5be1 100%);
+    color: white;
+  }
+  
+  .spin-slow {
+    animation: spin 3s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .border-focus:focus { 
+    box-shadow: 0 0 0 2px rgba(13,110,253,0.15) !important;
+  }
+`;
+
+// Inject styles once
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = dashboardStyles;
+  document.head.appendChild(style);
+}

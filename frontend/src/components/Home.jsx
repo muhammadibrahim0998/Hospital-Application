@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDoctors } from "../context/DoctorContext";
 import { useDepartments } from "../context/DepartmentContext";
 import { API_BASE_URL } from "../config";
-import { HeartPulse, Award, ShieldCheck, Users } from "lucide-react";
+import { HeartPulse, Award, ShieldCheck, Users, FileText } from "lucide-react";
 import "../css/Home.css";
 
 export default function Home() {
@@ -40,9 +40,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
-      {/* HERO SLIDER */}
-
+    <div className="bg-white">
+      {/* ── HERO SLIDER ────────────────────────────────────────── */}
       <div className="slider-container">
         {slides.map((slide, i) => (
           <img
@@ -53,80 +52,79 @@ export default function Home() {
           />
         ))}
 
-        <div className="carousel-caption center-caption animate__animated animate__fadeIn">
-          <h2 className="fw-extrabold display-4">{slides[currentIndex].title}</h2>
-          <p className="lead">{slides[currentIndex].desc}</p>
-          <button className="btn btn-danger btn-lg rounded-pill px-4 mt-3" onClick={() => navigate('/about')}>Discover More</button>
+        <div className="center-caption animate__animated animate__fadeIn">
+          <h1 className="display-3 mb-3">{slides[currentIndex].title}</h1>
+          <p className="lead mb-5 opacity-90">{slides[currentIndex].desc}</p>
+          
+          <div className="d-flex flex-wrap justify-content-center gap-3">
+            <button 
+              className="btn-premium btn-premium-primary d-flex align-items-center gap-2" 
+              onClick={() => navigate('/find-doctor')}
+            >
+              <Users size={18} /> Book Appointment
+            </button>
+            <button 
+              className="btn-premium btn-premium-outline bg-white bg-opacity-10 text-white border-white border-opacity-25" 
+              onClick={() => navigate('/about')}
+            >
+              Learn More
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* DEPARTMENTS SECTION REMOVED AS REQUESTED */}
-      {/* 
-      <section className="py-5 bg-light dept-section">
-        <div className="container">
-          <div className="text-center mb-4">
-            <h3 className="fw-bold text-danger">Our Departments</h3>
-            <p className="text-muted small">
-              Specialized departments with expert doctors
-            </p>
+      {/* ── QUICK ACTIONS ──────────────────────────────────────── */}
+      <div className="container quick-card-container">
+        <div className="row g-4 justify-content-center">
+          <div className="col-md-4">
+            <div className="quick-card h-100" onClick={() => navigate('/lab-results')} style={{ cursor: 'pointer' }}>
+              <div className="icon-box" style={{ background: 'rgba(79, 70, 229, 0.1)', color: '#4f46e5' }}>
+                <FileText size={28} />
+              </div>
+              <h4 className="fw-bold mb-2">Lab Results</h4>
+              <p className="text-muted small mb-0">Access your clinical reports and diagnostic history securely.</p>
+            </div>
           </div>
-
-          <div className="row g-4 justify-content-center">
-            {departments.map((dept) => {
-              const count = doctors.filter(
-                (d) => Number(d.department_id) === Number(dept.id),
-              ).length;
-
-              return (
-                <div
-                  key={dept.id}
-                  className="col-12 col-sm-6 col-md-4 col-lg-3"
-                  onClick={() => navigate(`/department/${dept.id}`)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="card h-100 text-center p-4 dept-card border-0 shadow-sm">
-                    <div
-                      className="dept-count mb-3"
-                      style={{
-                        background:
-                          count > 0
-                            ? "linear-gradient(135deg,#6a11cb,#2575fc)"
-                            : "#6c757d",
-                      }}
-                    >
-                      {count}
-                    </div>
-
-                    <h5 className="fw-bold mb-1">{dept.name}</h5>
-                    <p className="text-muted small mb-0">{count} Specialist{count !== 1 ? 's' : ''}</p>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="col-md-4">
+            <div className="quick-card h-100" onClick={() => navigate('/find-doctor')} style={{ cursor: 'pointer' }}>
+              <div className="icon-box" style={{ background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed' }}>
+                <Users size={28} />
+              </div>
+              <h4 className="fw-bold mb-2">Expert Doctors</h4>
+              <p className="text-muted small mb-0">Consult with our network of board-certified clinical specialists.</p>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="quick-card h-100" onClick={() => navigate('/contact')} style={{ cursor: 'pointer' }}>
+              <div className="icon-box" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                <HeartPulse size={28} />
+              </div>
+              <h4 className="fw-bold mb-2">Emergency</h4>
+              <p className="text-muted small mb-0">Dedicated 24/7 medical assistance for urgent healthcare needs.</p>
+            </div>
           </div>
         </div>
-      </section>
-      */}
+      </div>
 
-      {/* DOCTORS */}
+      {/* ── DOCTORS SECTION ───────────────────────────────────── */}
+      <div className="container py-5 my-5">
+        <div className="text-center mb-5">
+          <span className="doctor-tag mb-3">Our Specialists</span>
+          <h2 className="section-title display-5">Meet Our Expert team</h2>
+        </div>
 
-      <div className="container my-5">
-        <h3 className="fw-bold text-center mb-4 text-danger">Our Doctors</h3>
-
-        <div className="row g-4 justify-content-center">
+        <div className="row g-4">
           {doctors.length === 0 ? (
             <div className="col-12 py-5 text-center">
-              <div className="placeholder-container p-5 bg-light rounded-3">
-                <p className="text-muted mb-0">No doctors added yet. Please check back later.</p>
-              </div>
+              <p className="text-muted">No specialists available at the moment.</p>
             </div>
           ) : (
-            doctors.map((doc) => {
+            doctors.slice(0, 4).map((doc) => {
               const dept = departments.find(d => Number(d.id) === Number(doc.department_id));
               return (
-                <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={doc.id}>
-                  <div className="card doctor-card h-100 border-0 shadow-sm">
-                    <div className="doctor-img-container">
+                <div className="col-lg-3 col-md-6" key={doc.id}>
+                  <div className="doctor-card h-100">
+                    <div className="doctor-img-wrapper">
                       <img
                         src={
                           doc.image
@@ -136,14 +134,12 @@ export default function Home() {
                             : "https://img.icons8.com/color/96/doctor-male.png"
                         }
                         alt={doc.name}
-                        className="doctor-img"
                       />
                     </div>
-
-                    <div className="card-body text-center p-3">
-                      <h6 className="fw-bold mb-1">{doc.name}</h6>
-                      <p className="text-primary small fw-semibold mb-1">{dept ? dept.name : doc.specialty}</p>
-                      <p className="text-muted small mb-0">{doc.specialty || "Expert Physician"}</p>
+                    <div className="doctor-info text-center">
+                      <span className="doctor-tag">{dept ? dept.name : "General"}</span>
+                      <h5 className="fw-bold mb-1">{doc.name}</h5>
+                      <p className="text-muted small mb-0">{doc.specialty || "Senior Physician"}</p>
                     </div>
                   </div>
                 </div>
@@ -151,75 +147,65 @@ export default function Home() {
             })
           )}
         </div>
+        
+        <div className="text-center mt-5">
+          <button 
+            className="btn-premium btn-premium-outline"
+            onClick={() => navigate('/find-doctor')}
+          >
+            View All Doctors
+          </button>
+        </div>
       </div>
 
-      {/* ABOUT */}
-
-      <section className="py-5 overflow-hidden">
+      {/* ── ABOUT SECTION ─────────────────────────────────────── */}
+      <section className="py-5 bg-light overflow-hidden">
         <div className="container">
           <div className="row align-items-center g-5">
-            <div className="col-lg-6 mb-4 mb-lg-0 order-2 order-lg-1">
-              <div className="about-img-wrapper position-relative">
+            <div className="col-lg-6">
+              <div className="about-image-stack">
                 <img
                   src="https://images.unsplash.com/photo-1519494026892-80bbd2d670cb?auto=format&fit=crop&w=800&q=80"
                   alt="Modern Hospital"
-                  className="img-fluid rounded-4 shadow-lg main-about-img"
+                  className="img-fluid about-main-img"
                 />
-                <div className="experience-badge bg-danger p-3 rounded-4 shadow text-white text-center position-absolute">
-                  <h4 className="fw-bold mb-0">10+</h4>
-                  <small>Years Excellence</small>
+                <div className="about-floating-badge">
+                  <h3 className="fw-bold mb-0">10+</h3>
+                  <p className="mb-0 small fw-semibold">Years of Medical Excellence</p>
                 </div>
               </div>
             </div>
 
-            <div className="col-lg-6 order-1 order-lg-2">
-              <span className="text-danger fw-bold text-uppercase letter-spacing-2 mb-2 d-block">About Our Hospital</span>
-              <h2 className="fw-bold display-5 mb-4 text-dark">We Provide High Quality <span className="text-danger">Medical Services</span></h2>
-
-              <p className="text-muted lead mb-4">
-                CityCare Hospital is committed to providing compassionate healthcare with cutting-edge technology and a team of world-class specialists.
+            <div className="col-lg-6">
+              <span className="text-primary fw-bold text-uppercase letter-spacing-2 mb-3 d-block">Why Choose Us</span>
+              <h2 className="fw-bold display-4 mb-4">We are redefining the standards of <span className="text-primary">Clinical Care</span></h2>
+              
+              <p className="text-muted lead mb-5">
+                Providing exceptional healthcare with a perfect blend of high-end technology and compassionate medical professionals.
               </p>
 
               <div className="row g-4 mb-5">
-                <div className="col-sm-6">
-                  <div className="d-flex align-items-center gap-3 p-3 rounded-3 bg-white shadow-sm border-start border-danger border-4">
-                    <Award className="text-danger" size={32} />
-                    <span className="fw-semibold">Award Winning Care</span>
+                <div className="col-md-6">
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="p-2 rounded-circle bg-primary bg-opacity-10 text-primary">
+                      <Award size={24} />
+                    </div>
+                    <span className="fw-bold text-dark">Award Winning Service</span>
                   </div>
                 </div>
-                <div className="col-sm-6">
-                  <div className="d-flex align-items-center gap-3 p-3 rounded-3 bg-white shadow-sm border-start border-danger border-4">
-                    <ShieldCheck className="text-danger" size={32} />
-                    <span className="fw-semibold">Certified Specialists</span>
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="d-flex align-items-center gap-3 p-3 rounded-3 bg-white shadow-sm border-start border-danger border-4">
-                    <HeartPulse className="text-danger" size={32} />
-                    <span className="fw-semibold">Patient-First Approach</span>
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="d-flex align-items-center gap-3 p-3 rounded-3 bg-white shadow-sm border-start border-danger border-4">
-                    <Users className="text-danger" size={32} />
-                    <span className="fw-semibold">Dedicated Team</span>
+                <div className="col-md-6">
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="p-2 rounded-circle bg-primary bg-opacity-10 text-primary">
+                      <ShieldCheck size={24} />
+                    </div>
+                    <span className="fw-bold text-dark">Certified Specialists</span>
                   </div>
                 </div>
               </div>
 
-              <div className="d-flex gap-3 mt-4">
-                <button
-                  className="btn btn-danger btn-lg rounded-pill px-5 shadow"
-                  onClick={() => navigate("/about")}
-                >
-                  Read More
-                </button>
-                <button
-                  className="btn btn-outline-dark btn-lg rounded-pill px-5"
-                  onClick={() => navigate("/contact")}
-                >
-                  Contact Us
-                </button>
+              <div className="d-flex gap-3">
+                <button className="btn-premium btn-premium-primary" onClick={() => navigate('/about')}>Discover More</button>
+                <button className="btn-premium btn-premium-outline" onClick={() => navigate('/contact')}>Contact us</button>
               </div>
             </div>
           </div>

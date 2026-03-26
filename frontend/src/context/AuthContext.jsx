@@ -37,7 +37,8 @@ export const AuthProvider = ({ children }) => {
       if (foundRole) {
         loadSession(foundRole);
       } else {
-        setUser(null);
+        // Default to guest patient if no session found
+        setUser({ name: "Guest Patient", role: "patient" });
         setToken(null);
         setLoading(false);
       }
@@ -63,7 +64,7 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
       }
     } else {
-      setUser(null);
+      setUser({ name: "Guest Patient", role: "patient" });
       setToken(null);
     }
     setLoading(false); // session restore complete

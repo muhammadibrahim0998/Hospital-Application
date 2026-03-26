@@ -12,6 +12,7 @@ export const getAllDoctors = async () => {
         SELECT d.*, u.name, u.email 
         FROM doctors d 
         JOIN users u ON d.user_id = u.id
+        WHERE u.role = 'doctor'
     `;
     const [rows] = await db.query(sql);
     return rows;

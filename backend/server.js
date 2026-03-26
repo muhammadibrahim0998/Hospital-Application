@@ -20,9 +20,6 @@ app.use(express.json());
 // Health check
 app.get("/healthz", (_req, res) => res.send("OK"));
 
-// ULTRA DIAGNOSTIC ROUTE
-app.get("/api/v2-check", (req, res) => res.json({ status: "V2_SERVER_ACTIVE", time: new Date().toISOString() }));
-
 // Static
 app.use("/uploads", express.static("uploads"));
 
@@ -48,6 +45,7 @@ app.use("/api/messages", messageRoutes);
 app.get("/api/reports", async (req, res) => {
   const query = "SELECT * FROM reports ORDER BY id DESC";
   try {
+   
     const [results] = await db.query(query);
     res.json(results);
   } catch (err) {
@@ -57,3 +55,4 @@ app.get("/api/reports", async (req, res) => {
 
 const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+

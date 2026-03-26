@@ -22,3 +22,4 @@ export const deleteUser = async (id) => {
   const sql = "DELETE FROM users WHERE id = ?";
   return await db.query(sql, [id]);
 };
+

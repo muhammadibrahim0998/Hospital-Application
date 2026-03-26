@@ -37,6 +37,7 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 import DoctorDashboard from "./pages/DoctorDashboard.jsx";
 import PatientDashboard from "./pages/PatientDashboard.jsx";
 import LabTechnicianDashboard from "./pages/LabTechnicianDashboard";
+import MedicalReport from "./pages/MedicalReport.jsx";
 
 import DoctorLab from "./Lab/DoctorLab.jsx";
 import LabResults from "./Lab/LabResults.jsx";
@@ -144,13 +145,15 @@ function AppContent() {
 
   // Skip login for patient dashboard and find-doctor to allow "Direct Access"
   const isPatientPath = location.pathname.startsWith("/patient") ||
+                        location.pathname.startsWith("/lab-results") ||
+                        location.pathname.startsWith("/medical-report") ||
                         location.pathname.startsWith("/find-doctor") ||
                         location.pathname.startsWith("/doctors") ||
                         location.pathname === "/";
 
-  // Not logged in + trying to access any non-public page AND not a patient path → go to login
+  // Not logged in + trying to access any non-public page AND not a patient path → go to Patient Dashboard
   if (!token && !isPublicPath && !isPatientPath) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to="/patient/dashboard" replace />;
   }
 
   // Logged in + on a public page (login/register) → go to own dashboard
@@ -166,7 +169,7 @@ function AppContent() {
 
   return (
     <Routes>
-      {/* root path: now shows Home to everyone */}
+      {/* root path: now shows Patient Dashboard to everyone as requested */}
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
       </Route>
@@ -180,8 +183,6 @@ function AppContent() {
         <Route path="/" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="appointments" element={<Appointments />} />
-          <Route path="doctors" element={<Doctors />} />
-          <Route path="find-doctor" element={<Doctors />} />
           <Route path="doctor/:id" element={<DoctorProfile />} />
           <Route path="/admin/add-doctor" element={<AddDoctor />} />
           <Route path="department/:id" element={<DepartmentDetails />} />
@@ -235,6 +236,8 @@ function AppContent() {
         <Route path="doctors" element={<Doctors />} />
         <Route path="find-doctor" element={<Doctors />} />
       </Route>
+      {/* Standalone Route for completely clean printing without Layout */}
+      <Route path="medical-report/:appointmentId" element={<MedicalReport />} />
 
       <Route element={<PrivateRoute allowedRoles={["doctor", "lab_technician", "admin", "hospital_admin"]} />}>
         <Route path="/" element={<Layout />}>

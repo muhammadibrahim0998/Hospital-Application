@@ -4,7 +4,10 @@ import { bookAppointment, getDoctorsList, getMyAppointments } from "../controlle
 
 const router = express.Router();
 
-router.get("/doctors", authorizeRoles("patient", "admin", "lab_technician", "doctor"), getDoctorsList);
-router.get("/appointments", authorizeRoles("patient", "admin"), getMyAppointments);
+// Public routes (no token required)
+router.get("/doctors", getDoctorsList);
+
+// Protected routes (token and role required)
+router.get("/appointments", verifyToken, authorizeRoles("patient", "admin"), getMyAppointments);
 
 export default router;
