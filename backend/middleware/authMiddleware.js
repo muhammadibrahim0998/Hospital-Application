@@ -85,7 +85,7 @@ export const scopeToHospital = (req, res, next) => {
 
   if (role === "super_admin") {
     // Super admin can explicitly query a specific hospital or all
-    req.scopedHospitalId = req.query.hospitalId ? parseInt(req.query.hospitalId) : null;
+    req.scopedHospitalId = req.query.hospitalId || null;
     return next();
   }
 
