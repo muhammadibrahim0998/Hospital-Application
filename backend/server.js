@@ -1,9 +1,11 @@
 import dns from "node:dns";
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import mongoose from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -15,14 +17,12 @@ import labRoutes from "./routes/labRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import LabResult from "./models/LabResultModel.js";
 
-dotenv.config();
-
 const app = express();
 
 // Enable CORS to allow the frontend to communicate with this backend.
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000", "http://localhost:5174"],
+    origin: process.env.FRONTEND_URL || "http://localhost:5174",
     credentials: true,
   }),
 );
