@@ -134,6 +134,20 @@ export default function Layout() {
                 className="px-3 mb-3 pb-3"
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
               >
+                {/* Close button row */}
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                  <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>
+                    Menu
+                  </span>
+                  <button
+                    className="sidebar-close-btn"
+                    onClick={() => setSidebarOpen(false)}
+                    title="Close sidebar"
+                  >
+                    ✕
+                  </button>
+                </div>
+
                 <div className="d-flex align-items-center gap-3">
                   <div
                     style={{
@@ -162,6 +176,7 @@ export default function Layout() {
                   </div>
                 </div>
               </div>
+
 
               {/* ── Navigation ──────────────────────────────── */}
               <div className="flex-grow-1 px-3" style={{ overflowY: "auto" }}>
