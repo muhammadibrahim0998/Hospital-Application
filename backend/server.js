@@ -29,6 +29,13 @@ app.use(cors({
 
 app.use(express.json());
 
+// Root route for alive confirmation
+app.get("/", (_req, res) => res.json({
+  message: "Hospital Management System API is LIVE",
+  status: "success",
+  database: "connected"
+}));
+
 // Health check
 app.get("/healthz", (_req, res) => res.send("OK"));
 
