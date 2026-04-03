@@ -3,15 +3,25 @@
 /* Navbar container */
 .navbar-custom {
   z-index: 1100;
-  height: 65px;
+  height: 56px;
   transition: 0.3s;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
-/* Sidebar button */
+/* Sidebar button — now lives on the RIGHT, removed from left */
 .navbar-btn {
   border-radius: 8px;
-  border: 1px solid black;
+  border: 1px solid rgba(255,255,255,0.3);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
 }
 
 /* Logo container */
@@ -35,20 +45,19 @@
   color: #000;
 }
 
-
+/* ── SEARCH BAR ── */
 .navbar-search-container {
   max-width: 420px;
   width: 100%;
   border-radius: 50px;
   background: #ffffff;
-  border: 4px solid rgba(255, 255, 255, 0.2);
+  border: 4px solid rgba(255, 255, 255, 0.2) !important;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
   padding: 4px;
   transition: 0.3s;
 }
-
 
 .navbar-search-input {
   flex: 1;
@@ -60,7 +69,6 @@
   font-weight: 600;
   font-size: 14px;
 }
-
 
 .navbar-search-btn {
   background: #0d6efd;
@@ -78,19 +86,16 @@
   box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
 }
 
-
 .navbar-search-btn:hover {
   background: #0b5ed7;
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
 }
 
-
 .navbar-search-input::placeholder {
   color: #999;
   font-size: 14px;
 }
-
 
 .navbar-search-input:focus {
   outline: none;
@@ -105,13 +110,14 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 4px solid;
+  border: 3px solid rgba(255,255,255,0.3);
   transition: 0.3s;
+  font-weight: 700;
 }
 
 /* Notification bell */
 .navbar-bell {
-  border: 5px solid;
+  border: 3px solid rgba(255,255,255,0.3);
 }
 
 /* User dropdown */
@@ -134,7 +140,40 @@
   padding: 4px 16px;
   cursor: pointer;
   color: red;
-  ;
   border: none;
   background: transparent;
+}
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  /* Hide search bar completely on mobile */
+  .navbar-search-container {
+    display: none !important;
+  }
+
+  /* Give content area breathing room below navbar */
+  body {
+    padding-top: 0;
+  }
+
+  .navbar-custom {
+    height: 52px;
+  }
+
+  /* Smaller logo text on mobile */
+  .navbar-logo span {
+    font-size: 14px;
+  }
+
+  .navbar-logo-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-logo span {
+    display: none;
+  }
 }

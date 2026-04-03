@@ -345,22 +345,8 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
       }}
     >
       <div className="container-fluid d-flex align-items-center justify-content-between px-4">
-        {/* LEFT SIDE */}
+        {/* LEFT SIDE — logo only */}
         <div className="d-flex align-items-center gap-3">
-          <button
-            className="btn navbar-btn"
-            style={{
-              background: currentTheme.box,
-              color: currentTheme.text,
-              borderColor: currentTheme.border,
-            }}
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            <BsList size={20} />
-          </button>
-
-
-
           <div
             className="navbar-logo"
             style={{ color: currentTheme.text }}
@@ -405,7 +391,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
         {/* RIGHT SIDE */}
         <div className="d-flex align-items-center gap-3">
 
-
           {/* Notification bell */}
           <div
             className="navbar-icon navbar-bell"
@@ -417,6 +402,22 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
           >
             <BsBell size={18} />
           </div>
+
+          {/* Toggle button — RIGHT side with user initial */}
+          <button
+            className="btn navbar-btn"
+            style={{
+              background: currentTheme.box,
+              color: currentTheme.text,
+              borderColor: currentTheme.border,
+            }}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <BsList size={20} />
+            <span style={{ fontSize: "13px", fontWeight: 700 }}>
+              {isLoggedIn ? user?.name?.charAt(0)?.toUpperCase() || "M" : "M"}.
+            </span>
+          </button>
 
           {/* User dropdown */}
           <div className="position-relative">
