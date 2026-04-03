@@ -1,46 +1,23 @@
-import db from "../config/db.js";
+import mongoose from "mongoose";
 
-// Create appointment
-export const createAppointment = async (data) => {
-  const { Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id, hospital_id } = data;
-  const sql = "INSERT INTO appointments (Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id, hospital_id, status) VALUES (?,?,?,?,?,?,?,?,?,?,?, 'scheduled')";
-  return await db.query(sql, [Doctor, DoctorPhone, Fee, Patient, Phone, CNIC, Date, Time, patient_id, doctor_id, hospital_id]);
-};
+const AppointmentSchema = new mongoose.Schema({
+  Patient: { type: String, required: true },
+  Doctor: { type: String, required: true },
+  CNIC: { type: String, required: true },
+  Date: { type: String, required: true },
+  Time: { type: String, required: true },
+  Phone: { type: String, required: true },
+  Fee: { type: String, required: true },
+  doctor_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', default: null },
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  hospital_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital', default: null },
+  status: { type: String, enum: ['scheduled', 'completed', 'cancelled'], default: 'scheduled' }
+}, { 
+  timestamps: { createdAt: 'created_at' },
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
-// Get all appointments (Admin)
-export const getAllAppointments = async () => {
-  const sql = "SELECT * FROM appointments";
-  const [rows] = await db.query(sql);
-  return rows;
-};
+export const Appointment = mongoose.model("Appointment", AppointmentSchema);
 
-// Get appointments for a doctor (by ID)
-export const getDoctorAppointments = async (doctorId) => {
-  const sql = "SELECT * FROM appointments WHERE doctor_id = ?";
-  const [rows] = await db.query(sql, [doctorId]);
-  return rows;
-};
-
-// Get appointments for a patient (by ID)
-export const getPatientAppointments = async (patientId) => {
-  const sql = "SELECT * FROM appointments WHERE patient_id = ?";
-  const [rows] = await db.query(sql, [patientId]);
-  return rows;
-};
-
-// Update appointment status
-export const updateAppointmentStatus = async (id, status) => {
-  const sql = "UPDATE appointments SET status = ? WHERE id = ?";
-  return await db.query(sql, [status, id]);
-};
-
-// Update appointment (full)
-export const updateAppointment = async (id, data) => {
-  const { Date, Time, status } = data;
-  const sql = "UPDATE appointments SET Date = ?, Time = ?, status = ? WHERE id = ?";
-  return await db.query(sql, [Date, Time, status, id]);
-};
-export const deleteAppointment = async (id) => {
-  const sql = "DELETE FROM appointments WHERE id = ?";
-  return await db.query(sql, [id]);
-};
+export default Appointment;

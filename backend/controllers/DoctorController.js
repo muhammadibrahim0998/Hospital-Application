@@ -1,12 +1,12 @@
-import { getDoctorByUserId, getDoctorById } from "../models/DoctorModel.js";
-import { getDoctorAppointments, updateAppointmentStatus } from "../models/AppointmentModel.js";
+import { Doctor } from "../models/DoctorModel.js";
+import { Appointment } from "../models/appointmentModel.js";
 
 export const getMyAppointments = async (req, res) => {
     try {
-        const doctor = await getDoctorByUserId(req.userId);
+        const doctor = await Doctor.findOne({ user_id: req.userId });
         if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
 
-        const appointments = await getDoctorAppointments(doctor.id);
+        const appointments = await Appointment.find({ doctor_id: doctor._id }).sort({ created_at: 1 });
         res.json(appointments);
     } catch (err) {
         res.status(500).json(err);
@@ -15,9 +15,14 @@ export const getMyAppointments = async (req, res) => {
 
 export const getProfile = async (req, res) => {
     try {
-        const doctor = await getDoctorByUserId(req.userId);
+        const doctor = await Doctor.findOne({ user_id: req.userId }).populate('user_id', 'name email');
         if (!doctor) return res.status(404).json({ message: "Profile not found" });
-        res.json(doctor);
+        const data = {
+            ...doctor.toObject(),
+            name: doctor.user_id?.name,
+            email: doctor.user_id?.email
+        };
+        res.json(data);
     } catch (err) {
         res.status(500).json(err);
     }
@@ -27,7 +32,7 @@ export const updateStatus = async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
     try {
-        await updateAppointmentStatus(id, status);
+        await Appointment.findByIdAndUpdate(id, { status });
         res.json({ message: "Appointment updated" });
     } catch (err) {
         res.status(500).json(err);
@@ -36,7 +41,7 @@ export const updateStatus = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const doctor = await getDoctorByUserId(req.userId);
+        const doctor = await Doctor.findOne({ user_id: req.userId });
         if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
 
         const { specialization, contact_info, departmentId, fieldId, phone, fee, whatsappNumber } = req.body;
@@ -50,14 +55,13 @@ export const updateProfile = async (req, res) => {
             phone,
             fee,
             whatsapp_number: whatsappNumber,
-            ...(image && { image })
         };
+        if (image) updateData.image = image;
 
         // Filter out undefined values
         Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
-        const { updateDoctor } = await import("../models/DoctorModel.js");
-        await updateDoctor(doctor.id, updateData);
+        await Doctor.findByIdAndUpdate(doctor._id, updateData);
 
         res.json({ message: "Profile updated successfully" });
     } catch (err) {

@@ -8,23 +8,35 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // true until session is restored
 
   // Map backend roles to the requested storage keys
+  // Map backend roles to the requested storage keys
   const getRoleKey = (role) => {
-    const r = role?.toLowerCase();
-    if (r === "super_admin") return "superadmin";
-    if (r === "hospital_admin") return "hospitaladmin";
+    const r = role?.toLowerCase()?.replace(/_/g, "");
+    if (r === "superadmin") return "superadmin";
+    if (r === "hospitaladmin") return "hospitaladmin";
+    if (r === "labtechnician") return "labtechnician";
     return r; // admin, doctor, patient
+  };
+
+  const normalizeRole = (role) => {
+    const r = role?.toLowerCase()?.replace(/[-_]/g, "");
+    if (r === "superadmin") return "super_admin";
+    if (r === "hospitaladmin") return "hospital_admin";
+    if (r === "labtechnician") return "lab_technician";
+    return r;
   };
 
   // Detect which role session should be active based on current URL path
   // NOTE: /hospital-admin MUST be checked before /admin to avoid prefix collision
   const detectActiveRole = useCallback(() => {
     const path = window.location.pathname.toLowerCase();
-    if (path.includes("/super-admin")) return "super_admin";
-    if (path.includes("/hospital-admin")) return "hospital_admin"; // must be before /admin
+    if (path.includes("/super-admin") || path.includes("/superadmin")) return "super_admin";
+    if (path.includes("/hospital-admin") || path.includes("/hospitaladmin")) return "hospital_admin"; // must be before /admin
     if (path.includes("/admin")) return "admin";
-    if (path.includes("/doctor")) return "doctor";
+    if (path.includes("/doctor/dashboard") || path.includes("doctor-lab")) return "doctor";
     if (path.includes("/patient")) return "patient";
-    return sessionStorage.getItem("activeRole");
+    
+    const stored = sessionStorage.getItem("activeRole");
+    return stored ? normalizeRole(stored) : null;
   }, []);
 
   const refreshAuth = useCallback(() => {
@@ -71,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (userData, userToken) => {
-    const role = userData.role.toLowerCase();
+    const role = normalizeRole(userData.role);
     const key = getRoleKey(role);
 
     localStorage.setItem(`${key}_token`, userToken);
@@ -98,7 +110,7 @@ export const AuthProvider = ({ children }) => {
 
   const hasModule = (moduleName) => {
     if (!user) return false;
-    const role = user.role?.toLowerCase();
+    const role = normalizeRole(user.role);
     if (role === "super_admin") return true;
     if (role === "hospital_admin") {
       const mods = user.modules || {};
@@ -110,8 +122,25 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     refreshAuth();
     // Re-check auth on navigation or storage events
-    window.addEventListener("storage", refreshAuth);
-    return () => window.removeEventListener("storage", refreshAuth);
+    // When storage changes (e.g., doctor logs in Tab B), re-detect role from THIS tab's URL
+    const handleStorage = () => {
+      const path = window.location.pathname.toLowerCase();
+      // Always prioritize URL path to avoid cross-tab session interference
+      let roleFromPath = null;
+      if (path.includes("/super-admin") || path.includes("/superadmin")) roleFromPath = "super_admin";
+      else if (path.includes("/hospital-admin") || path.includes("/hospitaladmin")) roleFromPath = "hospital_admin";
+      else if (path.includes("/admin")) roleFromPath = "admin";
+      else if (path.includes("/doctor/dashboard") || path.includes("doctor-lab")) roleFromPath = "doctor";
+      else if (path.includes("/patient") || path.includes("/lab-results") || path.includes("/find-doctor") || path.includes("/appointments") || path === "/" || path.includes("/doctors") || path.includes("/doctor/")) roleFromPath = "patient";
+      
+      if (roleFromPath) {
+        // Only reload if the stored session for THIS role changed
+        loadSession(roleFromPath);
+      }
+      // If path gives no hint, don't override current session
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, [refreshAuth]);
 
   return (

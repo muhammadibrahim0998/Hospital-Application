@@ -359,6 +359,8 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
             <BsList size={20} />
           </button>
 
+
+
           <div
             className="navbar-logo"
             style={{ color: currentTheme.text }}

@@ -1,10 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { createUser, findUserByEmail } from "../models/UserModel.js";
-import { createDoctor } from "../models/DoctorModel.js";
-import { createPatient } from "../models/PatientModel.js";
-import { findHospitalAdminByEmail } from "../models/HospitalModel.js";
-import db from "../config/db.js";
+import { User } from "../models/UserModel.js";
+import { Patient } from "../models/PatientModel.js";
+import { HospitalAdmin } from "../models/HospitalModel.js"; 
 
 /**
  * register
@@ -15,7 +13,7 @@ export const register = async (req, res) => {
   const { name, email, password, role, hospitalId, gender, age, phone, cnic } = req.body;
 
   try {
-    const existingUsers = await findUserByEmail(email);
+    const existingUsers = await User.find({ email });
     if (existingUsers.length > 0)
       return res.status(400).json({ message: "User already exists" });
 
@@ -28,27 +26,30 @@ export const register = async (req, res) => {
     console.log("Registering user:", name, email, userRole);
 
     // Insert user with hospital_id and demographic info
-    const [userResult] = await db.query(
-      "INSERT INTO users (name, email, cnic, password, role, hospital_id, gender, age, phone) VALUES (?,?,?,?,?,?,?,?,?)",
-      [name, email, cnic || null, hash, userRole, hospitalId || null, gender || 'Male', age || 30, phone || '03000000000']
-    );
-    const userId = userResult.insertId;
+    const user = await User.create({
+      name,
+      email,
+      cnic: cnic || null,
+      password: hash,
+      role: userRole,
+      hospital_id: hospitalId || null,
+      gender: gender || 'Male',
+      age: age || 30,
+      phone: phone || '03000000000'
+    });
+    const userId = user._id;
     console.log("User created with ID:", userId);
 
     // Only create patient model context
     if (userRole === "patient") {
-      await createPatient([userId, "", ""]);
-      if (hospitalId) {
-        await db.query("UPDATE patients SET hospital_id = ? WHERE user_id = ?", [hospitalId, userId]);
-      }
+      await Patient.create({ user_id: userId, contact_info: "", medical_history: "", hospital_id: hospitalId || null });
     }
 
     res.json({ message: "User registered successfully" });
   } catch (err) {
     console.error("Critical Registration Error:", err);
     res.status(500).json({
-      message: "Backend Error: " + (err.sqlMessage || err.message),
-      error: err.code
+      message: "Backend Error: " + err.message,
     });
   }
 };
@@ -63,19 +64,26 @@ export const register = async (req, res) => {
  */
 export const login = async (req, res) => {
   const { email, password } = req.body;
+  console.log("Login Attempt:", email);
 
   try {
+
     // ── Step 1: Check if this email belongs to a hospital_admin ─────────────
-    const hospitalAdmins = await findHospitalAdminByEmail(email);
+    const hospitalAdmins = await HospitalAdmin.find({ email }).populate('hospital_id', 'name');
+    console.log("Hospital Admins found:", hospitalAdmins.length);
 
     if (hospitalAdmins.length > 0) {
       const ha = hospitalAdmins[0];
+      console.log("HA Found, checking activity...");
 
       if (!ha.is_active) {
+        console.log("HA Inactive");
         return res.status(403).json({ message: "This account has been disabled by Super Admin." });
       }
 
+      console.log("Comparing password for HA...");
       const isMatch = await bcrypt.compare(password, ha.password);
+      console.log("Password Match:", isMatch);
       if (!isMatch) return res.status(400).json({ message: "Wrong password" });
 
       // Parse modules from JSON
@@ -88,10 +96,10 @@ export const login = async (req, res) => {
 
       const token = jwt.sign(
         {
-          id: ha.id,
+          id: ha._id,
           role: "hospital_admin",
           hospitalId: ha.hospital_id,
-          hospitalAdminId: ha.id,
+          hospitalAdminId: ha._id,
         },
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
@@ -100,7 +108,7 @@ export const login = async (req, res) => {
       return res.json({
         token,
         user: {
-          id: ha.id,
+          id: ha._id,
           name: ha.name,
           email: ha.email,
           role: "hospital_admin",
@@ -112,18 +120,26 @@ export const login = async (req, res) => {
     }
 
     // ── Step 2: Check users table (super_admin, doctor, patient) ─────────────
-    const users = await findUserByEmail(email);
-    if (users.length === 0)
+    console.log("Checking Users collection...");
+    const users = await User.find({ email });
+    console.log("Users found:", users.length);
+    if (users.length === 0) {
+      console.log("User NOT found in DB");
       return res.status(404).json({ message: "User not found" });
+    }
 
     const user = users[0];
+    console.log("User Found:", user.role, "Checking password...");
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Password Match:", isMatch);
     if (!isMatch) return res.status(400).json({ message: "Wrong password" });
 
     const tokenPayload = {
-      id: user.id,
+      id: user._id,
       role: user.role,
       cnic: user.cnic || null,
+      phone: user.phone || null,
+      name: user.name || null,
     };
 
     // Attach hospitalId to token if user is scoped to a hospital
@@ -135,10 +151,11 @@ export const login = async (req, res) => {
       expiresIn: "1d",
     });
 
+    console.log("Login Successful for", user.role);
     return res.json({
       token,
       user: {
-        id: user.id,
+        id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,

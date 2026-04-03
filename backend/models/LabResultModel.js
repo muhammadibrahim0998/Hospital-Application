@@ -1,77 +1,28 @@
-import db from "../config/db.js";
+import mongoose from "mongoose";
 
-// Create a new lab test/report
-export const createReport = async (data) => {
-    const {
-        patient_name, doctor_name, test_name, cnic, description,
-        normal_range, price, category, hospital_id, patient_id, doctor_id, appointment_id
-    } = data;
-    const sql = `
-        INSERT INTO lab_results 
-        (patient_name, doctor_name, test_name, cnic, description, normal_range, price, category, status, date, hospital_id, patient_id, doctor_id, appointment_id) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?, ?)
-    `;
-    return await db.query(sql, [
-        patient_name, doctor_name, test_name, cnic, description,
-        normal_range, price, category, hospital_id, patient_id, doctor_id, appointment_id
-    ]);
-};
+const LabResultSchema = new mongoose.Schema({
+    patient_name: { type: String, required: true },
+    doctor_name: { type: String, required: true },
+    test_name: { type: String, required: true },
+    cnic: { type: String, required: true }, phone: { type: String },
+    description: { type: String },
+    normal_range: { type: String },
+    price: { type: Number },
+    category: { type: String },
+    status: { type: String, enum: ['pending', 'done'], default: 'pending' },
+    date: { type: Date, default: Date.now },
+    hospital_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital', default: null },
+    patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', default: null },
+    doctor_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', default: null },
+    appointment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment', default: null },
+    result: { type: String },
+    medication_given: { type: String }
+}, { 
+    timestamps: { createdAt: 'created_at' },
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
-// Get all tests/reports (optionally filtered by hospital)
-export const getAllReports = async (hospitalId = null) => {
-    let sql = "SELECT * FROM lab_results";
-    let params = [];
-    if (hospitalId) {
-        sql += " WHERE (hospital_id = ? OR hospital_id IS NULL)";
-        params.push(hospitalId);
-    }
-    sql += " ORDER BY created_at DESC";
-    const [rows] = await db.query(sql, params);
-    return rows;
-};
+export const LabResult = mongoose.model("LabResult", LabResultSchema);
 
-// Perform a test (update result and set status to 'done')
-export const performTest = async (id, result) => {
-    const sql = "UPDATE lab_results SET result = ?, status = 'done' WHERE id = ?";
-    return await db.query(sql, [result, id]);
-};
-
-// Give medication for a test
-export const giveMedication = async (id, medication) => {
-    const sql = "UPDATE lab_results SET medication_given = ? WHERE id = ?";
-    return await db.query(sql, [medication, id]);
-};
-
-// Get reports for a specific patient by ID or CNIC
-export const getPatientReports = async (patientId, cnic = null) => {
-    let sql = "SELECT * FROM lab_results WHERE patient_id = ?";
-    let params = [patientId];
-    
-    if (cnic) {
-        sql += " OR (cnic = ? AND cnic IS NOT NULL)";
-        params.push(cnic);
-    }
-    
-    sql += " ORDER BY created_at DESC";
-    const [rows] = await db.query(sql, params);
-    return rows;
-};
-
-// Get reports ordered by a specific doctor
-export const getDoctorReports = async (doctorId) => {
-    const sql = "SELECT * FROM lab_results WHERE doctor_id = ? ORDER BY created_at DESC";
-    const [rows] = await db.query(sql, [doctorId]);
-    return rows;
-};// Get reports for a specific appointment
-export const getReportsByAppointment = async (appointmentId) => {
-    const sql = "SELECT * FROM lab_results WHERE appointment_id = ? ORDER BY created_at DESC";
-    const [rows] = await db.query(sql, [appointmentId]);
-    return rows;
-};
-
-// Get PUBLIC reports for a patient by CNIC (ONLY 'done' results)
-export const getPublicReportsByCnic = async (cnic) => {
-    const sql = "SELECT * FROM lab_results WHERE cnic = ? AND cnic IS NOT NULL AND status = 'done' ORDER BY created_at DESC";
-    const [rows] = await db.query(sql, [cnic]);
-    return rows;
-};
+export default LabResult;

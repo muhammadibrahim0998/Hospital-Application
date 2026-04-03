@@ -1,67 +1,57 @@
-import { createReport, getAllReports, getPatientReports, getDoctorReports, performTest, giveMedication, getPublicReportsByCnic, getReportsByAppointment } from "../models/LabResultModel.js";
-import { getDoctorByUserId } from "../models/DoctorModel.js";
-import { getPatientByUserId, getPatientByCnic } from "../models/PatientModel.js";
+import { LabResult } from "../models/LabResultModel.js";
+import { Doctor } from "../models/DoctorModel.js";
+import { Patient } from "../models/PatientModel.js";
 
-// Add a new lab test
 export const addReport = async (req, res) => {
     try {
         const { patient_name, patient_id, test_name, cnic, description, normal_range, price, category, appointment_id } = req.body;
-
-        // Use doctor name / ID from token
-        const doctor_id = req.userId;
+        const doctor_id = req.userId || req.body.doctor_id;
         const hospital_id = req.hospitalId;
-
-        // We could fetch the doctor's name from DB if wanted, or just trust req.body.doctor_name
         const doctor_name = req.body.doctor_name || "Physician";
 
-        await createReport({
-            patient_name,
-            patient_id, // If provided by frontend
-            doctor_id,
-            hospital_id,
-            doctor_name,
+        await LabResult.create({
+            patient_name, 
+            patient_id: patient_id || null, 
+            doctor_id: doctor_id || null, 
+            hospital_id: hospital_id || null, 
+            doctor_name, 
             test_name,
-            cnic,
-            description,
-            normal_range,
-            price,
-            category,
-            appointment_id
+            cnic, 
+            description, 
+            normal_range, 
+            price, 
+            category, 
+            appointment_id: appointment_id || null
         });
         res.status(201).json({ message: "Lab test added successfully" });
     } catch (err) {
-        console.error("Error adding lab test:", err);
-        res.status(500).json({ message: "Internal server error" });
+        console.error("Error creating lab report:", err);
+        res.status(500).json({ message: "Internal server error", error: err.message });
     }
 };
 
-// Perform test (update result)
 export const performLabTest = async (req, res) => {
     try {
         const { id } = req.params;
         const { result } = req.body;
-        await performTest(id, result);
+        await LabResult.findByIdAndUpdate(id, { result, status: 'done' });
         res.json({ message: "Test result updated" });
     } catch (err) {
-        console.error("Error performing test:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 };
 
-// Give medication
 export const giveMedicationToPatient = async (req, res) => {
     try {
         const { id } = req.params;
         const { medication } = req.body;
-        await giveMedication(id, medication);
+        await LabResult.findByIdAndUpdate(id, { medication_given: medication });
         res.json({ message: "Medication updated" });
     } catch (err) {
-        console.error("Error giving medication:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 };
 
-// Fetch reports based on user role and hospital scope
 export const fetchReports = async (req, res) => {
     try {
         const role = req.userRole ? req.userRole.toLowerCase() : '';
@@ -71,56 +61,53 @@ export const fetchReports = async (req, res) => {
         let reports = [];
 
         if (role === 'super_admin') {
-            reports = await getAllReports();
-        } else if (role === 'hospital_admin') {
-            reports = await getAllReports(hospitalId);
-        } else if (role === 'lab_technician') {
-            // Lab technician sees all tests for their hospital
-            reports = await getAllReports(hospitalId);
+            reports = await LabResult.find().sort({ created_at: -1 });
+        } else if (role === 'hospital_admin' || role === 'lab_technician' || role === 'admin') {
+            const filter = hospitalId ? { hospital_id: hospitalId } : {};
+            reports = await LabResult.find(filter).sort({ created_at: -1 });
         } else if (role === 'doctor') {
-            // Doctors see all tests for their hospital OR tests they ordered personally
-            const hospitalReports = await getAllReports(hospitalId);
-            const orderedByMe = await getDoctorReports(userId);
-            
-            // Merge and remove duplicates
-            const allMerged = [...hospitalReports, ...orderedByMe];
-            const uniqueReports = Array.from(new Map(allMerged.map(item => [item.id, item])).values());
-            reports = uniqueReports.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            const filter = hospitalId ? { $or: [{ hospital_id: hospitalId }, { doctor_id: userId }] } : { doctor_id: userId };
+            reports = await LabResult.find(filter).sort({ created_at: -1 });
         } else if (role === 'patient') {
             const userCnic = req.userCnic;
-            reports = await getPatientReports(userId, userCnic);
-        } else if (role === 'admin') {
-            reports = await getAllReports(hospitalId);
+            const filter = { patient_id: userId };
+            if (userCnic) filter.$or = [{ patient_id: userId }, { cnic: userCnic }];
+            reports = await LabResult.find(filter).sort({ created_at: -1 });
         }
 
         res.json(reports);
     } catch (err) {
-        console.error("Error fetching reports:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 };
 
-// Public Fetch (Search by CNIC - Guests)
 export const fetchPublicReports = async (req, res) => {
     try {
         const { cnic } = req.params;
         if (!cnic) return res.status(400).json({ message: "CNIC is required" });
-        const reports = await getPublicReportsByCnic(cnic);
+        const reports = await LabResult.find({ cnic: cnic, status: 'done' }).sort({ created_at: -1 });
         res.json(reports);
     } catch (err) {
-        console.error("Error fetching public reports:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 };
 
-// Fetch report for a specific appointment (Unified View)
 export const fetchAppointmentReport = async (req, res) => {
     try {
         const { appointmentId } = req.params;
-        const reports = await getReportsByAppointment(appointmentId);
+        const reports = await LabResult.find({ appointment_id: appointmentId }).sort({ created_at: -1 });
         res.json(reports);
     } catch (err) {
-        console.error("Error fetching appointment report:", err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const deleteReport = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await LabResult.findByIdAndDelete(id);
+        res.json({ message: "Report deleted successfully" });
+    } catch (err) {
         res.status(500).json({ message: "Internal server error" });
     }
 };

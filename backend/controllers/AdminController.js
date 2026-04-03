@@ -1,16 +1,8 @@
-import { createUser } from "../models/UserModel.js";
-import {
-  createDoctor,
-  getAllDoctors,
-  updateDoctorStatus,
-  getDoctorById,
-  deleteDoctor,
-} from "../models/DoctorModel.js";
-import { updateUser, deleteUser } from "../models/UserModel.js";
-import { getAllPatients } from "../models/PatientModel.js";
-import { getAllAppointments } from "../models/AppointmentModel.js";
+import { User } from "../models/UserModel.js";
+import { Doctor } from "../models/DoctorModel.js";
+import { Patient } from "../models/PatientModel.js";
+import { Appointment } from "../models/appointmentModel.js";
 import bcrypt from "bcryptjs";
-import db from "../config/db.js";
 
 export const addDoctor = async (req, res) => {
   try {
@@ -32,20 +24,31 @@ export const addDoctor = async (req, res) => {
     // Determine hospital_id from the acting admin
     const hospitalId = req.hospitalId || null;
 
-    // Insert user with hospital_id
-    const [userInsert] = await db.query(
-      "INSERT INTO users (name, email, password, role, hospital_id) VALUES (?,?,?,?,?)",
-      [name, email, hash, "doctor", hospitalId]
-    );
-    const userId = userInsert.insertId;
+    // Insert user with hospital_id using Mongoose
+    const user = await User.create({
+      name,
+      email,
+      password: hash,
+      role: "doctor",
+      hospital_id: hospitalId
+    });
+    const userId = user._id;
 
     const imagePath = req.file ? `/uploads/doctors/${req.file.filename}` : null;
 
-    // Insert doctor with hospital_id
-    await db.query(
-      `INSERT INTO doctors (user_id, specialization, contact_info, image, department_id, field_id, phone, fee, whatsapp_number, hospital_id) VALUES (?,?,?,?,?,?,?,?,?,?)`,
-      [userId, specialization, contact_info, imagePath, departmentId, fieldId, phone, fee || 500, whatsappNumber, hospitalId]
-    );
+    // Insert doctor with hospital_id using Mongoose
+    await Doctor.create({
+      user_id: userId,
+      specialization,
+      contact_info,
+      image: imagePath,
+      department_id: departmentId,
+      field_id: fieldId,
+      phone,
+      fee: fee || 500,
+      whatsapp_number: whatsappNumber,
+      hospital_id: hospitalId
+    });
 
     res.status(201).json({ message: "Doctor added successfully" });
   } catch (error) {
@@ -69,59 +72,74 @@ export const editDoctor = async (req, res) => {
 
     const imagePath = req.file ? `/uploads/doctors/${req.file.filename}` : null;
 
-    await updateDoctor(id, [
-      specialization,
-      contact_info,
-      imagePath,
-      departmentId,
-      fieldId,
-      phone,
-      fee,
-      whatsappNumber,
-    ]);
+    const updateData = { specialization, contact_info, department_id: departmentId, field_id: fieldId, phone, fee, whatsapp_number: whatsappNumber };
+    if (imagePath) updateData.image = imagePath;
+
+    await Doctor.findByIdAndUpdate(id, updateData);
 
     res.json({ message: "Doctor updated successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json(err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const removeDoctor = async (req, res) => {
   try {
     const { id } = req.params;
-    await deleteDoctor(id);
+    const doctor = await Doctor.findById(id);
+    if (doctor) {
+      await User.findByIdAndDelete(doctor.user_id);
+      await Doctor.findByIdAndDelete(id);
+    }
     res.json({ message: "Doctor deleted successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json(err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const getDoctors = async (req, res) => {
   try {
-    const doctors = await getAllDoctors();
-    res.json(doctors);
+    const hospitalId = req.hospitalId || null;
+    const filter = hospitalId ? { hospital_id: hospitalId } : {};
+    const doctors = await Doctor.find(filter).populate('user_id', 'name email').sort({ created_at: -1 });
+    
+    const formatted = doctors.map(d => ({
+        ...d.toObject(),
+        name: d.user_id?.name,
+        email: d.user_id?.email
+    }));
+    res.json(formatted);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const getPatients = async (req, res) => {
   try {
-    const patients = await getAllPatients();
-    res.json(patients);
+    const hospitalId = req.hospitalId || null;
+    const filter = hospitalId ? { hospital_id: hospitalId } : {};
+    const patients = await Patient.find(filter).populate('user_id', 'name email').sort({ created_at: -1 });
+    const formatted = patients.map(p => ({
+        ...p.toObject(),
+        name: p.user_id?.name,
+        email: p.user_id?.email
+    }));
+    res.json(formatted);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 export const getAppointments = async (req, res) => {
   try {
-    const appointments = await getAllAppointments();
+    const hospitalId = req.hospitalId || null;
+    const filter = hospitalId ? { hospital_id: hospitalId } : {};
+    const appointments = await Appointment.find(filter).sort({ created_at: -1 });
     res.json(appointments);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -129,10 +147,10 @@ export const toggleDoctorStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   try {
-    await updateDoctorStatus(id, status);
+    await Doctor.findByIdAndUpdate(id, { status });
     res.json({ message: `Doctor status updated to ${status}` });
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -144,10 +162,14 @@ export const addLabTechnician = async (req, res) => {
     }
     const hash = await bcrypt.hash(password, 10);
     const hospitalId = req.hospitalId || null;
-    await db.query(
-      "INSERT INTO users (name, email, password, role, hospital_id, phone) VALUES (?,?,?,?,?,?)",
-      [name, email, hash, "lab_technician", hospitalId, phone || ""]
-    );
+    await User.create({
+      name,
+      email,
+      password: hash,
+      role: "lab_technician",
+      hospital_id: hospitalId,
+      phone: phone || ""
+    });
     res.status(201).json({ message: "Lab technician added successfully" });
   } catch (error) {
     console.error(error);
@@ -158,17 +180,12 @@ export const addLabTechnician = async (req, res) => {
 export const getLabTechnicians = async (req, res) => {
   try {
     const hospitalId = req.hospitalId || null;
-    let rows;
-    if (hospitalId) {
-      [rows] = await db.query(
-        "SELECT id, name, email, phone, created_at FROM users WHERE role = 'lab_technician' AND hospital_id = ? ORDER BY created_at DESC",
-        [hospitalId]
-      );
-    } else {
-      [rows] = await db.query(
-        "SELECT id, name, email, phone, created_at FROM users WHERE role = 'lab_technician' ORDER BY created_at DESC"
-      );
-    }
+    const filter = { role: 'lab_technician' };
+    if (hospitalId) filter.hospital_id = hospitalId;
+    
+    const rows = await User.find(filter)
+        .select('name email phone created_at')
+        .sort({ created_at: -1 });
     res.json(rows);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -179,9 +196,7 @@ export const editLabTechnician = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, phone } = req.body;
-    
-    await updateUser(id, [name, email, phone]);
-    
+    await User.findByIdAndUpdate(id, { name, email, phone });
     res.json({ message: "Lab technician updated successfully" });
   } catch (error) {
     console.error(error);
@@ -192,7 +207,7 @@ export const editLabTechnician = async (req, res) => {
 export const removeLabTechnician = async (req, res) => {
   try {
     const { id } = req.params;
-    await deleteUser(id);
+    await User.findByIdAndDelete(id);
     res.json({ message: "Lab technician deleted successfully" });
   } catch (error) {
     console.error(error);

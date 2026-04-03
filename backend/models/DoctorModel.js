@@ -1,70 +1,23 @@
-import db from "../config/db.js";
+import mongoose from "mongoose";
 
-// Create doctor profile
-export const createDoctor = async (data) => {
-    const sql = "INSERT INTO doctors (user_id, specialization, contact_info, image, department_id, field_id, phone, fee, whatsapp_number) VALUES (?,?,?,?,?,?,?,?,?)";
-    return await db.query(sql, data);
-};
+const DoctorSchema = new mongoose.Schema({
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    hospital_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital', default: null },
+    specialization: { type: String },
+    contact_info: { type: String },
+    image: { type: String },
+    department_id: { type: String }, // Can be changed to ObjectId if departments are migrated
+    field_id: { type: String },      // Can be changed to ObjectId if fields are migrated
+    phone: { type: String },
+    fee: { type: String },
+    whatsapp_number: { type: String },
+    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+}, { 
+    timestamps: { createdAt: 'created_at' },
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
-// Get all doctors with user details
-export const getAllDoctors = async () => {
-    const sql = `
-        SELECT d.*, u.name, u.email 
-        FROM doctors d 
-        JOIN users u ON d.user_id = u.id
-        WHERE u.role = 'doctor'
-    `;
-    const [rows] = await db.query(sql);
-    return rows;
-};
+export const Doctor = mongoose.model("Doctor", DoctorSchema);
 
-// Get doctor by ID
-export const getDoctorById = async (id) => {
-    const sql = `
-        SELECT d.*, u.name, u.email 
-        FROM doctors d 
-        JOIN users u ON d.user_id = u.id 
-        WHERE d.id = ?
-    `;
-    const [rows] = await db.query(sql, [id]);
-    return rows[0];
-};
-
-// Get doctor by User ID
-export const getDoctorByUserId = async (userId) => {
-    const sql = `
-        SELECT d.*, u.name, u.email 
-        FROM doctors d 
-        JOIN users u ON d.user_id = u.id 
-        WHERE d.user_id = ?
-    `;
-    const [rows] = await db.query(sql, [userId]);
-    return rows[0];
-};
-// Update doctor status
-export const updateDoctorStatus = async (id, status) => {
-    const sql = "UPDATE doctors SET status = ? WHERE id = ?";
-    return await db.query(sql, [status, id]);
-};
-
-// Update doctor details
-export const updateDoctor = async (id, data) => {
-    const sql = `
-        UPDATE doctors 
-        SET specialization = ?, contact_info = ?, image = IFNULL(?, image), department_id = ?, field_id = ?, phone = ?, fee = ?, whatsapp_number = ? 
-        WHERE id = ?
-    `;
-    return await db.query(sql, [...data, id]);
-};
-
-// Delete doctor
-export const deleteDoctor = async (doctorId) => {
-    // First get the user_id to delete from users table as well
-    const [doc] = await db.query("SELECT user_id FROM doctors WHERE id = ?", [doctorId]);
-    if (doc.length > 0) {
-        const userId = doc[0].user_id;
-        await db.query("DELETE FROM doctors WHERE id = ?", [doctorId]);
-        await db.query("DELETE FROM users WHERE id = ?", [userId]);
-    }
-    return true;
-};
+export default Doctor;

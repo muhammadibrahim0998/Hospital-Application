@@ -1,8 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
+import { AuthContext } from "../context/AuthContext";
 
 export default function DoctorProfile() {
   const { state } = useLocation();
@@ -10,15 +11,20 @@ export default function DoctorProfile() {
   const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
+  const { user, token } = useContext(AuthContext); 
+
   const [formData, setFormData] = useState({
-    Patient: "",
+    Patient: user?.name || "",
     Doctor: doctor?.name || "",
     DoctorPhone: doctor?.phone?.replace("+", "") || "",
-    CNIC: "",
+    CNIC: user?.cnic || "",
     Date: "",
     Time: "",
-    Phone: "",
-    Fee: 1000,
+    Phone: user?.phone || "",
+    Fee: doctor?.fee || 1000,
+    doctor_id: doctor?._id || doctor?.id,
+    hospital_id: doctor?.hospital_id?._id || doctor?.hospital_id || null,
+    user_id: user?._id || user?.id || null
   });
 
   if (!doctor)
@@ -37,7 +43,9 @@ export default function DoctorProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE_URL}/api/appointments`, formData);
+      await axios.post(`${API_BASE_URL}/api/appointments`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       alert("Appointment booked successfully!");
       setShowModal(false);
       navigate("/appointments");
@@ -61,12 +69,14 @@ export default function DoctorProfile() {
         <p>
           <strong>Phone:</strong> {doctor.phone}
         </p>
-        <button
-          className="btn btn-primary mt-3"
-          onClick={() => setShowModal(true)}
-        >
-          Book Appointment
-        </button>
+        {(!user || user?.role?.toLowerCase() === "patient") && (
+          <button
+            className="btn btn-primary mt-3"
+            onClick={() => setShowModal(true)}
+          >
+            Book Appointment
+          </button>
+        )}
       </div>
 
       {showModal && (

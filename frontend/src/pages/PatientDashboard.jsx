@@ -158,10 +158,13 @@ const PatientDashboard = () => {
   const reportsStats = useMemo(() => {
     // Correctly filter reports for this patient
     // If guest, we already have filtered list (from search) or empty list
-    const patientReports = token ? reports.filter(r =>
-      (user?.id && String(r.patient_id) === String(user.id)) ||
-      (user?.cnic && r.cnic === user.cnic)
-    ) : reports;
+    const patientReports = token ? reports.filter(r => {
+      const matchUserId = (user?.id && (String(r.patient_id) === String(user.id) || String(r.user_id) === String(user.id))) || 
+                          (user?._id && (String(r.patient_id) === String(user._id) || String(r.user_id) === String(user._id)));
+      const matchCnic = user?.cnic && r.cnic && (r.cnic.replace(/\D/g, "") === user.cnic.replace(/\D/g, ""));
+      const matchPhone = user?.phone && r.phone && (r.phone.replace(/\D/g, "") === user.phone.replace(/\D/g, ""));
+      return matchUserId || matchCnic || matchPhone;
+    }) : reports;
 
     const total = patientReports.length;
     const recent = patientReports.filter((r) => {
@@ -231,7 +234,7 @@ const PatientDashboard = () => {
       loading: loading.appointments,
     },
     {
-      label: "Reports & Results",
+      label: "Lab Results",
       path: "/lab-results",
       color: "warning",
       icon: "📊",

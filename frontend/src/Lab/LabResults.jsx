@@ -1,4 +1,6 @@
-import React, { useState, useContext, useMemo } from "react";
+import React, { useState, useContext, useMemo, useEffect } from "react";
+import axios from "axios";
+import { API_BASE_URL } from "../config";
 import { useLab } from "../context/LabContext";
 import { AuthContext } from "../context/AuthContext";
 import { Container, Card, Badge, Button, Modal, Form, Row, Col, Table, InputGroup } from "react-bootstrap";
@@ -21,30 +23,107 @@ import {
   Activity,
   Zap,
   Lock,
-  Stethoscope
+  Stethoscope,
+  Trash2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function LabResults() {
   const { user, token } = useContext(AuthContext);
-  const { tests, addMedication } = useLab();
+  const { tests: contextTests, addMedication, deleteTest, fetchTests: refreshTests, loading } = useLab();
+  const [reports, setReports] = useState([]);
+  const [localLoading, setLocalLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchPatientReports = async () => {
+      if (!token || user?.role?.toLowerCase() !== "patient") return;
+      setLocalLoading(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/lab/reports`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setReports(res.data || []);
+      } catch (err) {
+        console.error("Error fetching patient specific reports:", err);
+      } finally {
+        setLocalLoading(false);
+      }
+    };
+    fetchPatientReports();
+  }, [token, user]);
+
+  // Merge context tests (active worklist) and reports (finalized archive)
+  const allData = useMemo(() => {
+    const merged = [...reports];
+    contextTests.forEach(t => {
+      // Check for both 'id' and '_id' for robust merging
+      const exists = merged.some(m => 
+        (m.id && t.id && String(m.id) === String(t.id)) || 
+        (m._id && t._id && String(m._id) === String(t._id)) ||
+        (m.id && t._id && String(m.id) === String(t._id)) ||
+        (m._id && t.id && String(m._id) === String(t.id))
+      );
+      if (!exists) merged.push(t);
+    });
+    return merged;
+  }, [reports, contextTests]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTest, setSelectedTest] = useState(null);
   const [showMedModal, setShowMedModal] = useState(false);
   const [medInput, setMedInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const getUnit = (testName) => {
+    const lower = (testName || "").toLowerCase();
+    if (lower.includes('sugar') || lower.includes('rbs') || lower.includes('glucose')) return 'mg/dL';
+    if (lower.includes('hemoglobin') || lower.includes('hb')) return 'g/dL';
+    if (lower.includes('count') || lower.includes('wbc') || lower.includes('rbc')) return 'cells/µL';
+    if (lower.includes('percentage') || lower.includes('%')) return '%';
+    return '---';
+  };
+
+  const getResultScale = (result, range) => {
+    if (!result || !range || !range.includes('-')) return { percent: 0, color: '#0d6efd', label: '', isAlert: false };
+    const rangeMatch = range.match(/(\d+(\.\d+)?)/g);
+    if (!rangeMatch || rangeMatch.length < 2) return { percent: 0, color: '#0d6efd', label: '', isAlert: false };
+    
+    const min = parseFloat(rangeMatch[0]);
+    const max = parseFloat(rangeMatch[1]);
+    const val = parseFloat(result.match(/(\d+(\.\d+)?)/)?.[0] || '0');
+    
+    if (isNaN(min) || isNaN(max) || isNaN(val)) return { percent: 0, color: '#0d6efd', label: '', isAlert: false };
+    
+    let color = '#2c3e50'; 
+    let label = '';
+    let isAlert = false;
+    let statusColor = '#0d6efd';
+
+    if (val < min) { statusColor = '#dc3545'; label = 'Low'; isAlert = true; }
+    else if (val > max) { statusColor = '#dc3545'; label = 'High'; isAlert = true; }
+    else { statusColor = '#0d6efd'; label = 'Normal'; isAlert = false; }
+    
+    return { color: statusColor, label, isAlert };
+  };
+
   const filteredTests = useMemo(() => {
-    return tests.filter((t) => {
+    return allData.filter((t) => {
       if (user?.role?.toLowerCase() === "patient") {
-        const matchesId = String(t.patient_id) === String(user.id);
-        const matchesCnic = t.cnic && user.cnic && t.cnic === user.cnic;
-        return matchesId || matchesCnic;
+        const matchUserId = (user?.id && (String(t.patient_id) === String(user.id) || String(t.user_id) === String(user.id))) || 
+                            (user?._id && (String(t.patient_id) === String(user._id) || String(t.user_id) === String(user._id)));
+        const matchCnic = user?.cnic && t.cnic && (t.cnic.replace(/\D/g, "") === user.cnic.replace(/\D/g, ""));
+        const matchPhone = user?.phone && t.phone && (t.phone.replace(/\D/g, "") === user.phone.replace(/\D/g, ""));
+        
+        // Show if matched by credentials AND (it's done, OR has a result, OR has medication)
+        const isMatched = matchUserId || matchCnic || matchPhone;
+        const isReady = (t.status === 'done' || t.status === 'Completed' || t.result || t.medication_given);
+        
+        return isMatched && isReady;
       }
       return true;
     });
-  }, [tests, user]);
+  }, [allData, user]);
 
   const searchFiltered = useMemo(() => {
     return filteredTests.filter(t =>
@@ -126,7 +205,7 @@ export default function LabResults() {
     const medsList = group.tests.find(t => t.medication_given)?.medication_given;
     const medsStr = medsList ? medsList.split('\n').filter(Boolean).map((m, i) => `💊 ${i+1}. ${m}`).join('%0A') : 'No Prescriptions';
     
-    const text = `🏥 *CITYCARE HOSPITAL* 🏥%0A📞 *Contact:* +92 345 5959000%0A👨‍⚕️ *Consultant:* ${doctorName}%0A━━━━━━━━━━━━━━━━━━━━%0A👤 *Patient:* ${patientName}%0A📅 *Date:* ${date}%0A━━━━━━━━━━━━━━━━━━━━%0A*🧪 INVESTIGATION RESULTS:*%0A${testsStr}%0A━━━━━━━━━━━━━━━━━━━━%0A*📝 CLINICAL PRESCRIPTION:*%0A${medsStr}%0A━━━━━━━━━━━━━━━━━━━━%0A🔗 *View Smart Report:* ${window.location.host}/medical-report/${group.appointment_id || 'guest'}`;
+    const text = `🏥 *SAMARBAGH CITY HOSPITAL* 🏥%0A📞 *Contact:* +92 345 5959000%0A👨‍⚕️ *Consultant:* ${doctorName}%0A━━━━━━━━━━━━━━━━━━━━%0A👤 *Patient:* ${patientName}%0A📅 *Date:* ${date}%0A━━━━━━━━━━━━━━━━━━━━%0A*🧪 INVESTIGATION RESULTS:*%0A${testsStr}%0A━━━━━━━━━━━━━━━━━━━━%0A*📝 CLINICAL PRESCRIPTION:*%0A${medsStr}%0A━━━━━━━━━━━━━━━━━━━━%0A🔗 *View Smart Report:* ${window.location.host}/medical-report/${group.appointment_id || 'guest'}`;
     
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -154,10 +233,10 @@ export default function LabResults() {
                 <Lock size={20} strokeWidth={2.5} />
               </div>
               <div>
-                <h2 className="fw-black mb-0 tracking-tight text-dark h4" style={{ fontSize: '1.2rem' }}>Health Analytics Archive</h2>
+                <h2 className="fw-black mb-0 tracking-tight text-dark h4" style={{ fontSize: '1.2rem' }}>FINAL LAB REPORTS</h2>
                 <div className="d-flex align-items-center gap-2 mt-0">
                    <div className="d-flex align-items-center gap-1 text-muted fw-bold" style={{ fontSize: '9px' }}>
-                     <Activity size={10} className="text-primary" /> {filteredTests.length} PARAMETERS SECURED
+                     <Activity size={10} className="text-primary" /> {filteredTests.length} SECURED REPORTS
                    </div>
                    <div className="d-flex align-items-center gap-1 text-success fw-bold" style={{ fontSize: '9px' }}>
                      <Zap size={10} /> SYSTEM ENCRYPTED
@@ -184,11 +263,17 @@ export default function LabResults() {
       </div>
 
       <div className="archive-list-container">
-        {groupedList.length === 0 ? (
+        {(localLoading || loading) ? (
+          <div className="text-center py-5 bg-white rounded-5 shadow-sm border border-light">
+             <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}></div>
+             <h5 className="fw-black text-dark">SECURELY RETRIEVING RECORDS</h5>
+             <p className="text-muted small">Please wait while we verify your clinical data...</p>
+          </div>
+        ) : groupedList.length === 0 ? (
           <div className="text-center py-5 bg-white rounded-5 shadow-sm border border-light">
              <ClipboardList size={48} className="text-muted opacity-20 mb-3" />
-             <h5 className="fw-black text-dark">No Diagnostic Records</h5>
-             <p className="text-muted small">Your medical history will appear here once processed.</p>
+             <h5 className="fw-black text-dark">No Diagnostic Records Found</h5>
+             <p className="text-muted small">Try ensuring your system registration is complete.</p>
           </div>
         ) : (
           groupedList.map((group) => (
@@ -204,7 +289,7 @@ export default function LabResults() {
                            <div>
                               <div className="d-flex align-items-center gap-2 mb-0">
                                  <h4 className="fw-black mb-0 text-dark h5 tracking-tight">{group.patient_name?.toUpperCase() || "PATIENT"}</h4>
-                                 <Badge bg="dark" className="rounded-1 fw-black" style={{ fontSize: '8px' }}>RECORD #{group.appointment_id || '555'}</Badge>
+                                 <Badge bg="dark" className="rounded-1 fw-black" style={{ fontSize: '8px' }}>RECORD #{group.appointment_id?.toString().slice(-6) || '---'}</Badge>
                               </div>
                               <div className="d-flex align-items-center gap-2 text-muted fw-bold" style={{ fontSize: '10px' }}>
                                  <User size={12} className="text-primary" /> DR. {group.doctor_name?.toUpperCase() || 'RESIDENT'}
@@ -249,33 +334,53 @@ export default function LabResults() {
                    <div className="table-responsive">
                      <Table className="align-middle mb-0 lab-classic-table">
                         <thead className="lab-classic-header">
-                           <tr>
-                              <th style={{ width: '45%' }}>Investigation Parameter</th>
-                              <th style={{ width: '25%' }} className="text-start">Result</th>
-                              <th style={{ width: '30%' }} className="text-start">Status</th>
-                           </tr>
-                        </thead>
+                            <tr>
+                               <th style={{ width: '30%' }}>Investigation</th>
+                               <th style={{ width: '20%' }} className="text-center">Result</th>
+                               <th style={{ width: '25%' }} className="text-center">Reference Value</th>
+                               <th style={{ width: '15%' }} className="text-center">Unit</th>
+                               {user?.role?.toLowerCase() !== "patient" && <th style={{ width: '10%' }} className="text-center">Action</th>}
+                            </tr>
+                         </thead>
                         <tbody>
-                           {group.tests.map(t => (
-                             <tr key={t.id}>
-                                <td>
-                                   <div className="fw-bold">{t.test_name}</div>
-                                   <div className="text-muted" style={{ fontSize: '11px' }}>{t.category || 'General Diagnostic'}</div>
-                                </td>
-                                <td>
-                                   {t.result ? (
-                                     <span className="fw-bold fs-6">{t.result}</span>
-                                   ) : (
-                                      <span className="text-warning fw-bold text-uppercase" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>PROCESSING</span>
+                           {group.tests.map(t => {
+                             const scale = getResultScale(t.result, t.normal_range);
+                             return (
+                               <tr key={t.id} className="border-bottom border-light">
+                                  <td className="ps-3 py-2">
+                                     <div className="fw-black text-dark" style={{ fontSize: '13px' }}>{t.test_name}</div>
+                                     <div className="text-muted" style={{ fontSize: '9px' }}>{t.category || 'Clinical'}</div>
+                                  </td>
+                                  <td className="text-center py-2">
+                                     {t.result && t.status === 'done' ? (
+                                       <div className="d-flex align-items-center justify-content-center gap-2">
+                                          <span className="fw-black" style={{ color: scale.color, fontSize: '14px' }}>{t.result}</span>
+                                          {scale.label && (
+                                            <Badge bg={scale.isAlert ? 'danger' : 'primary'} className="bg-opacity-10 py-1" style={{ fontSize: '7.5px', color: scale.color, border: `1px solid ${scale.color}` }}>
+                                              {scale.label.toUpperCase()}
+                                            </Badge>
+                                          )}
+                                       </div>
+                                     ) : (
+                                        <Badge bg="warning" text="dark" className="bg-opacity-10 border border-warning px-2 py-1 fw-black" style={{ fontSize: '9px' }}>PROCESSING</Badge>
+                                     )}
+                                  </td>
+                                  <td className="text-center fw-bold text-muted py-2" style={{ fontSize: '11px' }}>
+                                     {t.normal_range || 'N/A'}
+                                  </td>
+                                  <td className="text-center fw-bold text-muted py-2" style={{ fontSize: '11px' }}>
+                                      {t.unit || getUnit(t.test_name)}
+                                   </td>
+                                   {user?.role?.toLowerCase() !== "patient" && (
+                                     <td className="text-center py-2">
+                                        <button className="btn btn-link p-0 text-danger border-0 shadow-none" onClick={() => { if(window.confirm("Delete this test?")) deleteTest(t._id) }}>
+                                           <Trash2 size={16} />
+                                        </button>
+                                     </td>
                                    )}
-                                </td>
-                                <td>
-                                   <span className={`fw-bold text-uppercase ${t.status === 'done' ? 'text-success' : 'text-warning'}`} style={{ fontSize: '11px', letterSpacing: '0.5px' }}>
-                                     {t.status === 'done' ? 'VERIFIED' : 'PENDING'}
-                                   </span>
-                                </td>
-                             </tr>
-                           ))}
+                               </tr>
+                             )
+                           })}
                         </tbody>
                      </Table>
                   </div>
@@ -390,6 +495,25 @@ export default function LabResults() {
           <Modal.Title className="fw-black h6 mb-0 text-uppercase letter-spacing-1"><Stethoscope size={16} className="me-2" /> Rx Protocol</Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-3 bg-light">
+          {selectedTest && (
+            <div className="mb-3 p-3 rounded-4 bg-white border border-light shadow-sm" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+               <div className="text-muted fw-black mb-2" style={{ fontSize: '10px' }}>
+                 INVESTIGATION RESULTS <span className="text-primary">({selectedTest.test_name?.toUpperCase()})</span>
+               </div>
+               {selectedTest.isBatch ? (
+                 selectedTest.tests.map(t => (
+                   <div key={t.id} className="d-flex justify-content-between border-bottom py-1" style={{ fontSize: '12px' }}>
+                     <span className="fw-bold text-dark">{t.test_name}</span>
+                     <span className="fw-black text-success">{t.result || "PENDING"}</span>
+                   </div>
+                 ))
+               ) : (
+                 <div className="fw-black text-dark" style={{ fontSize: '14px' }}>
+                     RESULT: <span className="text-success">{selectedTest.result || "PENDING"}</span>
+                 </div>
+               )}
+            </div>
+          )}
           <Form.Group>
             <Form.Label className="small fw-black text-muted text-uppercase mb-2" style={{ fontSize: '9px' }}>Dosage & Schedule</Form.Label>
             <Form.Control

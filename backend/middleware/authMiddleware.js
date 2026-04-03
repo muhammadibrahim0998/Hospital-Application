@@ -22,8 +22,10 @@ export const verifyToken = (req, res, next) => {
     req.userId = decoded.id;
     req.userRole = decoded.role;
     req.userCnic = decoded.cnic || null;
-    req.hospitalId = decoded.hospitalId || null;       // for hospital_admin & scoped users
-    req.hospitalAdminId = decoded.hospitalAdminId || null;  // for hospital_admin JWT
+    req.userPhone = decoded.phone || null;
+    req.userName = decoded.name || null;
+    req.hospitalId = decoded.hospitalId || null;       
+    req.hospitalAdminId = decoded.hospitalAdminId || null;  
     next();
   });
 };

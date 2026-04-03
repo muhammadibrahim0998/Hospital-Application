@@ -1,9 +1,11 @@
 
 import React, { useEffect, useState } from "react";
 import { useAppointments } from "../context/AppointmentContext";
+import { useDoctors } from "../context/DoctorContext";
 import AppointmentFormModal from "../pages/AppointmentModal";
 
 export default function Appointments() {
+  const { doctors: allDoctors } = useDoctors();
   const {
     appointments,
     fetchAppointments,
@@ -32,10 +34,24 @@ export default function Appointments() {
     closeModal();
   };
 
+  const getDoctorPhone = (appt) => {
+    // 1st Priority: Data within appointment object
+    // 2nd Priority: Look up in allDoctors (from DoctorContext) by name
+    // 3rd Priority: Any secondary phone field
+    if (appt.DoctorPhone && appt.DoctorPhone !== "N/A") return appt.DoctorPhone;
+    if (appt.doctor_phone) return appt.doctor_phone;
+
+    const matchedDoctor = (allDoctors || []).find(d => 
+      d.name === appt.Doctor || d.name === appt.doctor_name
+    );
+    return matchedDoctor?.phone || matchedDoctor?.whatsappNumber || "";
+  };
+
   const openWhatsApp = (a) => {
-    let phone = a.DoctorPhone || "";
+    let phone = getDoctorPhone(a);
     let cleanPhone = phone.replace(/\D/g, "");
 
+    // Modern Pakistan phone formatting (ensuring 92 prefix)
     if (cleanPhone.startsWith("0")) {
       cleanPhone = "92" + cleanPhone.substring(1);
     } else if (cleanPhone.length === 10 && !cleanPhone.startsWith("92")) {
@@ -43,7 +59,7 @@ export default function Appointments() {
     }
 
     if (!cleanPhone) {
-      alert("Doctor phone number not available");
+      alert("Doctor contact number not available in profile. Please contact hospital support.");
       return;
     }
 
@@ -51,13 +67,20 @@ export default function Appointments() {
 I am ${a.Patient}. I have booked an appointment with you.
 Details:
 - Date: ${a.Date}
-- Time: ${a.Time}
-- Patient Phone: ${a.Phone}`;
+- Time: ${a.Time}`;
 
     window.open(
       `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`,
       "_blank",
     );
+  };
+
+  const openReport = (appointmentId) => {
+    if (!appointmentId) {
+      alert("Report not yet finalized.");
+      return;
+    }
+    window.open(`/medical-report/${appointmentId}`, "_blank");
   };
 
   const doctors = [...new Set(appointments.map((a) => a.Doctor))];
@@ -67,6 +90,7 @@ Details:
     : appointments;
 
   return (
+
     <div className="container mt-5">
       <h4 className="mb-3 text-center fw-bold">Appointments List</h4>
 
@@ -92,44 +116,51 @@ Details:
       <div className="card-view">
         {filteredAppointments.map((a, i) => (
           <div key={a.id} className="card shadow-sm mb-3 border-0 rounded-3">
-            <div className="card-body p-3">
-              <h6 className="fw-bold mb-2">
-                #{i + 1} - {a.Doctor}
+            <div className="card-body p-3 text-start">
+              <h6 className="fw-bold mb-2 text-primary">
+                #{i + 1} - Dr. {a.Doctor}
               </h6>
 
-              <p className="mb-1">
-                <strong>DoctorPhone:</strong> {a.DoctorPhone}
+              <p className="mb-1 small">
+                <strong>DoctorPhone:</strong> {getDoctorPhone(a) || "Profile Missing Phone"}
               </p>
-              <p className="mb-1">
+              <p className="mb-1 small">
                 <strong>Fee:</strong> {a.Fee}
               </p>
-              <p className="mb-1">
+              <p className="mb-1 small">
                 <strong>Patient:</strong> {a.Patient}
               </p>
-              <p className="mb-1">
+              <p className="mb-1 small">
                 <strong>Phone:</strong> {a.Phone}
               </p>
-              <p className="mb-1">
+              <p className="mb-1 small">
                 <strong>CNIC:</strong> {a.CNIC}
               </p>
-              <p className="mb-1">
+              <p className="mb-1 small">
                 <strong>Date:</strong> {a.Date}
               </p>
-              <p className="mb-2">
+              <p className="mb-2 small">
                 <strong>Time:</strong> {a.Time}
               </p>
 
               {/* ================= ACTIONS ================= */}
-              <div className="d-flex justify-content-center gap-2">
-                {/* WhatsApp Button always visible */}
+              <div className="d-flex justify-content-center gap-2 mt-2 pt-2 border-top">
                 <button
-                  className="btn btn-success btn-sm"
+                  className="btn btn-success btn-sm px-3 shadow-sm"
                   onClick={() => openWhatsApp(a)}
                 >
-                  WhatsApp
+                  <i className="bi bi-whatsapp me-1"></i> WhatsApp
                 </button>
 
-                {/* Dropdown for View, Edit, Delete */}
+                {(a.status === "completed" || a.status === "done" || a.status === "Completed") && (
+                  <button
+                    className="btn btn-primary btn-sm px-3 shadow-sm"
+                    onClick={() => openReport(a.id)}
+                  >
+                    <i className="bi bi-file-earmark-medical me-1"></i> Result
+                  </button>
+                )}
+
                 <div className="dropdown">
                   <button
                     className="btn btn-secondary btn-sm"
@@ -177,7 +208,7 @@ Details:
         ))}
 
         {filteredAppointments.length === 0 && (
-          <div className="text-center text-muted py-3">
+          <div className="text-center text-muted py-3 shadow-sm rounded-3 bg-white">
             No Appointments Found
           </div>
         )}
@@ -205,22 +236,22 @@ Details:
               </tr>
             </thead>
 
-            <tbody>
+            <tbody className="text-center">
               {filteredAppointments.map((a, i) => (
                 <tr key={a.id}>
                   <td>{i + 1}</td>
                   <td>{a.Doctor}</td>
 
-                  <td>
+                  <td className="fw-bold text-success">
                     <a
-                      href={`tel:${a.DoctorPhone}`}
-                      className="text-decoration-none fw-semibold"
+                      href={`tel:${getDoctorPhone(a)}`}
+                      className="text-decoration-none"
                     >
-                      {a.DoctorPhone}
+                      {getDoctorPhone(a) || "N/A"}
                     </a>
                   </td>
 
-                  <td>{a.Fee}</td>
+                  <td className="fw-bold">Rs. {a.Fee}</td>
                   <td>{a.Patient}</td>
                   <td>{a.Phone}</td>
                   <td>{a.CNIC}</td>
@@ -229,15 +260,24 @@ Details:
 
                   {/* ================= ACTIONS ================= */}
                   <td className="text-center">
-                    {/* WhatsApp Button always visible */}
                     <button
                       className="btn btn-success btn-sm me-1"
                       onClick={() => openWhatsApp(a)}
+                      title="WhatsApp"
                     >
                       <i className="bi bi-whatsapp"></i>
                     </button>
 
-                    {/* Dropdown for View, Edit, Delete */}
+                    {(a.status === "completed" || a.status === "done" || a.status === "Completed") && (
+                      <button
+                        className="btn btn-primary btn-sm me-1"
+                        onClick={() => openReport(a.id)}
+                        title="View Lab Results"
+                      >
+                        <i className="bi bi-file-earmark-medical"></i>
+                      </button>
+                    )}
+
                     <div className="dropdown d-inline">
                       <button
                         className="btn btn-secondary btn-sm"
@@ -249,7 +289,7 @@ Details:
                       <ul className="dropdown-menu dropdown-menu-end">
                         <li>
                           <button
-                            className="dropdown-item"
+                            className="dropdown-item px-3"
                             onClick={() => {
                               setSelected(a);
                               setMode("view");
@@ -260,7 +300,7 @@ Details:
                         </li>
                         <li>
                           <button
-                            className="dropdown-item"
+                            className="dropdown-item px-3"
                             onClick={() => {
                               setSelected(a);
                               setMode("edit");
@@ -271,7 +311,7 @@ Details:
                         </li>
                         <li>
                           <button
-                            className="dropdown-item text-danger"
+                            className="dropdown-item px-3 text-danger"
                             onClick={() => deleteAppointment(a.id)}
                           >
                             Delete

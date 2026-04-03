@@ -223,7 +223,7 @@ function AppContent() {
       </Route>
 
       {/* Shared Lab Routes — Ensures visibility for all relevant roles */}
-      <Route element={<PrivateRoute allowedRoles={["doctor", "lab_technician", "admin", "hospital_admin"]} />}>
+      <Route element={<PrivateRoute allowedRoles={["doctor", "lab_technician", "admin", "hospital_admin", "patient"]} />}>
         <Route path="/" element={<Layout />}>
           <Route path="lab-results" element={<LabResults />} />
         </Route>
@@ -232,7 +232,6 @@ function AppContent() {
       {/* Public Patient Access — No PrivateRoute for these specific paths */}
       <Route path="/" element={<Layout />}>
         <Route path="patient/dashboard" element={<PatientDashboard />} />
-        <Route path="lab-results" element={<LabResults />} />
         <Route path="doctors" element={<Doctors />} />
         <Route path="find-doctor" element={<Doctors />} />
       </Route>

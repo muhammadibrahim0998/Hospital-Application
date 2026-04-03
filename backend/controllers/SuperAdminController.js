@@ -1,21 +1,10 @@
+import { User } from "../models/UserModel.js";
+import { Hospital, HospitalAdmin } from "../models/HospitalModel.js";
+import { Doctor } from "../models/DoctorModel.js";
+import { Patient } from "../models/PatientModel.js";
+import { Appointment } from "../models/appointmentModel.js";
+import { LabResult } from "../models/LabResultModel.js";
 import bcrypt from "bcryptjs";
-import db from "../config/db.js";
-import {
-    createHospital,
-    getAllHospitals,
-    getHospitalById,
-    updateHospital,
-    deleteHospital,
-    createHospitalAdmin,
-    getAllHospitalAdmins,
-    getHospitalAdminById,
-    updateHospitalAdmin,
-    updateHospitalAdminModules,
-    deleteHospitalAdmin,
-    getAllAppUsers,
-    getHospitalStats,
-} from "../models/HospitalModel.js";
-import { deleteDoctor } from "../models/DoctorModel.js";
 
 // ═══════════════════════════════════════════════════════
 //  HOSPITAL MANAGEMENT
@@ -26,8 +15,8 @@ export const addHospital = async (req, res) => {
         const { name, address, phone, email } = req.body;
         if (!name) return res.status(400).json({ message: "Hospital name is required" });
 
-        const result = await createHospital([name, address || "", phone || "", email || ""]);
-        res.status(201).json({ message: "Hospital created successfully", id: result.insertId });
+        const result = await Hospital.create({ name, address: address || "", phone: phone || "", email: email || "" });
+        res.status(201).json({ message: "Hospital created successfully", id: result._id });
     } catch (err) {
         console.error("addHospital error:", err);
         res.status(500).json({ message: "Server error", error: err.message });
@@ -36,7 +25,7 @@ export const addHospital = async (req, res) => {
 
 export const listHospitals = async (req, res) => {
     try {
-        const hospitals = await getAllHospitals();
+        const hospitals = await Hospital.find().sort({ created_at: -1 });
         res.json(hospitals);
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
@@ -47,7 +36,7 @@ export const editHospital = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, address, phone, email, is_active } = req.body;
-        await updateHospital(id, [name, address || "", phone || "", email || "", is_active ?? 1]);
+        await Hospital.findByIdAndUpdate(id, { name, address: address || "", phone: phone || "", email: email || "", is_active: is_active ?? true });
         res.json({ message: "Hospital updated successfully" });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
@@ -57,7 +46,7 @@ export const editHospital = async (req, res) => {
 export const removeHospital = async (req, res) => {
     try {
         const { id } = req.params;
-        await deleteHospital(id);
+        await Hospital.findByIdAndDelete(id);
         res.json({ message: "Hospital deleted successfully" });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
@@ -70,7 +59,13 @@ export const removeHospital = async (req, res) => {
 
 export const fetchProjectStats = async (req, res) => {
     try {
-        const stats = await getHospitalStats();
+        const hospitals = await Hospital.find();
+        const stats = await Promise.all(hospitals.map(async (h) => {
+            const doctor_count = await Doctor.countDocuments({ hospital_id: h._id });
+            const patient_count = await Patient.countDocuments({ hospital_id: h._id });
+            const app_user_count = await User.countDocuments({ hospital_id: h._id, role: { $nin: ['super_admin', 'hospital_admin'] } });
+            return { id: h._id, name: h.name, doctor_count, patient_count, app_user_count };
+        }));
         res.json(stats);
     } catch (err) {
         res.status(500).json({ message: "Error fetching project stats", error: err.message });
@@ -88,7 +83,7 @@ export const addHospitalAdmin = async (req, res) => {
             return res.status(400).json({ message: "hospital_id, name, email, password are required" });
         }
 
-        const hospital = await getHospitalById(hospital_id);
+        const hospital = await Hospital.findById(hospital_id);
         if (!hospital) return res.status(404).json({ message: "Hospital not found" });
 
         const hash = await bcrypt.hash(password, 10);
@@ -101,30 +96,30 @@ export const addHospitalAdmin = async (req, res) => {
             appUsers: true,
         };
 
-        const modulesJson = JSON.stringify(modules || defaultModules);
-        const result = await createHospitalAdmin([
+        const result = await HospitalAdmin.create({
             hospital_id,
             name,
             email,
-            hash,
-            modulesJson,
-            gender || 'Male',
-            age || 30,
-            phone || '03000000000'
-        ]);
-        res.status(201).json({ message: "Hospital Admin created successfully", id: result.insertId });
+            password: hash,
+            modules: modules || defaultModules,
+            gender: gender || 'Male',
+            age: age || 30,
+            phone: phone || '03000000000'
+        });
+        res.status(201).json({ message: "Hospital Admin created successfully", id: result._id });
     } catch (err) {
-        if (err.code === "ER_DUP_ENTRY") {
-            return res.status(400).json({ message: "This email is already registered as a Hospital Admin" });
-        }
         res.status(500).json({ message: "Server error", error: err.message });
     }
 };
 
 export const listHospitalAdmins = async (req, res) => {
     try {
-        const admins = await getAllHospitalAdmins();
-        const safe = admins.map(({ password, ...rest }) => rest);
+        const admins = await HospitalAdmin.find().populate('hospital_id', 'name').sort({ created_at: -1 });
+        const safe = admins.map(a => {
+            const obj = a.toObject();
+            delete obj.password;
+            return obj;
+        });
         res.json(safe);
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
@@ -135,16 +130,16 @@ export const editHospitalAdmin = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, email, is_active, modules, gender, age, phone } = req.body;
-        const modulesJson = JSON.stringify(modules || {});
-        await updateHospitalAdmin(id, [
-            name,
-            email,
-            is_active ?? 1,
-            modulesJson,
-            gender || 'Male',
-            age || 30,
-            phone || '03000000000'
-        ]);
+        
+        await HospitalAdmin.findByIdAndUpdate(id, { 
+            name, 
+            email, 
+            is_active: is_active ?? true, 
+            modules: modules || {}, 
+            gender: gender || 'Male', 
+            age: age || 30, 
+            phone: phone || '03000000000' 
+        });
         res.json({ message: "Hospital Admin updated successfully" });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
@@ -156,7 +151,7 @@ export const setHospitalAdminModules = async (req, res) => {
         const { id } = req.params;
         const { modules } = req.body;
         if (!modules) return res.status(400).json({ message: "modules object is required" });
-        await updateHospitalAdminModules(id, modules);
+        await HospitalAdmin.findByIdAndUpdate(id, { modules });
         res.json({ message: "Modules updated successfully" });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
@@ -166,7 +161,7 @@ export const setHospitalAdminModules = async (req, res) => {
 export const removeHospitalAdmin = async (req, res) => {
     try {
         const { id } = req.params;
-        await db.query("DELETE FROM hospital_admins WHERE id = ?", [id]);
+        await HospitalAdmin.findByIdAndDelete(id);
         res.json({ message: "Hospital Admin deleted successfully" });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
@@ -179,8 +174,23 @@ export const removeHospitalAdmin = async (req, res) => {
 
 export const fetchAllAppUsers = async (req, res) => {
     try {
-        const users = await getAllAppUsers();
-        res.json(users);
+        const users = await User.find().populate('hospital_id', 'name');
+        const hospitalAdmins = await HospitalAdmin.find().populate('hospital_id', 'name');
+        
+        const formattedUsers = users.map(u => {
+            const obj = u.toObject();
+            obj.hospital_name = u.hospital_id?.name;
+            return obj;
+        });
+        const formattedAdmins = hospitalAdmins.map(a => {
+            const obj = a.toObject();
+            obj.role = 'hospital_admin';
+            obj.hospital_name = a.hospital_id?.name;
+            return obj;
+        });
+        
+        const all = [...formattedUsers, ...formattedAdmins].sort((a, b) => b.created_at - a.created_at);
+        res.json(all);
     } catch (err) {
         res.status(500).json({ message: "Error fetching app users", error: err.message });
     }
@@ -191,54 +201,58 @@ export const updateAppUser = async (req, res) => {
         const { id } = req.params;
         const { name, email, role, hospital_id, gender, age, phone } = req.body;
 
-        console.log(`Updating user ${id} with role ${role}`);
-
-        const [userCheck] = await db.query("SELECT id, role FROM users WHERE id = ?", [id]);
-        const [adminCheck] = await db.query("SELECT id FROM hospital_admins WHERE id = ?", [id]);
+        const user = await User.findById(id);
+        const admin = await HospitalAdmin.findById(id);
 
         const targetHospitalId = hospital_id && hospital_id !== "" ? hospital_id : null;
 
         if (role === "hospital_admin") {
-            if (adminCheck.length > 0) {
-                const sql = `UPDATE hospital_admins SET name=?, email=?, hospital_id=?, gender=?, age=?, phone=? WHERE id=?`;
-                await db.query(sql, [name, email, targetHospitalId, gender || 'Male', age || 30, phone || '', id]);
-            } else if (userCheck.length > 0) {
-                console.log("Moving user to hospital_admins table");
-                const [oldUser] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
-                await db.query("DELETE FROM users WHERE id = ?", [id]);
-                const modules = JSON.stringify({ doctors: true, patients: true, appointments: true, lab: true, appUsers: true });
-                await db.query(
-                    "INSERT INTO hospital_admins (id, hospital_id, name, email, password, role, is_active, modules, gender, age, phone) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                    [id, targetHospitalId || 1, name, email, oldUser[0]?.password || '', 'hospital_admin', 1, modules, gender || 'Male', age || 30, phone || '']
-                );
+            if (admin) {
+                await HospitalAdmin.findByIdAndUpdate(id, { name, email, hospital_id: targetHospitalId, gender, age, phone });
+            } else if (user) {
+                const userData = user.toObject();
+                await User.findByIdAndDelete(id);
+                await HospitalAdmin.create({
+                    _id: id,
+                    hospital_id: targetHospitalId || user.hospital_id,
+                    name,
+                    email,
+                    password: userData.password,
+                    gender: gender || 'Male',
+                    age: age || 30,
+                    phone: phone || ''
+                });
             }
         } else {
-            if (userCheck.length > 0) {
-                const prevRole = userCheck[0].role;
-                const sql = `UPDATE users SET name=?, email=?, role=?, hospital_id=?, gender=?, age=?, phone=? WHERE id=?`;
-                await db.query(sql, [name, email, role, targetHospitalId, gender || 'Male', age || 30, phone || '', id]);
+            if (user) {
+                const prevRole = user.role;
+                await User.findByIdAndUpdate(id, { name, email, role, hospital_id: targetHospitalId, gender, age, phone });
 
-                // Handle Doctor specialization if role changed to doctor
                 if (role === 'doctor' && prevRole !== 'doctor') {
-                    const [docExists] = await db.query("SELECT id FROM doctors WHERE user_id = ?", [id]);
-                    if (docExists.length === 0) {
-                        await db.query("INSERT INTO doctors (user_id, name, specialization, phone, hospital_id) VALUES (?, ?, ?, ?, ?)", [id, name, 'General Physician', phone || '', targetHospitalId]);
+                    const docExists = await Doctor.findOne({ user_id: id });
+                    if (!docExists) {
+                        await Doctor.create({ user_id: id, specialization: 'General Physician', phone: phone || '', hospital_id: targetHospitalId });
                     }
                 } else if (role !== 'doctor' && prevRole === 'doctor') {
-                    // If no longer a doctor, optionally remove from doctors table
-                    await db.query("DELETE FROM doctors WHERE user_id = ?", [id]);
+                    await Doctor.findOneAndDelete({ user_id: id });
                 }
-            } else if (adminCheck.length > 0) {
-                console.log("Moving admin to users table");
-                const [oldAdmin] = await db.query("SELECT * FROM hospital_admins WHERE id = ?", [id]);
-                await db.query("DELETE FROM hospital_admins WHERE id = ?", [id]);
-                await db.query(
-                    "INSERT INTO users (id, name, email, password, role, hospital_id, gender, age, phone) VALUES (?,?,?,?,?,?,?,?,?)",
-                    [id, name, email, oldAdmin[0]?.password || '', role, targetHospitalId, gender || 'Male', age || 30, phone || '']
-                );
+            } else if (admin) {
+                const adminData = admin.toObject();
+                await HospitalAdmin.findByIdAndDelete(id);
+                await User.create({
+                    _id: id,
+                    name,
+                    email,
+                    password: adminData.password,
+                    role,
+                    hospital_id: targetHospitalId,
+                    gender: gender || 'Male',
+                    age: age || 30,
+                    phone: phone || ''
+                });
 
                 if (role === 'doctor') {
-                    await db.query("INSERT INTO doctors (user_id, name, specialization, phone, hospital_id) VALUES (?, ?, ?, ?, ?)", [id, name, 'General Physician', phone || '', targetHospitalId]);
+                    await Doctor.create({ user_id: id, specialization: 'General Physician', phone: phone || '', hospital_id: targetHospitalId });
                 }
             }
         }
@@ -255,31 +269,26 @@ export const deleteAppUser = async (req, res) => {
         const { id } = req.params;
         const { role } = req.query;
 
-        console.log(`Deleting user ${id} with expected role ${role}`);
-
         // 1. Cascade cleanup: Appointments
-        // Delete where user is patient
-        await db.query("DELETE FROM appointments WHERE patient_id = ?", [id]);
-        // Delete where user is doctor (via doctors table lookup)
-        await db.query("DELETE FROM appointments WHERE doctor_id IN (SELECT id FROM doctors WHERE user_id = ?)", [id]);
+        await Appointment.deleteMany({ $or: [{ user_id: id }, { doctor_id: id }] });
 
         // 2. Cascade cleanup: Lab Results
-        await db.query("DELETE FROM lab_results WHERE patient_id = ?", [id]);
-        await db.query("DELETE FROM lab_results WHERE doctor_id = ?", [id]); // If they ordered it
+        await LabResult.deleteMany({ $or: [{ patient_id: id }, { doctor_id: id }] });
 
         // 3. Delete Main Records
         if (role === 'hospital_admin' || role === 'Hospital Admin') {
-            await db.query("DELETE FROM hospital_admins WHERE id = ?", [id]);
+            await HospitalAdmin.findByIdAndDelete(id);
         } else if (role === 'doctor') {
-            const [docEntry] = await db.query("SELECT id FROM doctors WHERE user_id = ?", [id]);
-            if (docEntry.length > 0) {
-                await deleteDoctor(docEntry[0].id);
+            const docEntry = await Doctor.findOne({ user_id: id });
+            if (docEntry) {
+                await User.findByIdAndDelete(id);
+                await Doctor.findByIdAndDelete(docEntry._id);
             } else {
-                await db.query("DELETE FROM users WHERE id = ?", [id]);
+                await User.findByIdAndDelete(id);
             }
         } else {
-            await db.query("DELETE FROM patients WHERE user_id = ?", [id]);
-            await db.query("DELETE FROM users WHERE id = ?", [id]);
+            await Patient.findOneAndDelete({ user_id: id });
+            await User.findByIdAndDelete(id);
         }
         res.json({ message: "User deleted successfully" });
     } catch (err) {

@@ -79,17 +79,27 @@ export default function LaboratoryServices() {
     // Handle incoming state from Doctor Dashboard
     useEffect(() => {
         if (location.state) {
-            const { patient_id, appointment_id, doctor_name, appointment_date, patient_name } = location.state;
+            // Support both direct Laboratory Dashboard calls and DoctorDashboard calls (which pass raw Appointment objects)
+            const resolvedPatientId = location.state.patient_id || location.state.user_id;
+            const resolvedApptId = location.state.appointment_id || location.state._id || location.state.id || location.state.appointmentId;
+            const resolvedDoctorName = location.state.doctor_name || location.state.Doctor;
+            const resolvedPatientName = location.state.patient_name || location.state.Patient;
+            const resolvedApptDate = location.state.appointment_date || location.state.Date;
             
-            if (doctor_name) setDoctorName(doctor_name);
-            if (patient_name) setFormPatientName(patient_name);
-            if (appointment_date) {
-                const datePart = appointment_date.includes('T') ? appointment_date.split('T')[0] : appointment_date;
+            if (resolvedDoctorName) setDoctorName(resolvedDoctorName);
+            if (resolvedPatientName) setFormPatientName(resolvedPatientName);
+            if (resolvedApptDate) {
+                const datePart = String(resolvedApptDate).includes('T') ? String(resolvedApptDate).split('T')[0] : resolvedApptDate;
                 setRegDate(datePart);
             }
 
-            if (patient_id) {
-                const pIdString = patient_id.toString();
+            if (resolvedApptId) {
+                // Ensure it is a clean string for select matching
+                setSelectedAppointment(resolvedApptId.toString());
+            }
+
+            if (resolvedPatientId) {
+                const pIdString = resolvedPatientId.toString();
                 setSelectedPatient(pIdString);
                 
                 const fetchInitialAppointments = async () => {
@@ -98,9 +108,9 @@ export default function LaboratoryServices() {
                             headers: { Authorization: `Bearer ${token}` }
                         });
                         const allApps = res.data || [];
-                        const filtered = allApps.filter(app => String(app.patient_id) === pIdString);
+                        // Ensure we match using user_id or patient_id
+                        const filtered = allApps.filter(app => String(app.patient_id || app.user_id) === pIdString);
                         setAppointments(filtered);
-                        if (appointment_id) setSelectedAppointment(appointment_id.toString());
                     } catch (err) {
                         console.error("Error auto-populating appointments:", err);
                     }
@@ -128,7 +138,7 @@ export default function LaboratoryServices() {
             const res = await axios.get(`${API_BASE_URL}/api/admin/appointments`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            const filtered = (res.data || []).filter(app => String(app.patient_id) === String(patientId));
+            const filtered = (res.data || []).filter(app => String(app.user_id || app.patient_id) === String(patientId));
             setAppointments(filtered);
         } catch (err) {
             console.error("Error fetching patient appointments:", err);
@@ -149,9 +159,12 @@ export default function LaboratoryServices() {
         const val = e.target.value;
         setSelectedAppointment(val);
         if (val) {
-            const app = appointments.find(a => String(a.id) === String(val));
-            if (app && app.patient_id && !selectedPatient) {
-                setSelectedPatient(app.patient_id.toString());
+            const app = appointments.find(a => String(a.id || a._id) === String(val));
+            const patientIdRaw = app ? (app.user_id || app.patient_id) : null;
+            if (app) {
+                if (patientIdRaw) setSelectedPatient(patientIdRaw.toString());
+                if (app.Patient) setFormPatientName(app.Patient);
+                if (app.Doctor) setDoctorName(app.Doctor);
             }
         }
     };
@@ -174,22 +187,41 @@ export default function LaboratoryServices() {
     };
 
     const handleAuthorize = async () => {
-        if (!selectedPatient || selectedTests.length === 0) return;
+        if (!(selectedPatient || formPatientName) || selectedTests.length === 0) return;
         const patient = patients.find(p => String(p.user_id) === String(selectedPatient));
-        const selectedAppointmentData = appointments.find(app => String(app.id) === String(selectedAppointment));
+        const selectedAppointmentData = appointments.find(app => String(app.id || app._id) === String(selectedAppointment));
 
         try {
             for (const test of selectedTests) {
+                const nm = test.name.toLowerCase();
+                const unit = nm.includes('sugar') || nm.includes('glucose') || nm.includes('rbs') || nm.includes('cholesterol') || nm.includes('lipid') || nm.includes('creatinine') || nm.includes('urea') || nm.includes('uric') ? 'mg/dL'
+                    : nm.includes('hemoglobin') || nm.includes('hb') ? 'g/dL'
+                    : nm.includes('tsh') || nm.includes('thyroid') ? 'mIU/L'
+                    : nm.includes('vitamin') ? 'ng/mL'
+                    : nm.includes('count') || nm.includes('wbc') || nm.includes('platelet') ? 'cells/μL'
+                    : nm.includes('cbc') ? 'g/dL' : '---';
+                const normalRange = nm.includes('sugar') || nm.includes('glucose') || nm.includes('rbs') ? '70 – 110'
+                    : nm.includes('hemoglobin') || nm.includes('hb') || nm.includes('cbc') ? '12.0 – 17.0'
+                    : nm.includes('tsh') ? '0.4 – 4.0'
+                    : nm.includes('vitamin d') ? '20 – 50'
+                    : nm.includes('vitamin b12') ? '200 – 900'
+                    : nm.includes('uric acid') ? '3.5 – 7.2'
+                    : nm.includes('creatinine') || nm.includes('urea') ? '0.6 – 1.2'
+                    : nm.includes('alt') || nm.includes('sgpt') ? '7 – 56'
+                    : nm.includes('cholesterol') ? '< 200' : '---';
+
                 await addTest({
-                    patient_id: selectedPatient,
+                    patient_id: selectedPatient || (patients.find(p => p.name.toLowerCase() === formPatientName.toLowerCase())?.user_id) || null,
                     patient_name: formPatientName || (selectedAppointmentData ? selectedAppointmentData.Patient : patient?.name || "Guest Patient"),
-                    cnic: patient?.cnic || (selectedAppointmentData ? selectedAppointmentData.CNIC : "N/A"),
+                    cnic: patient?.cnic || (selectedAppointmentData ? (selectedAppointmentData.CNIC || selectedAppointmentData.cnic) : "N/A"),
                     test_name: test.name,
                     doctor_name: doctorName,
                     doctor_id: user?.id,
                     appointment_id: selectedAppointment,
                     category: test.category || "General",
                     price: test.fee - test.discount,
+                    normal_range: normalRange,
+                    unit: unit,
                     description: `Authorized at ${collectDate}`
                 });
             }
@@ -246,7 +278,7 @@ export default function LaboratoryServices() {
                                 </h4>
                                 <div className="d-flex align-items-center gap-2 mt-1">
                                     <Badge bg="primary" className="bg-opacity-10 text-primary fw-black border-0 rounded-1" style={{ fontSize: '9px' }}>
-                                        #{selectedAppointment || location.state?.appointment_id || "NEW_ORDER"}
+                                        #{selectedAppointment || location.state?.appointment_id || location.state?.id || "NEW_ORDER"}
                                     </Badge>
                                     <span className="text-muted small fw-bold opacity-75 d-flex align-items-center gap-1" style={{ fontSize: '10px' }}>
                                         <Stethoscope size={10} /> REF: {doctorName || "PRACTITIONER"}
@@ -278,17 +310,17 @@ export default function LaboratoryServices() {
                                             <label className="label-premium">CLIENT / PATIENT</label>
                                             <Form.Select
                                                 className="select-premium rounded-4 shadow-sm"
-                                                value={selectedPatient.toString()}
+                                                value={selectedPatient || formPatientName || ""}
                                                 onChange={handlePatientChange}
                                             >
                                                 <option value="">Search & Select Client</option>
-                                                {location.state?.patient_id && !patients.find(p => String(p.user_id) === String(location.state.patient_id)) && (
-                                                    <option value={location.state.patient_id.toString()}>
-                                                        {location.state.patient_name || "Selected Patient"} (ID: {location.state.patient_id})
+                                                {(selectedPatient || formPatientName) && !patients.find(p => String(p.user_id) === selectedPatient) && (
+                                                    <option value={selectedPatient || formPatientName}>
+                                                        {formPatientName || "Selected Patient"}
                                                     </option>
                                                 )}
                                                 {patients.map(p => (
-                                                    <option key={p.user_id} value={p.user_id.toString()}>{p.name} (ID: {p.user_id})</option>
+                                                    <option key={p.user_id} value={p.user_id.toString()}>{p.name}</option>
                                                 ))}
                                             </Form.Select>
                                         </div>
@@ -298,14 +330,19 @@ export default function LaboratoryServices() {
                                             <label className="label-premium">LINKED CLINICAL APPOINTMENT</label>
                                             <Form.Select
                                                 className="select-premium rounded-4 shadow-sm"
-                                                value={selectedAppointment.toString()}
+                                                value={selectedAppointment || ""}
                                                 onChange={handleAppointmentChange}
-                                                disabled={!selectedPatient}
+                                                disabled={!selectedPatient && !formPatientName}
                                             >
-                                                <option value="">{appointments.length > 0 ? "Select Active Record" : "No Records Found"}</option>
+                                                <option value="">{appointments.length > 0 || selectedAppointment ? "Select Active Record" : "No Records Found"}</option>
+                                                {selectedAppointment && !appointments.find(app => String(app.id || app._id) === selectedAppointment) && (
+                                                    <option value={selectedAppointment}>
+                                                        Recent • Appointment #{selectedAppointment}
+                                                    </option>
+                                                )}
                                                 {appointments.map(app => (
-                                                    <option key={app.id} value={app.id.toString()}>
-                                                        {app.Date} • ID: #{app.id}
+                                                    <option key={app.id || app._id} value={String(app.id || app._id)}>
+                                                        {app.Date ? String(app.Date).split('T')[0] : 'Date'} • Appointment #{app.id || app._id}
                                                     </option>
                                                 ))}
                                             </Form.Select>
@@ -568,16 +605,16 @@ export default function LaboratoryServices() {
                                  <Microscope size={48} color="#0d6efd" strokeWidth={1} />
                              </div>
                              <div>
-                                 <h1 className="fw-black mb-0 tracking-tight" style={{ fontSize: '32px', color: '#1a1a1a' }}>SMART PATHOLOGY LAB</h1>
-                                 <p className="mb-0 fw-black text-primary letter-spacing-2" style={{ fontSize: '10px' }}>PRECISION • INTEGRITY • EXCELLENCE</p>
+                                 <h1 className="fw-black mb-0 tracking-tight" style={{ fontSize: '32px', color: '#1a1a1a' }}>SAMARBAGH CITY HOSPITAL</h1>
+                                 <p className="mb-0 fw-black text-primary letter-spacing-2" style={{ fontSize: '10px' }}>ISO 9001:2015 CERTIFIED • DIAGNOSTIC WING</p>
                                  <div className="text-muted fw-bold mt-2" style={{ fontSize: '10px', maxWidth: '300px' }}>
-                                    Main Healthcare Complex, Diagnostic Wing, Building 04, National Medical City
+                                    Main Bazar Samarbagh, Lower Dir, Khyber Pakhtunkhwa, Pakistan
                                  </div>
                              </div>
                          </div>
                          <div className="text-end">
                              <div className="d-flex align-items-center justify-content-end gap-2 mb-1">
-                                 <Phone size={14} className="text-primary" /> <span className="fw-black" style={{ fontSize: '12px' }}>+92 311 0000000</span>
+                                 <Phone size={14} className="text-primary" /> <span className="fw-black" style={{ fontSize: '12px' }}>+92 345 5959000</span>
                              </div>
                              <div className="d-flex align-items-center justify-content-end gap-2">
                                  <Mail size={14} className="text-secondary" /> <span className="fw-bold" style={{ fontSize: '11px' }}>reports@smartpath.com</span>
@@ -613,7 +650,7 @@ export default function LaboratoryServices() {
                     </div>
 
                     {/* Investigation Table */}
-                    <div className="report-table-container min-vh-50 mb-5">
+                    <div className="report-table-container min-vh-50 mb-4">
                        <Table borderless className="clinical-report-table align-middle">
                            <thead>
                                <tr className="border-bottom border-dark border-2 fw-black text-muted" style={{ fontSize: '11px' }}>
@@ -624,38 +661,76 @@ export default function LaboratoryServices() {
                                </tr>
                            </thead>
                            <tbody className="fw-bold">
-                               {selectedTests.map((t, idx) => (
-                                   <tr key={idx} className="border-bottom border-light">
-                                       <td className="py-4">
-                                            <div className="fw-black text-dark" style={{ fontSize: '15px' }}>{t.name}</div>
-                                            <div className="text-muted fw-normal" style={{ fontSize: '10px' }}>Methodology: Spectrophotometry (Automation)</div>
-                                       </td>
-                                       <td className="py-4 text-center">
-                                            <div className="fw-black text-primary p-2 bg-primary bg-opacity-5 rounded-3 d-inline-block" style={{ minWidth: '80px', fontSize: '18px' }}>
-                                                {(t.fee / 10).toFixed(1)}
-                                            </div>
-                                       </td>
-                                       <td className="py-4 text-center text-muted" style={{ fontSize: '13px' }}>{t.name.includes('CBC') ? "12.0 - 16.0" : "70 - 110"}</td>
-                                       <td className="py-4 text-center text-muted fw-normal" style={{ fontSize: '12px' }}>{t.name.includes('CBC') ? "g/dL" : "mg/dL"}</td>
-                                   </tr>
-                               ))}
+                               {selectedTests.map((t, idx) => {
+                                   const nm = t.name.toLowerCase();
+                                   const unit = nm.includes('sugar') || nm.includes('glucose') || nm.includes('rbs') || nm.includes('cholesterol') || nm.includes('lipid') || nm.includes('creatinine') || nm.includes('urea') || nm.includes('uric') ? 'mg/dL'
+                                       : nm.includes('hemoglobin') || nm.includes('hb') ? 'g/dL'
+                                       : nm.includes('tsh') || nm.includes('thyroid') ? 'mIU/L'
+                                       : nm.includes('vitamin') ? 'ng/mL'
+                                       : nm.includes('count') || nm.includes('wbc') || nm.includes('platelet') ? 'cells/μL'
+                                       : nm.includes('cbc') ? 'g/dL' : '---';
+                                   const normalRange = nm.includes('sugar') || nm.includes('glucose') || nm.includes('rbs') ? '70 – 110'
+                                       : nm.includes('hemoglobin') || nm.includes('hb') || nm.includes('cbc') ? '12.0 – 17.0'
+                                       : nm.includes('tsh') ? '0.4 – 4.0'
+                                       : nm.includes('vitamin d') ? '20 – 50'
+                                       : nm.includes('vitamin b12') ? '200 – 900'
+                                       : nm.includes('uric acid') ? '3.5 – 7.2'
+                                       : nm.includes('creatinine') || nm.includes('urea') ? '0.6 – 1.2'
+                                       : nm.includes('alt') || nm.includes('sgpt') ? '7 – 56'
+                                       : nm.includes('cholesterol') ? '< 200' : '---';
+                                   return (
+                                       <tr key={idx} className="border-bottom border-light">
+                                           <td className="py-4">
+                                                <div className="fw-black text-dark" style={{ fontSize: '15px' }}>{t.name}</div>
+                                                <div className="text-muted fw-normal" style={{ fontSize: '10px' }}>Category: {t.category || 'General'}</div>
+                                           </td>
+                                           <td className="py-4 text-center">
+                                                <div className="fw-black text-primary p-2 bg-primary bg-opacity-5 rounded-3 d-inline-block" style={{ minWidth: '80px', fontSize: '18px' }}>
+                                                    {t.result || 'Pending'}
+                                                </div>
+                                           </td>
+                                           <td className="py-4 text-center text-muted" style={{ fontSize: '13px' }}>{normalRange}</td>
+                                           <td className="py-4 text-center text-muted fw-normal" style={{ fontSize: '12px' }}>{unit}</td>
+                                       </tr>
+                                   );
+                               })}
                            </tbody>
                        </Table>
                     </div>
 
-                    {/* Report Footer / Authentication */}
-                    <div className="report-signatures row mt-auto pt-5">
-                         <Col className="text-center border-top border-dark mx-4 pt-3">
-                             <div className="fw-black text-dark mb-0">Lab Technologist</div>
-                             <div className="text-muted fw-bold" style={{ fontSize: '10px' }}>BSc. Medical Technology</div>
+                    {/* Billing Summary within Report */}
+                    <div className="billing-summary-report d-flex justify-content-end mb-5">
+                        <div className="border border-dark p-3 rounded-2" style={{ minWidth: '280px' }}>
+                            <div className="d-flex justify-content-between mb-1">
+                                <span className="fw-black text-muted small">GROSS AMOUNT</span>
+                                <span className="fw-black">Rs. {selectedTests.reduce((a, t) => a + t.fee, 0)}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-1 pb-1 border-bottom border-light">
+                                <span className="fw-black text-muted small">TOTAL DISCOUNT</span>
+                                <span className="fw-black text-danger">- Rs. {selectedTests.reduce((a, t) => a + (t.discount || 0), 0)}</span>
+                            </div>
+                            <div className="d-flex justify-content-between pt-1">
+                                <span className="fw-black text-dark">NET PAYABLE</span>
+                                <span className="fw-black text-primary h5 mb-0">Rs. {calculateTotal()}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="report-signatures row mt-auto pt-4 border-top border-dark border-3">
+                         <Col className="text-center mx-4 pt-3">
+                             <div className="border-bottom border-dark mb-2" style={{height: '30px'}}></div>
+                             <div className="fw-black text-dark mb-0">LAB TECHNOLOGIST</div>
+                             <div className="text-muted fw-bold" style={{ fontSize: '10px' }}>SIGNATURE</div>
                          </Col>
-                         <Col className="text-center border-top border-dark mx-4 pt-3">
-                             <div className="fw-black text-primary mb-0 uppercase">{user?.name || "Senior Pathologist"}</div>
-                             <div className="text-muted fw-bold" style={{ fontSize: '10px' }}>MD, DCP (Pathology)</div>
+                         <Col className="text-center mx-4 pt-3">
+                             <div className="border-bottom border-dark mb-2" style={{height: '30px'}}></div>
+                             <div className="fw-black text-primary mb-0 uppercase">SENIOR PATHOLOGIST</div>
+                             <div className="text-muted fw-bold" style={{ fontSize: '10px' }}>SIGNATURE & STAMP</div>
                          </Col>
-                         <Col className="text-center border-top border-dark mx-4 pt-3">
-                             <div className="fw-black text-dark mb-0 uppercase">Dr. {doctorName}</div>
-                             <div className="text-muted fw-bold" style={{ fontSize: '10px' }}>Cons. Referring MD</div>
+                         <Col className="text-center mx-4 pt-3">
+                             <div className="border-bottom border-dark mb-2" style={{height: '30px'}}></div>
+                             <div className="fw-black text-dark mb-0 uppercase">REFERRING DOCTOR</div>
+                             <div className="text-muted fw-bold" style={{ fontSize: '10px' }}>SIGNATURE</div>
                          </Col>
                     </div>
 

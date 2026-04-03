@@ -100,10 +100,11 @@
 //     </>
 //   );
 // }
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import AppointmentModal from "../pages/AppointmentModal";
 import { useAppointments } from "../context/AppointmentContext";
 import { useDepartments } from "../context/DepartmentContext";
+import { AuthContext } from "../context/AuthContext";
 import { API_BASE_URL } from "../config";
 
 const Badge = ({ children, bg, className }) => (
@@ -113,6 +114,7 @@ const Badge = ({ children, bg, className }) => (
 export default function DoctorList({ doctors }) {
   const { bookAppointment } = useAppointments();
   const { departments } = useDepartments();
+  const { user } = useContext(AuthContext);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -127,13 +129,13 @@ export default function DoctorList({ doctors }) {
 
   return (
     <>
+
+
       <div className="container">
         <div className="row g-4">
           {activeDoctors.length === 0 ? (
             <div className="col-12 text-center py-5">
-              <p className="text-muted">
-                No doctors found matching your criteria.
-              </p>
+              <p className="text-muted fs-4">No doctors found matching your criteria.</p>
             </div>
           ) : (
             activeDoctors.map((doc) => (
@@ -199,15 +201,17 @@ export default function DoctorList({ doctors }) {
                         WhatsApp
                       </a>
 
-                      <button
-                        className="btn btn-primary rounded-pill flex-grow-1 fw-bold"
-                        onClick={() => {
-                          setSelectedDoctor(doc);
-                          setShowModal(true);
-                        }}
-                      >
-                        Book Now
-                      </button>
+                      {(!user || user?.role?.toLowerCase() === "patient") && (
+                        <button
+                          className="btn btn-primary rounded-pill flex-grow-1 fw-bold"
+                          onClick={() => {
+                            setSelectedDoctor(doc);
+                            setShowModal(true);
+                          }}
+                        >
+                          Book Now
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

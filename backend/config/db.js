@@ -1,62 +1,19 @@
-import mysql from "mysql2";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
 
-// Use environment variables
-const db = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "rootuser",
-  database: process.env.DB_NAME || "hospital_system",
-});
+dotenv.config();
 
-// Test connection
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error("Database connection failed:", err.message);
-  } else {
-    console.log("Connected to MySQL database");
-    connection.release();
-  }
-});
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/hospital_system");
+        console.log(`MongoDB Connected: ${conn.connection.host} 🚀`);
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+        process.exit(1);
+    }
+};
 
-export default db.promise();
+// Auto-connect
+connectDB();
 
-// backend/config/db.js
-// backend/config/db.js
-// import pkg from "pg";
-// import dotenv from "dotenv";
-
-// dotenv.config();
-
-// const { Pool } = pkg;
-
-// const pool = new Pool({
-//   host: process.env.DB_HOST,
-//   port: process.env.DB_PORT,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASSWORD,
-//   database: process.env.DB_NAME,
-//   ssl: {
-//     rejectUnauthorized: false,
-//   },
-// });
-
-// pool
-//   .connect()
-//   .then(() => console.log("✅ Connected to PostgreSQL"))
-//   .catch((err) => console.error("❌ DB connection error:", err));
-
-// export default pool;
-
-// const { Pool } = require("pg");
-
-// const pool = new Pool({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: {
-//     rejectUnauthorized: false,
-//   },
-// });
-
-// pool
-//   .connect()
-//   .then(() => console.log("✅ Database connected"))
-//   .catch((err) => console.error("❌ DB error:", err));
+export default mongoose;

@@ -66,8 +66,20 @@ export function LabProvider({ children }) {
     }
   };
 
+  const deleteTest = async (id) => {
+    if (!token) return;
+    try {
+      await axios.delete(`${API_BASE_URL}/api/lab/reports/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTests();
+    } catch (err) {
+      console.error("Error deleting lab test:", err);
+    }
+  };
+
   return (
-    <LabContext.Provider value={{ tests, addTest, performTest, addMedication, loading, fetchTests }}>
+    <LabContext.Provider value={{ tests, addTest, performTest, deleteTest, addMedication, loading, fetchTests }}>
       {children}
     </LabContext.Provider>
   );

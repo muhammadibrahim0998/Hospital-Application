@@ -322,7 +322,9 @@ export default function Layout() {
 
                     {(role === "patient" || role === "admin" || role === "doctor" || !role) && (
                       <>
-                        <div style={sectionLabel}>{(role === "doctor" || role === "admin") ? "Diagnostics" : "Patient Services"}</div>
+                        <div style={sectionLabel}>
+                           {(role === "doctor" || role === "admin") ? "Diagnostics" : "Patient Services"}
+                        </div>
                         <Link to="/lab-results" onClick={handleLinkClick} style={linkStyle("/lab-results")}>
                           <BsFileEarmarkText style={{ ...iconStyle, color: "#a55eea" }} />
                           Lab Results

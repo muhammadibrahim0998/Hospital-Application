@@ -18,13 +18,13 @@ const Login = () => {
     setLoading(true);
     try {
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
-      const role = res.data.user.role?.toLowerCase();
+      const role = res.data.user.role?.toLowerCase()?.replace(/[-_]/g, "");
       // DYNAMIC ROLE REDIRECTION
       login(res.data.user, res.data.token);
 
-      if (role === "super_admin") {
+      if (role === "superadmin") {
         navigate("/super-admin/dashboard");
-      } else if (role === "hospital_admin") {
+      } else if (role === "hospitaladmin") {
         navigate("/hospital-admin/dashboard");
       } else if (role === "admin") {
         navigate("/admin/dashboard");

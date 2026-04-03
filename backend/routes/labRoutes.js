@@ -1,25 +1,33 @@
 import express from "express";
-import { addReport, fetchReports, performLabTest, giveMedicationToPatient, fetchPublicReports, fetchAppointmentReport } from "../controllers/LabResultController.js";
+import {
+  addReport,
+  fetchReports,
+  performLabTest,
+  giveMedicationToPatient,
+  fetchPublicReports,
+  fetchAppointmentReport,
+  deleteReport
+} from "../controllers/LabResultController.js";
+
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public check (No token needed)
+// 1. PUBLIC ENDPOINTS
 router.get("/public/check-result/:cnic", fetchPublicReports);
 router.get("/public/appointment-report/:appointmentId", fetchAppointmentReport);
 
-// Get all test reports (filtered by role)
+// 2. PROTECTED ENDPOINTS (REPORTS & TESTS)
 router.get("/reports", verifyToken, fetchReports);
-router.get("/tests", verifyToken, fetchReports); // Aliasing for frontend context
+router.get("/tests", verifyToken, fetchReports); 
 
-// Add a new lab test (doctor or admin orders it)
 router.post("/reports", verifyToken, authorizeRoles("admin", "doctor", "hospital_admin"), addReport);
 router.post("/tests", verifyToken, authorizeRoles("admin", "doctor", "hospital_admin"), addReport);
 
-// Perform test (enter result) — lab_technician, admin, doctor can all do this
 router.put("/tests/:id/perform", verifyToken, authorizeRoles("admin", "doctor", "lab_technician", "hospital_admin"), performLabTest);
-
-// Give medication
 router.put("/tests/:id/medication", verifyToken, authorizeRoles("admin", "doctor", "lab_technician"), giveMedicationToPatient);
+
+// DELETE Individual Test Result
+router.delete("/reports/:id", verifyToken, authorizeRoles("admin", "doctor", "hospital_admin", "lab_technician"), deleteReport);
 
 export default router;

@@ -1,74 +1,51 @@
-import * as Lab from "../models/LabTestModel.js";
+import { LabTest } from "../models/LabTestModel.js";
 
-// GET /api/lab/tests?cnic=...
 export const getTests = async (req, res) => {
   try {
     const { cnic } = req.query;
-    let tests = cnic ? await Lab.getTestsByCNIC(cnic) : await Lab.getAllTests();
+    let tests = cnic ? await LabTest.find({ cnic: cnic }) : await LabTest.find();
     res.json(tests);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-// POST /api/lab/tests
 export const createTest = async (req, res) => {
   try {
-    const {
-      patient_name,
-      cnic,
-      test_name,
-      description,
-      normal_range,
-      price,
-      category,
-    } = req.body;
-
+    const { patient_name, cnic, test_name, description, normal_range, price, category } = req.body;
     if (!patient_name || !cnic || !test_name || !price || !category) {
-      return res
-        .status(400)
-        .json({ message: "Please provide all required fields" });
+      return res.status(400).json({ message: "Please provide all required fields" });
     }
-
-    await Lab.addTest(
-      patient_name,
-      cnic,
-      test_name,
-      description,
-      normal_range,
-      price,
-      category,
-    );
+    await LabTest.create({ patient_name, cnic, test_name, description, normal_range, price, category });
     res.status(201).json({ message: "Test added successfully" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-// PUT /api/lab/:id/perform
 export const performLabTest = async (req, res) => {
   try {
     const { id } = req.params;
     const { result } = req.body;
-    await Lab.performTest(id, result);
+    await LabTest.findByIdAndUpdate(id, { status: 'done', result: result });
     res.json({ message: "Test performed successfully" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-// PUT /api/lab/:id/medication
 export const addMedication = async (req, res) => {
   try {
     const { id } = req.params;
     const { medication } = req.body;
-    await Lab.giveMedication(id, medication);
+    const existing = await LabTest.findById(id);
+    if (!existing) return res.status(404).json({ message: "Test not found" });
+
+    let meds = existing.medicationGiven ? existing.medicationGiven.split(", ") : [];
+    meds.push(medication);
+    await LabTest.findByIdAndUpdate(id, { medicationGiven: meds.join(", ") });
     res.json({ message: "Medication added successfully" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 };
