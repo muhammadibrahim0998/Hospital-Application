@@ -118,10 +118,10 @@ export default function Layout() {
             transition: "all 0.3s ease",
             overflow: "hidden",
             position: "fixed",
-            top: sidebarOpen ? "0" : "56px",
+            top: "56px",
             left: 0,
-            height: sidebarOpen ? "100vh" : "calc(100vh - 56px)",
-            zIndex: 1100,
+            height: "calc(100vh - 56px)",
+            zIndex: 1000,
             display: "flex",
             flexDirection: "column",
           }}

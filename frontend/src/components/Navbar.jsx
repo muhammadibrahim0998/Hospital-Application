@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { BsList, BsBell, BsSearch, BsX } from "react-icons/bs";
+import { BsList, BsBell, BsSearch } from "react-icons/bs";
 import { AuthContext } from "../context/AuthContext";
 import "../css/Navbar.css";
 
@@ -12,7 +12,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const currentTheme = {
     navBg: "#0d6efd",
@@ -27,7 +26,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     if (!search.trim()) return;
     navigate(`/doctors?search=${search}`);
     setSearch("");
-    setSearchOpen(false);
   };
 
   const handleKeyPress = (e) => {
@@ -47,35 +45,35 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
   return (
     <nav
-      className={`navbar navbar-expand-lg position-fixed w-100 shadow-sm navbar-custom${sidebarOpen ? " navbar-hidden" : ""}`}
+      className="navbar-custom"
       style={{
         background: currentTheme.navBg,
         borderBottom: `2px solid ${currentTheme.border}`,
       }}
     >
-      <div
-        className="container-fluid d-flex align-items-center justify-content-between px-3 px-md-4"
-        style={{ gap: "8px" }}
-      >
+      <div className="navbar-inner">
 
-        {/* ── LEFT: Logo only ── */}
-        <div
-          className="navbar-logo"
-          style={{ color: currentTheme.text, flexShrink: 0 }}
-          onClick={goHome}
-        >
-          <div className="navbar-logo-icon">🏥</div>
-          <span className="fw-bold navbar-logo-text">CityCare Hospital</span>
+        {/* ── LEFT: Toggle + Logo ── */}
+        <div className="navbar-left">
+          <button
+            className="navbar-toggle"
+            style={{ background: currentTheme.box, borderColor: currentTheme.border }}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <BsList size={20} color="#fff" />
+          </button>
+
+          <div className="navbar-brand" onClick={goHome}>
+            <div className="navbar-brand-icon">🏥</div>
+            <span className="navbar-brand-name">CityCare Hospital</span>
+          </div>
         </div>
 
-        {/* ── CENTER: Animated Search Bar ── */}
-        <div className={`navbar-search-wrapper ${searchOpen ? "search-expanded" : ""}`}>
+        {/* ── CENTER: Search Bar (hidden on mobile) ── */}
+        <div className="navbar-center">
           <div
-            className="navbar-search-container"
-            style={{
-              border: `2px solid ${currentTheme.border}`,
-              background: currentTheme.searchBg,
-            }}
+            className="navbar-search"
+            style={{ borderColor: currentTheme.border }}
           >
             <input
               type="text"
@@ -84,97 +82,55 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyPress}
               className="navbar-search-input"
-              style={{ color: currentTheme.searchText }}
-              autoFocus={searchOpen}
             />
             <button
               onClick={handleSearch}
               className="navbar-search-btn"
-              style={{ background: currentTheme.box, color: currentTheme.text }}
+              style={{ background: currentTheme.box }}
             >
-              <BsSearch size={14} />
+              <BsSearch size={14} color="#fff" />
             </button>
           </div>
         </div>
 
-        {/* ── RIGHT: Buttons ── */}
-        <div className="d-flex align-items-center" style={{ gap: "8px", flexShrink: 0 }}>
+        {/* ── RIGHT: Bell + User ── */}
+        <div className="navbar-right">
 
-          {/* Search toggle */}
-          <button
-            className="navbar-action-btn"
-            style={{ background: currentTheme.box, color: currentTheme.text, borderColor: currentTheme.border }}
-            onClick={() => setSearchOpen(!searchOpen)}
-            title="Search"
-          >
-            {searchOpen ? <BsX size={18} /> : <BsSearch size={16} />}
-          </button>
-
-          {/* Notification bell */}
+          {/* Bell */}
           <div
-            className="navbar-action-btn navbar-bell"
-            style={{ background: currentTheme.box, color: currentTheme.text, borderColor: currentTheme.border }}
+            className="navbar-icon-btn"
+            style={{ background: currentTheme.box, borderColor: currentTheme.border }}
           >
-            <BsBell size={16} />
+            <BsBell size={17} color="#fff" />
           </div>
 
-          {/* Account dropdown */}
-          <div className="position-relative">
-            <button
-              className="navbar-action-btn navbar-account-btn"
-              style={{ background: "#00c6ff", color: "#000", border: "2px solid rgba(0,0,0,0.1)" }}
+          {/* User avatar + dropdown */}
+          <div className="navbar-user-wrap">
+            <div
+              className="navbar-avatar"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              title="Account"
+              title={user?.name || "Account"}
             >
-              <span style={{ fontWeight: 800, fontSize: "14px" }}>
-                {isLoggedIn ? user?.name?.charAt(0)?.toUpperCase() || "U" : "U"}
-              </span>
-            </button>
+              {isLoggedIn ? user?.name?.charAt(0)?.toUpperCase() || "U" : "U"}
+            </div>
 
             {dropdownOpen && (
-              <div
-                className="position-absolute end-0 mt-2 shadow navbar-dropdown"
-                style={{
-                  background: currentTheme.box,
-                  color: currentTheme.text,
-                  borderColor: currentTheme.border,
-                }}
-              >
-                <div
-                  className="navbar-dropdown-header"
-                  style={{ borderBottomColor: currentTheme.border }}
-                >
-                  <small>Signed in as</small>
-                  <div className="fw-bold small">{user?.name || "User"}</div>
-                  <div className="text-muted small text-capitalize">
+              <div className="navbar-dropdown">
+                <div className="navbar-dropdown-info">
+                  <small className="navbar-dropdown-label">Signed in as</small>
+                  <div className="navbar-dropdown-name">{user?.name || "User"}</div>
+                  <div className="navbar-dropdown-role">
                     {user?.role?.replace("_", " ")}
                   </div>
                 </div>
-                <button className="navbar-dropdown-button" onClick={handleLogout}>
+                <button className="navbar-dropdown-logout" onClick={handleLogout}>
                   Logout
                 </button>
               </div>
             )}
           </div>
-
-          {/* Sidebar toggle with user initial — opens/closes sidebar */}
-          <button
-            className="btn navbar-toggle-btn"
-            style={{
-              background: currentTheme.box,
-              color: currentTheme.text,
-              borderColor: currentTheme.border,
-            }}
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            title="Menu"
-          >
-            <BsList size={20} />
-            <span className="navbar-toggle-initial">
-              {isLoggedIn ? user?.name?.charAt(0)?.toUpperCase() || "M" : "M"}.
-            </span>
-          </button>
-
         </div>
+
       </div>
     </nav>
   );
