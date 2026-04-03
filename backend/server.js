@@ -1,12 +1,10 @@
-import dns from 'node:dns';
-dns.setServers(['8.8.8.8', '8.8.4.4']);
-
-
+import dns from "node:dns";
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import mongoose from "./config/db.js"; 
+import mongoose from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import superAdminRoutes from "./routes/superAdminRoutes.js";
@@ -22,19 +20,23 @@ dotenv.config();
 const app = express();
 
 // Enable CORS to allow the frontend to communicate with this backend.
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTENT_URL || "http://localhost:3000",
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
 // Root route for alive confirmation
-app.get("/", (_req, res) => res.json({
-  message: "Hospital Management System API is LIVE",
-  status: "success",
-  database: "connected"
-}));
+app.get("/", (_req, res) =>
+  res.json({
+    message: "Hospital Management System API is LIVE",
+    status: "success",
+    database: "connected",
+  }),
+);
 
 // Health check
 app.get("/healthz", (_req, res) => res.send("OK"));
