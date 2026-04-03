@@ -1,3 +1,6 @@
+import dns from 'node:dns';
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
@@ -9,7 +12,9 @@ dotenv.config();
 const seed = async () => {
   try {
     console.log("Connecting to MongoDB...");
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.MONGODB_URI, {
+      family: 4 // Force IPv4
+    });
     console.log("Connected.");
 
     // Clear existing data (optional, but good for a fresh start as requested)
