@@ -5,7 +5,10 @@ dotenv.config();
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/hospital_system", {
+        const url = process.env.MONGODB_URI || process.env.DATABASE_URL;
+        if (!url) throw new Error("Database URI (MONGODB_URI) is missing in .env!");
+
+        const conn = await mongoose.connect(url, {
             family: 4 // Force IPv4 to avoid Atlas DNS/IPv6 issues
         });
         console.log(`MongoDB Connected: ${conn.connection.host} 🚀`);
