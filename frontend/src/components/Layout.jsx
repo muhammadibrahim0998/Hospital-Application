@@ -118,10 +118,10 @@ export default function Layout() {
             transition: "all 0.3s ease",
             overflow: "hidden",
             position: "fixed",
-            top: "56px",
+            top: sidebarOpen ? "0" : "56px",
             left: 0,
-            height: "calc(100vh - 56px)",
-            zIndex: 1000,
+            height: sidebarOpen ? "100vh" : "calc(100vh - 56px)",
+            zIndex: 1100,
             display: "flex",
             flexDirection: "column",
           }}
@@ -134,18 +134,11 @@ export default function Layout() {
                 className="px-3 mb-3 pb-3"
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
               >
-                {/* Close button row */}
-                <div className="d-flex align-items-center justify-content-between mb-2">
+                {/* Menu label */}
+                <div className="mb-2">
                   <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>
                     Menu
                   </span>
-                  <button
-                    className="sidebar-close-btn"
-                    onClick={() => setSidebarOpen(false)}
-                    title="Close sidebar"
-                  >
-                    ✕
-                  </button>
                 </div>
 
                 <div className="d-flex align-items-center gap-3">

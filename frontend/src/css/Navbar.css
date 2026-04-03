@@ -6,10 +6,15 @@
 .navbar-custom {
   z-index: 1100;
   height: 56px;
-  transition: 0.3s;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   top: 0;
   left: 0;
   right: 0;
+}
+
+/* Navbar slides up and hides when sidebar is open */
+.navbar-hidden {
+  transform: translateY(-100%);
 }
 
 /* ── Logo ── */

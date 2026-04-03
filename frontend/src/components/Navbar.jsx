@@ -47,7 +47,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
   return (
     <nav
-      className="navbar navbar-expand-lg position-fixed w-100 shadow-sm navbar-custom"
+      className={`navbar navbar-expand-lg position-fixed w-100 shadow-sm navbar-custom${sidebarOpen ? " navbar-hidden" : ""}`}
       style={{
         background: currentTheme.navBg,
         borderBottom: `2px solid ${currentTheme.border}`,
