@@ -184,7 +184,12 @@
   border-radius: 40px;
   box-shadow: var(--shadow-premium);
   border: 8px solid #fff;
-  
+  transition: var(--transition-smooth);
+}
+
+.about-main-img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
 }
 
 .about-floating-badge {
@@ -192,10 +197,55 @@
   bottom: 10%;
   left: 0;
   background: var(--primary-gradient);
-  padding: 1.5rem 2rem;
-  border-radius: 25px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 15px;
   color: white;
-  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+  transition: var(--transition-smooth);
+}
+
+.about-floating-badge:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4);
+}
+
+.about-floating-badge h3 {
+  font-size: 1.2rem;
+  transition: var(--transition-smooth);
+}
+
+.about-floating-badge p {
+  font-size: 0.65rem;
+  line-height: 1.2;
+  transition: var(--transition-smooth);
+}
+
+/* GLOBAL HOVER EFFECTS FOR ENTIRE PAGE */
+.display-3, .display-4, .section-title {
+  transition: var(--transition-smooth);
+}
+
+.display-3:hover, .display-4:hover, .section-title:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+.d-flex.align-items-center.gap-3 {
+  transition: var(--transition-smooth);
+}
+
+.d-flex.align-items-center.gap-3:hover {
+  transform: translateX(5px);
+}
+
+.d-flex.align-items-center.gap-3:hover .rounded-circle {
+  transform: scale(1.15) rotate(10deg);
+  background: var(--primary-gradient) !important;
+  color: white !important;
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+}
+
+.rounded-circle {
+  transition: var(--transition-smooth) !important;
 }
 
 /* BUTTON SYSTEM */
@@ -234,6 +284,38 @@
   background: rgba(99, 102, 241, 0.05);
 }
 
+/* Custom button animation for Book Appointment */
+.animated-book-btn {
+  font-size: 0.9rem !important; 
+  white-space: nowrap; 
+  background: linear-gradient(270deg, #4f46e5, #7c3aed, #3b82f6, #8b5cf6);
+  background-size: 300% 300%;
+  color: #ffffff;
+  transition: all 0.4s ease;
+  animation: bg-text-pulse 4s ease infinite;
+}
+
+.animated-book-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.6);
+}
+
+@keyframes bg-text-pulse {
+  0% {
+    background-position: 0% 50%;
+    color: #ffffff;
+  }
+  50% {
+    background-position: 100% 50%;
+    color: #e0e7ff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    background-position: 0% 50%;
+    color: #ffffff;
+  }
+}
+
 /* RESPONSIVE ADJUSTMENTS */
 @media (max-width: 991px) {
   .slider-container { height: 75vh; }
@@ -246,5 +328,10 @@
   .quick-card-container { margin-top: -3rem; }
   .display-4 { font-size: 1.8rem; }
   .quick-card { padding: 1.5rem; }
-  .about-floating-badge { padding: 1rem 1.5rem; }
+  
+  /* Reduced sizes for badges and buttons specifically for mobile screens */
+  .about-floating-badge { padding: 0.8rem 1.2rem; }
+  .about-floating-badge h3 { font-size: 1.3rem !important; }
+  .about-floating-badge p { font-size: 0.7rem !important; }
+  .btn-premium { padding: 8px 18px !important; font-size: 0.85rem !important; }
 }

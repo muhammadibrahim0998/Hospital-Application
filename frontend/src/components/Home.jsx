@@ -58,10 +58,10 @@ export default function Home() {
           
           <div className="d-flex flex-wrap justify-content-center gap-3">
             <button 
-              className="btn-premium btn-premium-primary d-flex align-items-center gap-2" 
+              className="btn-premium btn-premium-primary d-flex align-items-center justify-content-center gap-2 animated-book-btn" 
               onClick={() => navigate('/find-doctor')}
             >
-              <Users size={18} /> Book Appointment
+              <Users size={16} /> Book Appointment
             </button>
             <button 
               className="btn-premium btn-premium-outline bg-white bg-opacity-10 text-white border-white border-opacity-25" 

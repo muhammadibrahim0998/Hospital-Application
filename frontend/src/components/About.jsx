@@ -52,17 +52,17 @@ export default function About() {
               <span className="badge bg-primary px-3 py-2 rounded-pill mb-4 text-uppercase fw-bold ls-2 animate-fade-in" style={{ fontSize: '0.75rem', letterSpacing: '2px' }}>
                 Next-Gen Healthcare Management
               </span>
-              <h1 className="display-2 fw-bold mb-4 ls-n1">
+              <h1 className="display-4 fw-bold mb-4 ls-n1">
                 Hospital <span className="text-primary italic">Management</span> System
               </h1>
-              <p className="lead mb-5 opacity-90 text-light fs-4 border-start border-4 border-primary ps-4" style={{ maxWidth: "700px" }}>
+              <p className="lead mb-5 opacity-90 text-light fs-5 border-start border-4 border-primary ps-4" style={{ maxWidth: "700px" }}>
                 Empowering healthcare providers with a unified digital ecosystem. From the <strong>Smart Pathology Lab</strong> to advanced practitioner dashboards, we redefine clinical efficiency.
               </p>
               <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
-                <Button as={Link} to="/appointments" size="lg" className="px-5 py-3 rounded-pill fw-bold shadow-lg border-0" style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}>
-                  Book Appointment <ArrowRight className="ms-2" size={20} />
+                <Button as={Link} to="/find-doctor" className="px-4 py-2 rounded-pill fw-bold shadow-lg border-0" style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)", fontSize: '0.95rem' }}>
+                  Book Appointment <ArrowRight className="ms-2" size={18} />
                 </Button>
-                <Button as={Link} to="/contact" variant="outline-light" size="lg" className="px-5 py-3 rounded-pill fw-bold border-2 backdrop-blur hover-bg-light text-white">
+                <Button as={Link} to="/contact" variant="outline-light" className="px-4 py-2 rounded-pill fw-bold border-2 backdrop-blur hover-bg-light text-white" style={{ fontSize: '0.95rem' }}>
                   Learn More
                 </Button>
               </div>
@@ -101,8 +101,8 @@ export default function About() {
           <Row className="align-items-center g-5">
             <Col lg={6}>
               <div className="pe-lg-5">
-                <h2 className="display-5 fw-bold text-dark mb-4 ls-n1">The Digital <span className="text-primary">Ecosystem</span></h2>
-                <p className="text-muted mb-4 fs-5 leading-relaxed">
+                <h2 className="display-6 fw-bold text-dark mb-4 ls-n1">The Digital <span className="text-primary">Ecosystem</span></h2>
+                <p className="text-muted mb-4 leading-relaxed">
                   Our Hospital Management System is built to streamline every aspect of patient care, from first registration to final laboratory reporting.
                 </p>
                 <div className="space-y-4 mb-5">
@@ -152,14 +152,14 @@ export default function About() {
 
       {/* Laboratory Deep-Dive */}
       <section className="py-5 bg-dark text-white position-relative overflow-hidden">
-        <div className="position-absolute top-0 end-0 opacity-10 rotate-12">
-            <FaFlask size={300} />
+        <div className="position-absolute top-0 end-0" style={{ opacity: 0.05, transform: "rotate(15deg)", zIndex: 0, padding: "20px" }}>
+            <FaFlask size={180} />
         </div>
         <Container className="py-5">
           <Row className="align-items-center g-5">
             <Col lg={5} className="order-lg-2">
-              <h2 className="display-6 fw-bold mb-4">Smart <span className="text-primary">Pathology</span> Lab</h2>
-              <p className="opacity-75 mb-5 fs-5">
+              <h2 className="fs-2 fw-bold mb-4">Smart <span className="text-primary">Pathology</span> Lab</h2>
+              <p className="opacity-75 mb-5 fs-6">
                 Our cutting-edge laboratory module integrates seamless billing, patient investigation queues, and professional clinical reporting.
               </p>
               <ul className="list-unstyled space-y-3">
@@ -186,7 +186,7 @@ export default function About() {
                 <Card.Body className="p-0">
                     <div style={{ height: "300px", background: "#f8f9fa", border: "20px solid #fff" }} className="d-flex align-items-center justify-content-center text-center">
                         <div>
-                            <p className="display-6 text-muted opacity-20 fw-bold">SMART LAB<br/>HM SYSTEM</p>
+                            <p className="fs-3 text-muted opacity-20 fw-bold">SMART LAB<br/>HM SYSTEM</p>
                             <div className="mt-2" style={{ height: "4px", width: "100px", background: "#3b82f6", margin: "0 auto" }}></div>
                         </div>
                     </div>
@@ -202,8 +202,8 @@ export default function About() {
         <Container>
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-end mb-5">
             <div>
-              <h2 className="fw-bold display-6 mb-2 tracking-tight">Our Elite <span className="text-primary">Panel</span></h2>
-              <p className="text-muted fs-5 mb-0">Professional practitioners at the core of our management system.</p>
+              <h2 className="fw-bold fs-2 mb-2 tracking-tight">Our Elite <span className="text-primary">Panel</span></h2>
+              <p className="text-muted mb-0">Professional practitioners at the core of our management system.</p>
             </div>
             <Link to="/doctors" className="btn btn-link text-primary fw-bold text-decoration-none p-0 mt-3 mt-md-0">
               Explore Medical Staff <ArrowRight size={18} className="ms-1" />
@@ -251,20 +251,20 @@ export default function About() {
             style={{ minHeight: "350px" }}
           >
             <div className="position-absolute w-100 h-100 top-0 start-0" style={{ background: "linear-gradient(225deg, #1e293b 0%, #0f172a 100%)" }}></div>
-            <div className="position-absolute top-0 end-0 p-5 opacity-5 rotate-12">
-              <HeartPulse size={250} />
+            <div className="position-absolute top-0 end-0 p-5" style={{ opacity: 0.05, transform: "rotate(12deg)", zIndex: 0 }}>
+              <HeartPulse size={180} />
             </div>
             
             <Row className="g-0 position-relative h-100">
                 <Col lg={7} className="p-5 d-flex flex-column justify-content-center text-white">
-                    <h2 className="display-4 fw-bold mb-4 tracking-tight">Experience Digital <span className="text-primary">Excellence</span></h2>
-                    <p className="lead opacity-75 mb-5 fs-4"> Empowering patients and practitioners with a system built for the future of healthcare.</p>
+                    <h2 className="display-5 fw-bold mb-4 tracking-tight">Experience Digital <span className="text-primary">Excellence</span></h2>
+                    <p className="lead opacity-75 mb-5 fs-5"> Empowering patients and practitioners with a system built for the future of healthcare.</p>
                     <div className="d-flex flex-column flex-sm-row gap-3">
-                        <Button as={Link} to="/appointments" variant="primary" size="lg" className="px-5 py-3 rounded-pill fw-bold shadow-lg border-0">
+                        <Button as={Link} to="/find-doctor" variant="primary" className="px-4 py-2 rounded-pill fw-bold shadow-lg border-0" style={{ fontSize: '0.95rem' }}>
                             Book Now
                         </Button>
-                        <a href="tel:+1234567890" className="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold d-flex align-items-center justify-content-center backdrop-blur">
-                            <Phone size={18} className="me-2" /> Support Desk
+                        <a href="tel:+1234567890" className="btn btn-outline-light px-4 py-2 rounded-pill fw-bold d-flex align-items-center justify-content-center backdrop-blur" style={{ fontSize: '0.95rem' }}>
+                            <Phone size={16} className="me-2" /> Support Desk
                         </a>
                     </div>
                 </Col>

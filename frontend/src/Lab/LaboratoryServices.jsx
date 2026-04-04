@@ -297,19 +297,20 @@ export default function LaboratoryServices() {
                     {/* Left Panel: Setup & Catalog */}
                     <Col lg={8}>
                         {/* Compact Setup Card */}
-                        <Card className="border-0 shadow-2xl rounded-5 overflow-hidden mb-4">
-                            <Card.Header className="bg-white border-0 p-4 pb-0">
-                                <h6 className="fw-black text-dark mb-0 d-flex align-items-center gap-2 tracking-tight">
-                                    <User size={16} className="text-primary" /> SESSION CONFIGURATION
+                        <Card className="border border-primary border-2 shadow-2xl rounded-5 overflow-hidden mb-4" style={{ backgroundColor: '#eef2ff' }}>
+                            <Card.Header className="border-0 p-3 pb-0 bg-transparent">
+                                <h6 className="fw-black text-primary mb-0 d-flex align-items-center gap-2 tracking-tight">
+                                    <User size={16} /> SESSION CONFIGURATION
                                 </h6>
                             </Card.Header>
-                            <Card.Body className="p-4">
-                                <Row className="g-3">
+                            <Card.Body className="p-3 pt-2">
+                                <Row className="g-2">
                                     <Col md={6}>
                                         <div className="input-group-premium">
-                                            <label className="label-premium">CLIENT / PATIENT</label>
+                                            <label className="label-premium mb-1 text-primary">CLIENT / PATIENT</label>
                                             <Form.Select
-                                                className="select-premium rounded-4 shadow-sm"
+                                                className="select-premium rounded-4 shadow-sm border-primary text-dark bg-white"
+                                                style={{ padding: '6px 12px', fontSize: '12px' }}
                                                 value={selectedPatient || formPatientName || ""}
                                                 onChange={handlePatientChange}
                                             >
@@ -327,9 +328,10 @@ export default function LaboratoryServices() {
                                     </Col>
                                     <Col md={6}>
                                         <div className="input-group-premium">
-                                            <label className="label-premium">LINKED CLINICAL APPOINTMENT</label>
+                                            <label className="label-premium mb-1 text-primary">LINKED CLINICAL APPOINTMENT</label>
                                             <Form.Select
-                                                className="select-premium rounded-4 shadow-sm"
+                                                className="select-premium rounded-4 shadow-sm border-primary text-dark bg-white"
+                                                style={{ padding: '6px 12px', fontSize: '12px' }}
                                                 value={selectedAppointment || ""}
                                                 onChange={handleAppointmentChange}
                                                 disabled={!selectedPatient && !formPatientName}
@@ -350,9 +352,10 @@ export default function LaboratoryServices() {
                                     </Col>
                                     <Col md={4}>
                                         <div className="input-group-premium">
-                                            <label className="label-premium">REFERRING MD</label>
+                                            <label className="label-premium mb-1 text-primary">REFERRING MD</label>
                                             <Form.Control
-                                                className="control-premium rounded-4 shadow-sm"
+                                                className="control-premium rounded-4 shadow-sm border-primary text-dark bg-white"
+                                                style={{ padding: '6px 12px', fontSize: '12px' }}
                                                 value={doctorName}
                                                 onChange={e => setDoctorName(e.target.value)}
                                             />
@@ -360,10 +363,11 @@ export default function LaboratoryServices() {
                                     </Col>
                                     <Col md={4}>
                                          <div className="input-group-premium">
-                                            <label className="label-premium">REG DATE</label>
+                                            <label className="label-premium mb-1 text-primary">REG DATE</label>
                                             <Form.Control
                                                 type="date"
-                                                className="control-premium rounded-4 shadow-sm"
+                                                className="control-premium rounded-4 shadow-sm border-primary text-dark bg-white"
+                                                style={{ padding: '6px 12px', fontSize: '12px' }}
                                                 value={regDate}
                                                 onChange={e => setRegDate(e.target.value)}
                                             />
@@ -371,10 +375,11 @@ export default function LaboratoryServices() {
                                     </Col>
                                     <Col md={4}>
                                          <div className="input-group-premium">
-                                            <label className="label-premium">COLLECT DATE</label>
+                                            <label className="label-premium mb-1 text-primary">COLLECT DATE</label>
                                             <Form.Control
                                                 type="date"
-                                                className="control-premium rounded-4 shadow-sm"
+                                                className="control-premium rounded-4 shadow-sm border-primary text-dark bg-white"
+                                                style={{ padding: '6px 12px', fontSize: '12px' }}
                                                 value={collectDate}
                                                 onChange={e => setCollectDate(e.target.value)}
                                             />
@@ -385,8 +390,8 @@ export default function LaboratoryServices() {
                         </Card>
 
                         {/* High-Density Catalog Card */}
-                        <Card className="border-0 shadow-2xl rounded-5 overflow-hidden">
-                            <Card.Header className="bg-white border-0 p-4 pb-2 d-flex justify-content-between align-items-center">
+                        <Card className="border border-primary border-2 shadow-2xl rounded-5 overflow-hidden mb-4">
+                            <Card.Header className="bg-white border-0 p-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
                                 <h6 className="fw-black text-dark mb-0 d-flex align-items-center gap-2 tracking-tight">
                                     <Clipboard size={16} className="text-primary" /> TEST PARAMETERS CATALOG
                                 </h6>
@@ -407,19 +412,21 @@ export default function LaboratoryServices() {
                                     <Button 
                                         variant="dark" 
                                         size="sm" 
-                                        className="rounded-pill px-3 py-1 fw-black shadow-lg"
-                                        style={{ fontSize: '10px' }}
+                                        className="rounded-circle p-0 fw-black shadow-sm d-flex align-items-center justify-content-center"
+                                        style={{ width: '26px', height: '26px', flexShrink: 0 }}
                                         onClick={() => setShowNewTestModal(true)}
+                                        title="Add New Test"
                                     >
-                                        <Plus size={12} className="me-1" /> ADD NEW
+                                        <Plus size={14} />
                                     </Button>
                                 </div>
                             </Card.Header>
                             <Card.Body className="p-0">
-                                <div className="table-responsive" style={{ maxHeight: "320px" }}>
+                                {/* Desktop Table View */}
+                                <div className="table-responsive d-none d-md-block" style={{ maxHeight: "320px" }}>
                                     <Table hover borderless className="align-middle mb-0 compact-catalog-table">
                                         <thead className="bg-slate-50 sticky-top shadow-sm">
-                                            <tr className="text-muted text-uppercase fw-black" style={{ fontSize: '9px', letterSpacing: '1px' }}>
+                                            <tr className="text-muted text-uppercase fw-black" style={{ fontSize: '10px', letterSpacing: '1px' }}>
                                                 <th className="px-4 py-3">INVESTIGATION</th>
                                                 <th className="py-3">CATEGORY</th>
                                                 <th className="py-3">SERVICE FEE</th>
@@ -430,10 +437,10 @@ export default function LaboratoryServices() {
                                             {filteredCatalog.map(test => (
                                                 <tr key={test.id} className="border-bottom border-light hover-bg-primary transition-all">
                                                     <td className="px-4 py-2">
-                                                        <div className="fw-black text-dark" style={{ fontSize: '12.5px' }}>{test.name}</div>
+                                                        <div className="fw-black text-dark" style={{ fontSize: '13px' }}>{test.name}</div>
                                                     </td>
                                                     <td className="py-2">
-                                                        <Badge bg="light" className="text-primary border fw-black rounded-1" style={{ fontSize: '8px' }}>{test.category || 'GENERAL'}</Badge>
+                                                        <Badge bg="light" className="text-primary border fw-black rounded-1" style={{ fontSize: '9px' }}>{test.category || 'GENERAL'}</Badge>
                                                     </td>
                                                     <td className="py-2">
                                                         <div className="fw-black text-primary" style={{ fontSize: '13px' }}>Rs. {test.fee}</div>
@@ -453,7 +460,7 @@ export default function LaboratoryServices() {
                                                                 className="btn btn-link text-danger p-0 opacity-50 hover-opacity-100 transition-all border-0 shadow-none"
                                                                 onClick={() => deleteFromCatalog(test.id)}
                                                             >
-                                                                <Trash2 size={14} />
+                                                                <Trash2 size={15} />
                                                             </button>
                                                         </div>
                                                     </td>
@@ -462,16 +469,52 @@ export default function LaboratoryServices() {
                                         </tbody>
                                     </Table>
                                 </div>
+
+                                {/* Mobile Card View */}
+                                <div className="d-block d-md-none p-3 bg-slate-50" style={{ maxHeight: "400px", overflowY: "auto" }}>
+                                    {filteredCatalog.length === 0 ? (
+                                        <div className="text-center py-5 text-muted fw-bold">No tests matched your search.</div>
+                                    ) : (
+                                        filteredCatalog.map(test => (
+                                            <div key={`mob-${test.id}`} className="bg-white rounded-4 p-3 mb-3 shadow-sm border border-primary position-relative" style={{ borderWidth: '2px !important' }}>
+                                                <div className="d-flex justify-content-between align-items-start mb-2">
+                                                    <div className="fw-black text-dark" style={{ fontSize: '15px' }}>{test.name}</div>
+                                                    <button 
+                                                        className="btn btn-link text-danger p-0 border-0 shadow-none opacity-50 hover-opacity-100"
+                                                        onClick={() => deleteFromCatalog(test.id)}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center mb-0 mt-3 pt-3 border-top border-light">
+                                                    <div>
+                                                        <Badge bg="primary" className="bg-opacity-10 text-primary border-0 fw-black rounded-1 me-2" style={{ fontSize: '10px' }}>{test.category || 'GENERAL'}</Badge>
+                                                        <span className="fw-black text-primary" style={{ fontSize: '14px' }}>Rs. {test.fee}</span>
+                                                    </div>
+                                                    <Button
+                                                        variant="primary"
+                                                        size="sm"
+                                                        className="rounded-pill px-3 py-2 fw-black border-0 shadow-sm btn-premium-main"
+                                                        style={{ fontSize: '10px' }}
+                                                        onClick={() => addTestToSummary(test)}
+                                                    >
+                                                        <Plus size={12} className="me-1" /> ADD
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </Card.Body>
                         </Card>
                     </Col>
 
                     {/* Right Panel: Summary & Billing */}
                     <Col lg={4}>
-                        <Card className="border-0 shadow-2xl rounded-5 h-100 bg-white overflow-hidden d-flex flex-column">
-                            <Card.Header className="bg-dark text-white p-4 border-0">
+                        <Card className="border-0 shadow-sm rounded-5 h-100 bg-white overflow-hidden d-flex flex-column m-lg-2 m-0 mt-4 mt-lg-0" style={{ boxShadow: "0 0 0 3px #0d6efd, 0 0 0 6px #198754" }}>
+                            <Card.Header className="text-white p-3 border-0 shadow-sm" style={{ background: "linear-gradient(135deg, #198754, #0d6efd)" }}>
                                 <h6 className="fw-black mb-0 d-flex align-items-center gap-2 tracking-tight">
-                                    <ShoppingCart size={18} className="text-primary" /> BILLING SUMMARY
+                                    <ShoppingCart size={18} className="text-white" /> BILLING SUMMARY
                                 </h6>
                             </Card.Header>
                             <Card.Body className="p-4 d-flex flex-column flex-grow-1">
@@ -535,18 +578,19 @@ export default function LaboratoryServices() {
                                         <h2 className="mb-0 fw-black text-primary tracking-tight">Rs. {calculateTotal()}</h2>
                                     </div>
 
-                                    <div className="d-grid gap-3">
+                                    <div className="d-grid gap-2">
                                         <Button
                                             variant="primary"
-                                            className="py-3 fw-black rounded-pill shadow-2xl border-0 btn-premium-main"
+                                            className="py-2 rounded-pill fw-black border-0 shadow-sm d-flex align-items-center justify-content-center gap-2 outline-none"
                                             onClick={handleAuthorize}
                                             disabled={selectedTests.length === 0}
+                                            style={{ fontSize: '12px', background: 'linear-gradient(135deg, #198754, #0d6efd)' }}
                                         >
-                                            AUTHORIZE INVESTIGATIONS
+                                            <CheckCircle size={16} /> AUTHORIZE INVESTIGATIONS
                                         </Button>
                                         <Button
                                             variant="outline-dark"
-                                            className="py-2 rounded-pill fw-black d-flex align-items-center justify-content-center gap-2 border-2"
+                                            className="py-2 rounded-pill fw-black d-flex align-items-center justify-content-center gap-2 border-2 shadow-sm"
                                             onClick={() => window.print()}
                                             style={{ fontSize: '12px' }}
                                         >

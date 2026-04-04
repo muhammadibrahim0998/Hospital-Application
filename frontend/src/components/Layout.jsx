@@ -410,11 +410,13 @@ export default function Layout() {
         <div
           className="flex-grow-1"
           style={{
-            marginLeft: sidebarOpen ? "250px" : "0",
-            transition: "margin-left 0.3s",
+            marginLeft: (sidebarOpen && windowWidth > 768) ? "250px" : "0",
+            width: (sidebarOpen && windowWidth > 768) ? "calc(100% - 250px)" : "100%",
+            transition: "all 0.3s ease",
             padding: "1.5rem",
             background: "#f0f2f5",
             minHeight: "calc(100vh - 56px)",
+            overflowX: "hidden", // Ensure no horizontal scrolling happens
           }}
         >
           <Outlet />

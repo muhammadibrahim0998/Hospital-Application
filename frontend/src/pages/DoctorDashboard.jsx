@@ -213,18 +213,24 @@ const DoctorDashboard = () => {
                 <div className="banner-accent"></div>
                 <Row className="align-items-center g-4 position-relative">
                     <Col lg={7}>
-                        <div className="d-flex align-items-center gap-4">
-                            <div className="profile-img-container shadow-lg rounded-circle border border-4 border-white p-1 bg-light">
+                        <div className="d-flex flex-column flex-md-row align-items-center gap-4 mb-3 mb-md-0 text-center text-md-start">
+                            <div className="profile-img-container rounded-circle bg-white" style={{ 
+                                width: "90px", height: "90px", padding: "3px",
+                                marginTop: "10px", marginBottom: "5px",
+                                boxShadow: "0 0 0 3px #198754, 0 0 0 6px #0d6efd, 0 0 0 9px #212529" 
+                            }}>
                                 <img
                                     src={profile.image ? `${API_BASE_URL}${profile.image}` : "https://img.icons8.com/color/96/doctor-male.png"}
                                     alt="Doctor"
-                                    className="rounded-circle"
-                                    style={{ width: "90px", height: "90px", objectFit: "cover" }}
+                                    className="rounded-circle w-100 h-100"
+                                    style={{ objectFit: "cover" }}
                                 />
                             </div>
                             <div>
-                                <h1 className="fw-black mb-1 tracking-tight text-dark display-6">Welcome, Dr. {profile.name}</h1>
-                                <div className="d-flex flex-wrap align-items-center gap-3 mt-2">
+                                <h1 className="fw-black text-dark fst-italic tracking-tight mb-2" style={{ whiteSpace: "nowrap", fontSize: "clamp(1.3rem, 4vw, 2rem)" }}>
+                                    Welcome, Dr. {profile.name}
+                                </h1>
+                                <div className="d-flex flex-wrap justify-content-center justify-content-md-start align-items-center gap-3">
                                     <Badge bg="primary" className="bg-opacity-10 text-primary rounded-pill px-4 py-2 fw-black" style={{ fontSize: '13px' }}>
                                         {profile.specialization || "General Physician"}
                                     </Badge>
@@ -262,7 +268,8 @@ const DoctorDashboard = () => {
                             </Badge>
                         </Card.Header>
                         <Card.Body className="p-0">
-                            <div className="table-responsive" style={{ maxHeight: "400px" }}>
+                            {/* Desktop Table View */}
+                            <div className="table-responsive d-none d-md-block" style={{ maxHeight: "400px" }}>
                                 <Table hover borderless className="align-middle mb-0">
                                     <thead>
                                         <tr className="bg-slate-50 text-muted text-uppercase fw-black" style={{ fontSize: '11px', letterSpacing: '1px' }}>
@@ -315,6 +322,43 @@ const DoctorDashboard = () => {
                                     </tbody>
                                 </Table>
                             </div>
+
+                            {/* Mobile Card View */}
+                            <div className="d-block d-md-none p-3" style={{ maxHeight: "400px", overflowY: "auto" }}>
+                                {appointments.length === 0 ? (
+                                    <div className="text-center py-5 text-muted fw-bold">Queue is clear.</div>
+                                ) : (
+                                    appointments.map((app) => (
+                                        <div key={`mob-${app.id}`} className="bg-white rounded-4 p-3 mb-3 shadow-sm border border-primary position-relative" style={{ borderWidth: '2px !important' }}>
+                                            <div className="d-flex justify-content-between align-items-start mb-3">
+                                                <div>
+                                                    <div className="fw-black text-dark" style={{ fontSize: '16px' }}>{app.Patient || app.patient_name}</div>
+                                                    <div className="text-muted fw-bold mt-1" style={{ fontSize: '11px' }}>PID: {app.patient_id || `APP-${app.id}`}</div>
+                                                </div>
+                                                <Badge bg={app.status === 'completed' ? 'success' : 'warning'} className="bg-opacity-10 text-success fw-black rounded-pill px-3 py-1 border-0" style={{ fontSize: '10px', letterSpacing: '0.5px' }}>
+                                                    {app.status?.toUpperCase()}
+                                                </Badge>
+                                            </div>
+                                            <div className="d-flex align-items-center gap-3 mb-3">
+                                                <div className="fw-black text-dark" style={{ fontSize: '14px' }}>
+                                                    <Clock size={16} className="me-1 text-primary" /> {app.Time || '10:00'}
+                                                </div>
+                                                <div className="text-muted fw-bold" style={{ fontSize: '12px' }}>
+                                                    {app.Date ? app.Date.split('T')[0] : 'Today'}
+                                                </div>
+                                            </div>
+                                            <div className="d-flex gap-2 border-top border-light pt-3">
+                                                <BootstrapButton variant="primary" size="sm" className="rounded-3 p-2 btn-premium-sky border-0 shadow-sm" title="Order Lab Test" onClick={() => navigate("/doctor-lab", { state: { ...app, doctor_name: profile.name } })}>
+                                                    <FlaskConical size={18} />
+                                                </BootstrapButton>
+                                                <BootstrapButton variant="light" size="sm" className="rounded-3 p-2 border shadow-sm text-dark hover-lift bg-white" title="View Patient" onClick={() => handleViewClick(app)}>
+                                                    <Eye size={18} />
+                                                </BootstrapButton>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </Card.Body>
                     </Card>
 
@@ -338,7 +382,8 @@ const DoctorDashboard = () => {
                             </InputGroup>
                         </Card.Header>
                         <Card.Body className="p-0">
-                            <div className="table-responsive" style={{ maxHeight: "450px" }}>
+                            {/* Desktop Table View */}
+                            <div className="table-responsive d-none d-md-block" style={{ maxHeight: "450px" }}>
                                 <Table hover borderless className="align-middle mb-0">
                                     <thead className="bg-slate-50 text-muted text-uppercase fw-black" style={{ fontSize: '11px', letterSpacing: '1px' }}>
                                         <tr>
@@ -398,6 +443,56 @@ const DoctorDashboard = () => {
                                         )}
                                     </tbody>
                                 </Table>
+                            </div>
+
+                            {/* Mobile Card View */}
+                            <div className="d-block d-md-none p-3" style={{ maxHeight: "450px", overflowY: "auto" }}>
+                                {filteredReports.length === 0 ? (
+                                    <div className="text-center py-5 text-muted fw-bold">Archive empty or no results matching search.</div>
+                                ) : (
+                                    filteredReports.map((report) => (
+                                        <div key={`mob-${report.id}`} className="bg-white rounded-4 p-3 mb-3 shadow-sm border border-primary position-relative" style={{ borderWidth: '2px !important' }}>
+                                            <div className="d-flex justify-content-between align-items-start mb-3">
+                                                <div>
+                                                    <div className="fw-black text-dark" style={{ fontSize: '16px' }}>{report.patient_name}</div>
+                                                    <div className="text-muted fw-bold mt-1" style={{ fontSize: '11px' }}>DATE: {new Date(report.date || report.created_at).toLocaleDateString()}</div>
+                                                </div>
+                                                <div className={`px-3 py-1 rounded-pill fw-black text-white ${report.status === 'done' ? 'bg-primary shadow-sm' : 'bg-warning text-dark'}`} style={{ fontSize: '10px' }}>
+                                                    {report.status === 'done' ? (report.result || "NORMAL") : "PENDING"}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="mb-3 d-flex align-items-center gap-2">
+                                                <div className="fw-bold text-dark" style={{ fontSize: '14px' }}>{report.test_name || "General"}</div>
+                                                <Badge bg="primary" className="bg-opacity-10 text-primary fw-black rounded-pill px-3 py-1 border-0" style={{ fontSize: '9px', letterSpacing: '0.5px' }}>PATHOLOGY</Badge>
+                                            </div>
+
+                                            <div className="d-flex justify-content-between align-items-center border-top border-light pt-3 mt-1">
+                                                <div>
+                                                    {report.medication_given ? (
+                                                        <div className="text-success fw-bold d-flex align-items-center gap-1" style={{ fontSize: '12px' }}>
+                                                            <CheckCircle size={14} /> PRESCRIBED
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-muted fw-bold opacity-50" style={{ fontSize: '12px' }}>---</div>
+                                                    )}
+                                                </div>
+                                                <div className="d-flex gap-2">
+                                                    {report.status === 'done' && (
+                                                        <BootstrapButton variant="outline-primary" size="sm" className="rounded-3 p-2 bg-white shadow-sm" title="Rx Pad" onClick={() => handlePrescriptionClick(report)}>
+                                                            <ClipboardCheck size={18} />
+                                                        </BootstrapButton>
+                                                    )}
+                                                    {report.appointment_id && (
+                                                        <BootstrapButton variant="primary" size="sm" className="rounded-3 p-2 btn-premium-sky border-0 shadow-sm" title="E-Chart" onClick={() => window.open(`/medical-report/${report.appointment_id}`, '_blank')}>
+                                                            <FileText size={18} />
+                                                        </BootstrapButton>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </Card.Body>
                     </Card>

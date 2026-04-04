@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { BsList, BsBell, BsSearch } from "react-icons/bs";
+import { BsList, BsSearch } from "react-icons/bs";
 import { AuthContext } from "../context/AuthContext";
 import "../css/Navbar.css";
 
@@ -51,10 +51,10 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
         borderBottom: `2px solid ${currentTheme.border}`,
       }}
     >
-      <div className="navbar-inner">
+      <div className="navbar-inner d-flex justify-content-between w-100">
 
-        {/* ── LEFT: Toggle + Logo ── */}
-        <div className="navbar-left">
+        {/* ── LEFT: Toggle + Desktop Logo ── */}
+        <div className="navbar-left d-flex align-items-center">
           <button
             className="navbar-toggle"
             style={{ background: currentTheme.box, borderColor: currentTheme.border }}
@@ -63,17 +63,19 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
             <BsList size={20} color="#fff" />
           </button>
 
-          <div className="navbar-brand" onClick={goHome}>
+          {/* Logo visible on desktop (hidden on mobile) */}
+          <div className="navbar-brand d-none d-sm-flex ms-2" onClick={goHome}>
             <div className="navbar-brand-icon">🏥</div>
             <span className="navbar-brand-name">CityCare Hospital</span>
           </div>
         </div>
 
-        {/* ── CENTER: Search Bar (hidden on mobile) ── */}
-        <div className="navbar-center">
+        {/* ── CENTER: Search Bar ── */}
+        {/* Added d-flex to guarantee search bar shows in the center on mobile */}
+        <div className="navbar-center d-flex flex-grow-1 px-2 px-sm-4">
           <div
-            className="navbar-search"
-            style={{ borderColor: currentTheme.border }}
+            className="navbar-search w-100"
+            style={{ borderColor: currentTheme.border, maxWidth: "400px", margin: "0 auto" }}
           >
             <input
               type="text"
@@ -81,11 +83,11 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyPress}
-              className="navbar-search-input"
+              className="navbar-search-input text-truncate"
             />
             <button
               onClick={handleSearch}
-              className="navbar-search-btn"
+              className="navbar-search-btn flex-shrink-0"
               style={{ background: currentTheme.box }}
             >
               <BsSearch size={14} color="#fff" />
@@ -93,15 +95,12 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
           </div>
         </div>
 
-        {/* ── RIGHT: Bell + User ── */}
-        <div className="navbar-right">
+        {/* ── RIGHT: Mobile Logo + User Account ── */}
+        <div className="navbar-right d-flex align-items-center">
 
-          {/* Bell */}
-          <div
-            className="navbar-icon-btn"
-            style={{ background: currentTheme.box, borderColor: currentTheme.border }}
-          >
-            <BsBell size={17} color="#fff" />
+          {/* Mobile Logo: Shown on the right side only on mobile screens */}
+          <div className="navbar-brand d-flex d-sm-none me-2" onClick={goHome} style={{ cursor: "pointer" }}>
+            <div className="navbar-brand-icon" style={{ width: "28px", height: "28px", fontSize: "14px" }}>🏥</div>
           </div>
 
           {/* User avatar + dropdown */}

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import User from "./models/UserModel.js";
-import SuperAdmin from "./models/SuperAdminModel.js";
 import db from "./config/db.js"; // This triggers connection
 
 const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || "[EMAIL_ADDRESS]";
@@ -13,41 +12,28 @@ async function seedSuperAdmin() {
 
     const hash = await bcrypt.hash(SUPER_ADMIN_PASSWORD, 10);
 
-    // 1. Manage User record
-    let user = await User.findOne({ role: "super_admin" });
+    // Check if a super_admin already exists
+    const existing = await User.findOne({ role: "super_admin" });
 
-    if (user) {
-      // Update existing record
-      user.email = SUPER_ADMIN_EMAIL;
-      user.password = hash;
-      user.name = "Super Admin";
-      await user.save();
-      console.log("✅ Super Admin User credentials updated!");
+    if (existing) {
+      // Update only email and password
+      existing.email = SUPER_ADMIN_EMAIL;
+      existing.password = hash;
+      existing.name = "Super Admin"; // Ensure name is correct
+      await existing.save();
+      console.log("✅ Super Admin credentials updated successfully!");
     } else {
-      // Create new user record
-      user = await User.create({
+      // Create new super admin
+      await User.create({
         name: "Super Admin",
         email: SUPER_ADMIN_EMAIL,
         password: hash,
         role: "super_admin",
       });
-      console.log("✅ Super Admin User created successfully!");
+      console.log("✅ Super Admin created successfully!");
     }
 
-    // 2. Manage SuperAdmin specialized record
-    const superAdminRecord = await SuperAdmin.findOne({ user_id: user._id });
-    if (!superAdminRecord) {
-      await SuperAdmin.create({
-        user_id: user._id,
-        permissions: ['all'],
-        status: 'active'
-      });
-      console.log("✅ SuperAdmin specialized record created!");
-    } else {
-      console.log("ℹ️ SuperAdmin specialized record already exists.");
-    }
-
-    console.log("📧 Super Admin Email:", SUPER_ADMIN_EMAIL);
+    console.log("📧 Email:", SUPER_ADMIN_EMAIL);
 
     mongoose.connection.close();
     process.exit(0);

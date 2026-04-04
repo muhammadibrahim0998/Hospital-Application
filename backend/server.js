@@ -20,24 +20,9 @@ import LabResult from "./models/LabResultModel.js";
 const app = express();
 
 // Enable CORS to allow the frontend to communicate with this backend.
-const allowedOrigins = [
-  process.env.FRONTEND_URI,
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:3000",
-].filter(Boolean);
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith("http://localhost")) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: process.env.FRONTEND_URI || "http://localhost:5174",
     credentials: true,
   }),
 );
