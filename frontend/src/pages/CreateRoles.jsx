@@ -54,9 +54,10 @@ const CreateRoles = () => {
 
     return (
         <Container fluid className="py-4 px-md-5 bg-light min-vh-100">
-            <Card className="border-0 shadow-sm rounded-4">
-                <Card.Header className="bg-white border-0 p-4 border-bottom">
-                    <h5 className="fw-bold mb-0">ROLE PERMISSION CONTROL</h5>
+            <Card className="border-0 shadow-lg rounded-5 overflow-hidden bg-white">
+                <Card.Header className="bg-white border-0 p-4 border-bottom border-blue-soft text-center">
+                    <h4 className="fw-black mb-0 tracking-tight text-dark letter-spacing-1">ROLE PERMISSION CONTROL</h4>
+                    <p className="text-muted small mb-0 mt-1 fw-bold fw-black">Configure System Logic & Access Nodes</p>
                 </Card.Header>
                 <Card.Body className="p-4">
                     <Form onSubmit={handleSave}>
@@ -82,11 +83,11 @@ const CreateRoles = () => {
                             </Col>
                         </Row>
 
-                        <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-primary bg-opacity-10 rounded-3 border-start border-4 border-primary shadow-xs">
+                        <div className="d-flex align-items-center gap-3 mb-5 p-3 rounded-4 border-start border-4 border-blue shadow-sm bg-blue-tint">
                             <Form.Check
                                 type="checkbox"
                                 id="super-role-toggle"
-                                label={<span className="fw-bold">Super Role (All Permissions)</span>}
+                                label={<span className="fw-black text-dark" style={{fontSize: '14px'}}>Super Role (All Permissions)</span>}
                                 checked={isSuperRole}
                                 onChange={e => handleSuperToggle(e.target.checked)}
                             />
@@ -134,14 +135,26 @@ const CreateRoles = () => {
                             </Table>
                         </div>
 
-                        <div className="mt-5 text-end">
-                            <Button type="submit" variant="primary" className="px-5 py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2 ms-auto">
-                                <Save size={18} /> CREATE NEW ROLE
+                        <div className="mt-5 text-center">
+                            <Button type="submit" variant="primary" className="px-4 py-2 rounded-2 fw-black shadow-lg d-inline-flex align-items-center gap-2 border-0 btn-premium-blue" style={{fontSize: '12px'}}>
+                                <Save size={16} /> CREATE NEW ROLE
                             </Button>
                         </div>
                     </Form>
                 </Card.Body>
             </Card>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+                body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+                .fw-black { font-weight: 900; }
+                .border-blue-soft { border-bottom-color: rgba(13, 110, 253, 0.1) !important; }
+                .border-blue { border-color: #0d6efd !important; }
+                .bg-blue-tint { background: rgba(13, 110, 253, 0.03); }
+                .letter-spacing-1 { letter-spacing: 1px; }
+                .btn-premium-blue { background: #0d6efd !important; transition: all 0.3s ease; }
+                .btn-premium-blue:hover { background: #0b5ed7 !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13, 110, 253, 0.2) !important; }
+                .tracking-tight { letter-spacing: -1px; }
+            `}</style>
         </Container>
     );
 };

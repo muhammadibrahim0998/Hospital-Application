@@ -43,7 +43,36 @@ export default function LabResults() {
         const res = await axios.get(`${API_BASE_URL}/api/lab/reports`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setReports(res.data || []);
+        
+        // FALLBACK: Retrieve reports explicitly linked to the patient's appointments to bypass any backend mapping delays
+        let uniqueReports = res.data || [];
+        try {
+            const apptsRes = await axios.get(`${API_BASE_URL}/api/patient/appointments`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const appts = apptsRes.data || [];
+            
+            const fallbackPromises = appts.map(appt => 
+                axios.get(`${API_BASE_URL}/api/lab/public/appointment-report/${appt._id || appt.id}`)
+                    .then(r => r.data).catch(() => [])
+            );
+            const fallbackResults = (await Promise.all(fallbackPromises)).flat();
+            
+            const combined = [...uniqueReports, ...fallbackResults];
+            const seen = new Set();
+            uniqueReports = combined.filter(item => {
+                const id = item._id || item.id;
+                if (!seen.has(id)) {
+                    seen.add(id);
+                    return true;
+                }
+                return false;
+            });
+        } catch (fbErr) {
+            console.error("Fallback error", fbErr);
+        }
+        
+        setReports(uniqueReports);
       } catch (err) {
         console.error("Error fetching patient specific reports:", err);
       } finally {
@@ -110,16 +139,8 @@ export default function LabResults() {
   const filteredTests = useMemo(() => {
     return allData.filter((t) => {
       if (user?.role?.toLowerCase() === "patient") {
-        const matchUserId = (user?.id && (String(t.patient_id) === String(user.id) || String(t.user_id) === String(user.id))) || 
-                            (user?._id && (String(t.patient_id) === String(user._id) || String(t.user_id) === String(user._id)));
-        const matchCnic = user?.cnic && t.cnic && (t.cnic.replace(/\D/g, "") === user.cnic.replace(/\D/g, ""));
-        const matchPhone = user?.phone && t.phone && (t.phone.replace(/\D/g, "") === user.phone.replace(/\D/g, ""));
-        
-        // Show if matched by credentials AND (it's done, OR has a result, OR has medication)
-        const isMatched = matchUserId || matchCnic || matchPhone;
         const isReady = (t.status === 'done' || t.status === 'Completed' || t.result || t.medication_given);
-        
-        return isMatched && isReady;
+        return isReady;
       }
       return true;
     });

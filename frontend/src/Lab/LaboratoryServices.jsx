@@ -211,13 +211,13 @@ export default function LaboratoryServices() {
                     : nm.includes('cholesterol') ? '< 200' : '---';
 
                 await addTest({
-                    patient_id: selectedPatient || (patients.find(p => p.name.toLowerCase() === formPatientName.toLowerCase())?.user_id) || null,
+                    patient_id: selectedPatient || null,
                     patient_name: formPatientName || (selectedAppointmentData ? selectedAppointmentData.Patient : patient?.name || "Guest Patient"),
                     cnic: patient?.cnic || (selectedAppointmentData ? (selectedAppointmentData.CNIC || selectedAppointmentData.cnic) : "N/A"),
                     test_name: test.name,
                     doctor_name: doctorName,
                     doctor_id: user?.id,
-                    appointment_id: selectedAppointment,
+                    appointment_id: selectedAppointment || null,
                     category: test.category || "General",
                     price: test.fee - test.discount,
                     normal_range: normalRange,
@@ -228,6 +228,7 @@ export default function LaboratoryServices() {
             alert("Lab tests authorized successfully!");
             setSelectedTests([]);
         } catch (err) {
+            console.error("Authorization Error:", err?.response?.data || err);
             alert("Error authorizing tests.");
         }
     };
@@ -320,8 +321,8 @@ export default function LaboratoryServices() {
                                                         {formPatientName || "Selected Patient"}
                                                     </option>
                                                 )}
-                                                {patients.map(p => (
-                                                    <option key={p.user_id} value={p.user_id.toString()}>{p.name}</option>
+                                                {patients.map((p, idx) => (
+                                                    <option key={p.user_id || p._id || idx} value={p.user_id?.toString() || p._id?.toString() || ""}>{p.name}</option>
                                                 ))}
                                             </Form.Select>
                                         </div>

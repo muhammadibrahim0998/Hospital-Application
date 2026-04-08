@@ -54,7 +54,30 @@ export default function Layout() {
   };
 
   const role = user?.role?.toLowerCase();
-  const userName = user?.name || "User";
+  
+  // Dynamic Name Logic for Patient/Guest
+  const [dynamicName, setDynamicName] = useState(user?.name || "User");
+
+  useEffect(() => {
+    const updateName = () => {
+      if (role === 'patient') {
+        const guestName = localStorage.getItem("guest_patient_name");
+        if (guestName) {
+          setDynamicName(guestName);
+        } else {
+          setDynamicName("Patient");
+        }
+      } else {
+        setDynamicName(user?.name || "User");
+      }
+    };
+
+    updateName();
+    window.addEventListener("storage", updateName);
+    return () => window.removeEventListener("storage", updateName);
+  }, [user, role]);
+
+  const userName = dynamicName;
 
   const hasModule = (m) => {
     if (authHasModule) return authHasModule(m);

@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { API_BASE_URL } from "../config";
 import { AuthContext } from "../context/AuthContext";
+import { useAppointments } from "../context/AppointmentContext";
 
 ChartJS.register(
   CategoryScale,
@@ -46,10 +47,10 @@ ChartJS.register(
 
 const PatientDashboard = () => {
   const { user, token } = useContext(AuthContext);
+  const { appointments, fetchAppointments: globalFetchAppointments } = useAppointments();
   const navigate = useNavigate();
   const displayUser = user || { name: "Guest Patient", role: "patient" };
 
-  const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [reports, setReports] = useState([]);
   const [searchCnic, setSearchCnic] = useState("");
@@ -76,16 +77,8 @@ const PatientDashboard = () => {
   }, [token]);
 
   const fetchAppointments = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/patient/appointments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setAppointments(res.data || []);
-    } catch (err) {
-      console.error("Error loading appointments", err);
-    } finally {
-      setLoading((prev) => ({ ...prev, appointments: false }));
-    }
+    await globalFetchAppointments();
+    setLoading((prev) => ({ ...prev, appointments: false }));
   };
 
   const fetchDoctors = async () => {
@@ -122,8 +115,17 @@ const PatientDashboard = () => {
     setLoading(prev => ({ ...prev, reports: true }));
     try {
       const res = await axios.get(`${API_BASE_URL}/api/lab/public/check-result/${searchCnic}`);
-      setReports(res.data || []);
-      if ((res.data || []).length === 0) {
+      const data = res.data || [];
+      setReports(data);
+
+      if (data.length > 0) {
+        // If results found, update the dynamic name from the report
+        const patientName = data[0].Patient || data[0].patient_name;
+        if (patientName) {
+           localStorage.setItem("guest_patient_name", patientName);
+           window.dispatchEvent(new Event("storage"));
+        }
+      } else {
         alert("No finalized results found for this CNIC.");
       }
     } catch (err) {
@@ -273,12 +275,20 @@ const PatientDashboard = () => {
     }
   };
 
+  const dynamicName = useMemo(() => {
+    if (user?.name && user.name !== "Guest Patient") return user.name;
+    const storedName = localStorage.getItem("guest_patient_name");
+    if (storedName) return storedName;
+    if (appointments.length > 0) return appointments[appointments.length - 1].Patient;
+    return "Guest Patient";
+  }, [user, appointments]);
+
   return (
     <div className="patient-dashboard container-fluid p-3 p-md-4 bg-light min-vh-100">
       {/* Header */}
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-          <h2 className="fw-bold text-primary mb-1">👋 Welcome, {displayUser.name}</h2>
+          <h2 className="fw-bold text-primary mb-1">👋 Welcome, {dynamicName}</h2>
           <p className="text-muted small mb-0">{token ? "Your personalized health overview" : "Access your lab results and find doctors easily"}</p>
         </div>
         {!token && (

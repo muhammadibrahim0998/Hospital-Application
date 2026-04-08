@@ -69,7 +69,10 @@ export const login = async (req, res) => {
   try {
 
     // ── Step 1: Check if this email belongs to a hospital_admin ─────────────
-    const hospitalAdmins = await HospitalAdmin.find({ email }).populate('hospital_id', 'name');
+    const hospitalAdmins = await HospitalAdmin.find({ 
+      email: { $regex: `^${email}$`, $options: "i" } 
+    }).populate("hospital_id", "name");
+    
     console.log("Hospital Admins found:", hospitalAdmins.length);
 
     if (hospitalAdmins.length > 0) {
@@ -121,7 +124,9 @@ export const login = async (req, res) => {
 
     // ── Step 2: Check users table (super_admin, doctor, patient) ─────────────
     console.log("Checking Users collection...");
-    const users = await User.find({ email });
+    const users = await User.find({ 
+      email: { $regex: `^${email}$`, $options: "i" } 
+    });
     console.log("Users found:", users.length);
     if (users.length === 0) {
       console.log("User NOT found in DB");

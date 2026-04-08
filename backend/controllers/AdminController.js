@@ -160,6 +160,13 @@ export const addLabTechnician = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Name, email and password are required" });
     }
+
+    // Proactive check for duplicate email to avoid 500 errors
+    const existing = await User.findOne({ email: { $regex: `^${email}$`, $options: "i" } });
+    if (existing) {
+      return res.status(400).json({ message: "A user with this email already exists." });
+    }
+
     const hash = await bcrypt.hash(password, 10);
     const hospitalId = req.hospitalId || null;
     await User.create({

@@ -1,6 +1,7 @@
 import { LabResult } from "../models/LabResultModel.js";
 import { Doctor } from "../models/DoctorModel.js";
 import { Patient } from "../models/PatientModel.js";
+import { Appointment } from "../models/appointmentModel.js";
 
 export const addReport = async (req, res) => {
     try {
@@ -45,7 +46,7 @@ export const giveMedicationToPatient = async (req, res) => {
     try {
         const { id } = req.params;
         const { medication } = req.body;
-        await LabResult.findByIdAndUpdate(id, { medication_given: medication });
+        await LabResult.findByIdAndUpdate(id, { medication_given: medication, status: 'done' });
         res.json({ message: "Medication updated" });
     } catch (err) {
         res.status(500).json({ message: "Internal server error" });
@@ -70,8 +71,25 @@ export const fetchReports = async (req, res) => {
             reports = await LabResult.find(filter).sort({ created_at: -1 });
         } else if (role === 'patient') {
             const userCnic = req.userCnic;
-            const filter = { patient_id: userId };
-            if (userCnic) filter.$or = [{ patient_id: userId }, { cnic: userCnic }];
+            const userName = req.userName ? req.userName.trim() : "";
+            const userPhone = req.userPhone;
+            const conditions = [{ patient_id: userId }];
+            
+            if (userCnic) conditions.push({ cnic: userCnic });
+            if (userPhone) conditions.push({ phone: userPhone });
+            if (userName) conditions.push({ patient_name: new RegExp(`^\\s*${userName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*`, 'i') });
+            
+            // Also collect any appointment IDs that belong to this patient
+            const apptFilter = { $or: [{ user_id: userId }] };
+            if (userCnic) apptFilter.$or.push({ CNIC: userCnic });
+            if (userName) apptFilter.$or.push({ Patient: new RegExp(`^\\s*${userName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*`, 'i') });
+            if (userPhone) apptFilter.$or.push({ Phone: new RegExp(`^\\s*${userPhone}\\s*`, 'i') });
+            
+            const appts = await Appointment.find(apptFilter);
+            const apptIds = appts.map(a => a._id);
+            if (apptIds.length > 0) conditions.push({ appointment_id: { $in: apptIds } });
+            
+            const filter = { $or: conditions };
             reports = await LabResult.find(filter).sort({ created_at: -1 });
         }
 

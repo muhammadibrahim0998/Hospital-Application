@@ -29,17 +29,6 @@ export default function Doctors() {
       <div className="text-center mb-5">
         <h2 className="fw-bold text-dark display-5 mb-3">Find Expert Care</h2>
         <p className="text-muted mb-4 fs-5">Search through our network of verified clinical specialists</p>
-
-        <div className="col-md-6 mx-auto position-relative">
-          <Search className="position-absolute top-50 translate-middle-y ms-3 text-muted" size={20} />
-          <input
-            type="text"
-            className="form-control form-control-lg rounded-pill ps-5 shadow-sm border-0"
-            placeholder="Search by doctor name or specialization..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
       </div>
 
       <DoctorList doctors={filteredDoctors} />

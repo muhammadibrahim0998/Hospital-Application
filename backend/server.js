@@ -20,9 +20,29 @@ import LabResult from "./models/LabResultModel.js";
 const app = express();
 
 // Enable CORS to allow the frontend to communicate with this backend.
+// Supports: deployed Vercel URL + local dev (ports 5173, 5174, 3000, 3001)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://health-samarbagh.vercel.app",
+  // Add any extra URLs from .env (comma-separated)
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(",").map(u => u.trim()) : []),
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URI || "http://localhost:5174",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      console.warn(`❌ CORS blocked origin: ${origin}`);
+      return callback(new Error(`CORS policy: origin ${origin} not allowed`));
+    },
     credentials: true,
   }),
 );

@@ -106,14 +106,14 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
           {/* User avatar + dropdown */}
           <div className="navbar-user-wrap">
             <div
-              className="navbar-avatar"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className={`navbar-avatar ${user?.role?.toLowerCase() === 'patient' ? 'pe-none' : ''}`}
+              onClick={() => user?.role?.toLowerCase() !== 'patient' && setDropdownOpen(!dropdownOpen)}
               title={user?.name || "Account"}
             >
-              {isLoggedIn ? user?.name?.charAt(0)?.toUpperCase() || "U" : "U"}
+              {user?.role?.toLowerCase() === 'patient' ? 'P' : (isLoggedIn ? user?.name?.charAt(0)?.toUpperCase() || "U" : "U")}
             </div>
 
-            {dropdownOpen && (
+            {dropdownOpen && user?.role?.toLowerCase() !== 'patient' && (
               <div className="navbar-dropdown">
                 <div className="navbar-dropdown-info">
                   <small className="navbar-dropdown-label">Signed in as</small>

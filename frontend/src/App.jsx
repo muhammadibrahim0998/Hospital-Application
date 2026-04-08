@@ -58,7 +58,6 @@ function getDashboardPath(role) {
   if (r === "admin") return "/admin/dashboard";
   if (r === "lab_technician") return "/lab-tech/dashboard";
   if (r === "doctor") return "/doctor/dashboard";
-  if (r === "patient") return "/patient/dashboard";
   return "/patient/dashboard"; // Default to patient dashboard for guest
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -153,6 +152,11 @@ function AppContent() {
 
   // Not logged in + trying to access any non-public page AND not a patient path → go to Patient Dashboard
   if (!token && !isPublicPath && !isPatientPath) {
+    return <Navigate to="/patient/dashboard" replace />;
+  }
+
+  // Auto-redirect root to patient dashboard for non-logged in users
+  if (!token && location.pathname === "/") {
     return <Navigate to="/patient/dashboard" replace />;
   }
 

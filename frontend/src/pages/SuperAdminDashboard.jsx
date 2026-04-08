@@ -10,7 +10,7 @@ import {
 import {
     Building2, UserCog, Users, Plus, Trash2, Edit,
     ShieldCheck, RefreshCw, Settings, Hospital,
-    Globe, LayoutDashboard, Database,
+    Globe, LayoutDashboard, Database, QrCode
 } from "lucide-react";
 
 const api = (path) => `${API_BASE_URL}/api/super-admin${path}`;
@@ -214,10 +214,10 @@ const SuperAdminDashboard = () => {
 
     /* ── ROLLUP STATS ──────────────────────────────────── */
     const stats = [
-        { label: "Total Projects", val: hospitals.length, icon: <Building2 size={22} />, color: "primary", bg: "rgba(13,110,253,0.1)" },
-        { label: "Active Admins", val: admins.filter(a => a.is_active).length, icon: <UserCog size={22} />, color: "warning", bg: "rgba(255,193,7,0.1)" },
-        { label: "Grand Total Users", val: appUsers.length, icon: <Users size={22} />, color: "success", bg: "rgba(25,135,84,0.1)" },
-        { label: "Storage Health", val: "Optimal", icon: <Database size={22} />, color: "info", bg: "rgba(13,202,240,0.1)" },
+        { label: "Total Projects", val: hospitals.length, icon: <Building2 size={22} />, color: "warning", bg: "rgba(255,152,0,0.1)", iconColor: "#E65100" },
+        { label: "Active Admins", val: admins.filter(a => a.is_active).length, icon: <UserCog size={22} />, color: "primary", bg: "rgba(13,110,253,0.1)", iconColor: "#0047AB" },
+        { label: "Grand Total Users", val: appUsers.length, icon: <Users size={22} />, color: "success", bg: "rgba(25,135,84,0.1)", iconColor: "#1B5E20" },
+        { label: "Storage Health", val: "Optimal", icon: <Database size={22} />, color: "info", bg: "rgba(13,202,240,0.1)", iconColor: "#0277BD" },
     ];
 
     const roleColor = (role) =>
@@ -228,22 +228,23 @@ const SuperAdminDashboard = () => {
 
     /* ── RENDER ─────────────────────────────────────────── */
     return (
-        <Container fluid className="py-4 px-md-5 bg-light min-vh-100">
+        <Container fluid className="py-2 px-md-5 bg-light min-vh-100">
 
             {/* ── Header ──────────────────────────────────────── */}
-            <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-4 rounded-4 shadow-sm">
+            <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-1 gap-3 bg-white p-4 rounded-5 border border-primary border-opacity-25 shadow-lg">
                 <div>
-                    <h2 className="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                        <ShieldCheck className="text-danger" size={28} /> Super Admin Dashboard
+                    <h2 className="fw-black text-dark mb-1 d-flex align-items-center gap-2 tracking-tight" style={{ fontSize: '1.5rem' }}>
+                        <ShieldCheck className="text-primary" size={28} /> Platform Command
                     </h2>
-                    <p className="text-muted mb-0 small">
-                        Full Platform Console · <Badge bg="dark" className="rounded-pill">Super Admin</Badge>
+                    <p className="text-muted mb-0 small fw-bold">
+                        Central Infrastructure Console · <Badge bg="dark" className="rounded-1 px-3 py-1 fw-black">SUPER USER</Badge>
                     </p>
                 </div>
-                <Button variant="light" className="rounded-pill px-3 py-2 d-flex align-items-center fw-bold text-muted border shadow-sm"
+                <Button variant="dark" className="rounded-pill px-4 py-2 d-flex align-items-center fw-black shadow-lg border-0 hover-lift"
+                    style={{ fontSize: '11px' }}
                     onClick={fetchAll} disabled={loading}>
-                    <RefreshCw size={16} className={`me-2 ${loading ? "spin" : ""}`} />
-                    {loading ? "Refreshing…" : "Refresh All Data"}
+                    <RefreshCw size={14} className={`me-2 ${loading ? "spin" : ""}`} />
+                    {loading ? "SYNCING..." : "REFRESH CLUSTER"}
                 </Button>
             </div>
 
@@ -261,18 +262,20 @@ const SuperAdminDashboard = () => {
             <Row className="g-4 mb-5">
                 {stats.map((s, i) => (
                     <Col key={i} xs={12} sm={6} lg={3}>
-                        <Card className="border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                        <Card className={`border-0 shadow-lg rounded-5 h-100 overflow-hidden bg-white hover-lift transition-all border-bottom border-3 border-${s.color} stat-card-premium`} style={{ border: '3px solid #000' }}>
                             <Card.Body className="p-4">
                                 <div className="d-flex justify-content-between align-items-start mb-3">
-                                    <div className="rounded-3 p-3" style={{ backgroundColor: s.bg, color: `var(--bs-${s.color})` }}>
-                                        {s.icon}
+                                    <div className="rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ backgroundColor: s.bg, color: s.iconColor, width: '42px', height: '42px', border: `1px solid ${s.iconColor}44` }}>
+                                        {React.cloneElement(s.icon, { size: 18, strokeWidth: 3 })}
                                     </div>
-                                    <Badge bg={s.color} className="rounded-pill px-2 py-1 opacity-75">LIVE</Badge>
+                                    <Badge bg={s.color} className={`rounded-pill px-2 py-1 fw-black bg-opacity-10 text-${s.color} border border-${s.color} border-opacity-25 shadow-xs`} style={{ fontSize: '9px' }}>LIVE DATA</Badge>
                                 </div>
-                                <h6 className="text-uppercase small fw-extrabold text-muted mb-1 ls-1">{s.label}</h6>
-                                <h2 className="display-6 fw-bold mb-0 text-dark">{s.val}</h2>
+                                <h6 className="text-uppercase small fw-black text-muted mb-1 tracking-widest" style={{ fontSize: '9px', opacity: 0.8 }}>{s.label}</h6>
+                                <h2 className="fw-black mb-0 text-dark tracking-tight d-flex align-items-baseline gap-1">
+                                    {s.val} <span className="small fw-bold text-muted" style={{fontSize: '10px'}}>Units</span>
+                                </h2>
                             </Card.Body>
-                            <div className={`h-1 bg-${s.color} opacity-50`} />
+                            <div className="h-1 bg-primary" style={{ opacity: 0.15 }} />
                         </Card>
                     </Col>
                 ))}
@@ -282,75 +285,131 @@ const SuperAdminDashboard = () => {
             <Tabs defaultActiveKey="hospitals" className="mb-4 custom-tabs border-0 bg-white p-2 rounded-pill shadow-sm d-inline-flex">
 
                 {/* ════ PROJECTS (HOSPITALS) TAB ═══════════════════ */}
-                <Tab eventKey="hospitals" title={<span className="d-flex align-items-center gap-2"><Building2 size={15} />Projects</span>} className="mt-3">
-                    <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
-                        <Card.Header className="bg-white border-0 px-4 pt-3 pb-0 d-flex justify-content-between align-items-center">
-                            <h5 className="fw-bold mb-0">Active Projects (Hospitals)</h5>
-                            <Button variant="primary" className="rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2" onClick={openAddHosp}>
-                                <Plus size={18} /> Add Project
+                <Tab eventKey="hospitals" title={<span className="d-flex align-items-center gap-2"><Building2 size={14} /> Projects</span>} className="mt-4">
+                    <Card className="border-0 shadow-2xl rounded-5 overflow-hidden bg-white border border-primary border-2">
+                        <Card.Header className="bg-white border-0 px-4 pt-4 pb-0 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <h5 className="fw-black mb-0 tracking-tight text-dark" style={{fontSize: '14px'}}>INFRASTRUCTURE NODES</h5>
+                            <Button variant="primary" className="rounded-2 px-3 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 border-0 btn-premium-blue" style={{ fontSize: '10px' }} onClick={openAddHosp}>
+                                <Plus size={14} /> NEW PROJECT
                             </Button>
                         </Card.Header>
-                        <Card.Body className="p-0 mt-2">
-                            <div className="table-responsive">
-                                <Table hover className="align-middle mb-0">
-                                    <thead className="bg-light text-muted small text-uppercase fw-bold">
-                                        <tr>
-                                            <th className="px-4 py-3">PROJECT NAME</th>
-                                            <th className="py-3">LOCATION / CONTACT</th>
-                                            <th className="py-3">ADMINS</th>
-                                            <th className="py-3">USERS</th>
-                                            <th className="py-3 text-end px-4">ACTIONS</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {hospitals.length === 0 ? (
-                                            <tr><td colSpan={5} className="text-center py-5 text-muted">No Projects found. Click "Add Project" to begin.</td></tr>
-                                        ) : hospitals.map((h) => {
-                                            const stats = projectStats.find(s => s.id === h.id) || { doctor_count: 0, patient_count: 0, app_user_count: 0 };
-                                            return (
-                                                <tr key={h.id}>
-                                                    <td className="px-4 py-3">
-                                                        <div className="d-flex align-items-center gap-3">
-                                                            <div className="rounded-3 p-2 bg-primary bg-opacity-10 text-primary">
-                                                                <Hospital size={20} />
+                        <Card.Body className="p-4 mt-2">
+                            {hospitals.length === 0 ? (
+                                <div className="text-center py-5 text-muted">No Projects found. Click "Add Project" to begin.</div>
+                            ) : (
+                                <>
+                                    {/* 🖥️ DESKTOP TABLE VIEW */}
+                                    <div className="d-none d-lg-block">
+                                        <div className="table-responsive">
+                                            <Table hover className="align-middle mb-0 border-0">
+                                                <thead className="bg-light text-muted small text-uppercase fw-black">
+                                                    <tr>
+                                                        <th className="px-4 py-3">PROJECT / HOSPITAL</th>
+                                                        <th className="py-3">LOCATION & CONTACT</th>
+                                                        <th className="py-3">INFRASTRUCTURE STATS</th>
+                                                        <th className="py-3 text-end px-4">MANAGEMENT</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {hospitals.map((h) => {
+                                                        const stats = projectStats.find(s => s.id === h.id) || { doctor_count: 0, patient_count: 0 };
+                                                        const adminCount = admins.filter(a => a.hospital_id === h.id).length;
+                                                        return (
+                                                            <tr key={h.id} className="border-bottom border-light">
+                                                                <td className="px-4 py-4">
+                                                                    <div className="d-flex align-items-center gap-3">
+                                                                        <div className="rounded-3 p-3 bg-primary bg-opacity-10 text-primary shadow-sm">
+                                                                            <Hospital size={20} />
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="fw-black text-dark mb-0">{h.name}</div>
+                                                                            <div className="small text-muted fw-bold" style={{ fontSize: '10px' }}>ID: {h.id}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-4">
+                                                                    <div className="small fw-bold text-dark">{h.address || "No Address"}</div>
+                                                                    <div className="small text-muted mt-1 text-truncate" style={{maxWidth: '200px'}}>{h.email || h.phone || "No Contact"}</div>
+                                                                </td>
+                                                                <td className="py-4">
+                                                                    <div className="d-flex gap-2">
+                                                                        <Badge bg="dark" className="rounded-pill px-3 py-2 fw-black" style={{ fontSize: '10px' }}>{adminCount} Admins</Badge>
+                                                                        <Badge bg="primary" className="rounded-pill px-3 py-2 fw-black" style={{ fontSize: '10px' }}>{stats.doctor_count} Drs</Badge>
+                                                                        <Badge bg="success" className="rounded-pill px-3 py-2 fw-black" style={{ fontSize: '10px' }}>{stats.patient_count} Pts</Badge>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-4 text-end px-4">
+                                                                    <div className="d-flex justify-content-end gap-2">
+                                                                        <Button variant="light" size="sm" className="rounded-circle p-2 text-primary shadow-sm border" onClick={() => openEditHosp(h)}>
+                                                                            <Edit size={16} />
+                                                                        </Button>
+                                                                        <Button variant="light" size="sm" className="rounded-circle p-2 text-danger shadow-sm border" onClick={() => deleteHospital(h.id)}>
+                                                                            <Trash2 size={16} />
+                                                                        </Button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </Table>
+                                        </div>
+                                    </div>
+
+                                    {/* 📱 MOBILE CARD VIEW */}
+                                    <div className="d-lg-none">
+                                        <Row className="g-4">
+                                            {hospitals.map((h) => {
+                                                const stats = projectStats.find(s => s.id === h.id) || { doctor_count: 0, patient_count: 0, app_user_count: 0 };
+                                                return (
+                                                    <Col key={h.id} xs={12} md={6}>
+                                                        <div className="project-node-card p-4 rounded-4 border-2 border-primary border shadow-sm hover-lift transition-all bg-white h-100">
+                                                            <div className="d-flex justify-content-between align-items-start mb-3">
+                                                                <div className="d-flex align-items-center gap-3">
+                                                                    <div className="rounded-3 p-3 bg-primary bg-opacity-10 text-primary shadow-sm">
+                                                                        <Hospital size={24} />
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="fw-black text-dark h5 mb-0">{h.name}</div>
+                                                                        <div className="small text-muted fw-bold" style={{ fontSize: '10px' }}>ID: {h.id}</div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <div>
-                                                                <div className="fw-bold text-dark">{h.name}</div>
-                                                                <div className="small text-muted">ID: #{h.id}</div>
+
+                                                            <div className="mb-3 p-3 bg-light rounded-3">
+                                                                <div className="text-dark fw-black small mb-1">LOCATION</div>
+                                                                <div className="small text-muted">{h.address || "No Address Provided"}</div>
+                                                                <div className="small text-muted mt-1 fw-bold">{h.email || h.phone || "No Contact Details"}</div>
+                                                            </div>
+
+                                                            <div className="d-flex flex-wrap gap-2 mb-4">
+                                                                <Badge bg="dark" className="rounded-pill px-3 py-2 fw-black" style={{ fontSize: '10px' }}>
+                                                                    {admins.filter(a => a.hospital_id === h.id).length} Admin(s)
+                                                                </Badge>
+                                                                <Badge bg="primary" className="rounded-pill px-3 py-2 fw-black" style={{ fontSize: '10px' }}>
+                                                                    {stats.doctor_count} Drs
+                                                                </Badge>
+                                                                <Badge bg="success" className="rounded-pill px-3 py-2 fw-black" style={{ fontSize: '10px' }}>
+                                                                    {stats.patient_count} Pts
+                                                                </Badge>
+                                                            </div>
+
+                                                            <div className="d-flex justify-content-end gap-2 border-top pt-3">
+                                                                <Button variant="light" size="sm" className="rounded-circle p-2 text-primary shadow-sm border" onClick={() => openEditHosp(h)}>
+                                                                    <Edit size={16} />
+                                                                </Button>
+                                                                <Button variant="light" size="sm" className="rounded-circle p-2 text-danger shadow-sm border" onClick={() => deleteHospital(h.id)}>
+                                                                    <Trash2 size={16} />
+                                                                </Button>
                                                             </div>
                                                         </div>
-                                                    </td>
-                                                    <td className="py-3 small text-muted">
-                                                        <div className="text-dark fw-semibold">{h.address || "No Address"}</div>
-                                                        <div>{h.email || h.phone || "No Contact"}</div>
-                                                    </td>
-                                                    <td className="py-3">
-                                                        <Badge bg="secondary" className="rounded-pill px-3">
-                                                            {admins.filter(a => a.hospital_id === h.id).length} Admin(s)
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="py-3">
-                                                        <div className="d-flex align-items-center gap-2">
-                                                            <Badge bg="info" className="rounded-pill">{stats.doctor_count} Drs</Badge>
-                                                            <Badge bg="success" className="rounded-pill">{stats.patient_count} Pts</Badge>
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-3 text-end px-4">
-                                                        <div className="d-flex justify-content-end gap-2">
-                                                            <Button variant="light" size="sm" className="rounded-circle p-2 text-primary shadow-sm" onClick={() => openEditHosp(h)}>
-                                                                <Edit size={16} />
-                                                            </Button>
-                                                            <Button variant="light" size="sm" className="rounded-circle p-2 text-danger shadow-sm" onClick={() => deleteHospital(h.id)}>
-                                                                <Trash2 size={16} />
-                                                            </Button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </Table>
-                            </div>
+                                                    </Col>
+                                                );
+                                            })}
+                                        </Row>
+                                    </div>
+                                </>
+                            )}
                         </Card.Body>
                     </Card>
                 </Tab>
@@ -358,10 +417,10 @@ const SuperAdminDashboard = () => {
                 {/* ════ HOSPITAL ADMINS TAB ════════════════════════ */}
                 <Tab eventKey="admins" title={<span className="d-flex align-items-center gap-2"><UserCog size={15} />Hospital Admins</span>} className="mt-3">
                     <Card className="border-0 shadow-sm rounded-4 overflow-hidden">
-                        <Card.Header className="bg-white border-0 px-4 pt-3 pb-0 d-flex justify-content-between align-items-center">
-                            <h5 className="fw-bold mb-0">Project Administrators</h5>
-                            <Button variant="warning" className="rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2" onClick={openAddAdmin}>
-                                <Plus size={18} /> Create Admin
+                        <Card.Header className="bg-white border-0 px-4 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                            <h5 className="fw-black mb-0 tracking-tight text-dark" style={{fontSize: '14px'}}>PROJECT ADMINISTRATORS</h5>
+                            <Button variant="info" className="rounded-2 px-3 py-1 fw-bold shadow-sm d-flex align-items-center gap-2 border-0 btn-premium-navy text-white" style={{ fontSize: '10px' }} onClick={openAddAdmin}>
+                                <Plus size={14} /> CREATE ADMIN
                             </Button>
                         </Card.Header>
                         <Card.Body className="p-0 mt-2">
@@ -465,51 +524,91 @@ const SuperAdminDashboard = () => {
                             <p className="text-muted small mb-0 mt-1">Showing all accounts across all active projects.</p>
                         </Card.Header>
                         <Card.Body className="p-0">
-                            <div className="table-responsive">
-                                <Table hover className="align-middle mb-0">
-                                    <thead className="bg-light text-muted small text-uppercase fw-bold">
-                                        <tr>
-                                            <th className="px-4 py-3">USER</th>
-                                            <th className="py-3">EMAIL</th>
-                                            <th className="py-3">ROLE</th>
-                                            <th className="py-3">PROJECT</th>
-                                            <th className="py-3">ACCOUNT AGE</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {appUsers.length === 0 ? (
-                                            <tr><td colSpan={5} className="text-center py-5 text-muted">No platform users found.</td></tr>
-                                        ) : appUsers.map((u) => (
-                                            <tr key={u.id}>
-                                                <td className="px-4 py-3">
+                            {/* 🖥️ DESKTOP COMPACT TABLE VIEW */}
+                            <div className="d-none d-lg-block">
+                                <div className="table-responsive" style={{maxHeight: '600px', overflowY: 'auto'}}>
+                                    <Table hover size="sm" className="align-middle mb-0 border-0">
+                                        <thead className="bg-light text-muted small text-uppercase fw-black" style={{position: 'sticky', top: 0, zIndex: 10, background: '#f8f9fa'}}>
+                                            <tr>
+                                                <th className="px-4 py-2">USER ACCOUNT</th>
+                                                <th className="py-2">EMAIL ADDRESS</th>
+                                                <th className="py-2">PLATFORM ROLE</th>
+                                                <th className="py-2">PROJECT</th>
+                                                <th className="py-2 px-4 text-end">SINCE</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {appUsers.length === 0 ? (
+                                                <tr><td colSpan={5} className="text-center py-5 text-muted">No platform users found.</td></tr>
+                                            ) : appUsers.map((u) => (
+                                                <tr key={u.id}>
+                                                    <td className="px-4 py-2">
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <div style={{
+                                                                width: 24, height: 24, borderRadius: 6, background: "linear-gradient(135deg,#667eea,#764ba2)",
+                                                                display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: "0.65rem"
+                                                            }}>
+                                                                {u.name?.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <span className="fw-bold text-dark small">{u.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-2 small text-muted font-monospace" style={{fontSize: '0.75rem'}}>{u.email}</td>
+                                                    <td className="py-2">
+                                                        <Badge bg={roleColor(u.role)} className="rounded-1 px-2 py-1 text-capitalize fw-bold" style={{fontSize: '9px'}}>{u.role}</Badge>
+                                                    </td>
+                                                    <td className="py-2">
+                                                        {u.hospital_name
+                                                            ? <Badge bg="light" text="dark" className="rounded-1 border px-2 fw-black shadow-xs" style={{fontSize: '9px'}}>
+                                                                <Globe size={8} className="me-1 text-primary" /> {u.hospital_name}
+                                                            </Badge>
+                                                            : <span className="text-muted italic" style={{fontSize: '10px'}}>System</span>}
+                                                    </td>
+                                                    <td className="py-2 px-4 text-end small text-muted" style={{fontSize: '10px'}}>
+                                                        {u.created_at ? new Date(u.created_at).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </div>
+                            </div>
+
+                            {/* 📱 MOBILE CARD VIEW */}
+                            <div className="d-lg-none p-3">
+                                <Row className="g-3">
+                                    {appUsers.length === 0 ? (
+                                        <Col xs={12} className="text-center py-5 text-muted">No platform users found.</Col>
+                                    ) : appUsers.map((u) => (
+                                        <Col key={u.id} xs={12}>
+                                            <div className="bg-white p-3 rounded-4 border shadow-sm">
+                                                <div className="d-flex justify-content-between align-items-center mb-3">
                                                     <div className="d-flex align-items-center gap-2">
                                                         <div style={{
                                                             width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#667eea,#764ba2)",
-                                                            display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.8rem"
+                                                            display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700
                                                         }}>
                                                             {u.name?.charAt(0).toUpperCase()}
                                                         </div>
-                                                        <span className="fw-semibold text-dark">{u.name}</span>
+                                                        <div className="fw-black text-dark">{u.name}</div>
                                                     </div>
-                                                </td>
-                                                <td className="py-3 small text-muted">{u.email}</td>
-                                                <td className="py-3">
                                                     <Badge bg={roleColor(u.role)} className="rounded-pill px-3 py-1 text-capitalize fw-normal">{u.role}</Badge>
-                                                </td>
-                                                <td className="py-3">
-                                                    {u.hospital_name
-                                                        ? <Badge bg="light" text="dark" className="rounded-pill border px-3 fw-semibold shadow-xs">
-                                                            <Globe size={10} className="me-1 text-primary" /> {u.hospital_name}
-                                                        </Badge>
-                                                        : <span className="text-muted small italic">System Default</span>}
-                                                </td>
-                                                <td className="py-3 small text-muted">
-                                                    {u.created_at ? new Date(u.created_at).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }) : "—"}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </Table>
+                                                </div>
+                                                <div className="small text-muted mb-2 border-bottom pb-2">
+                                                    <span className="fw-bold text-dark">Email:</span> {u.email}
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                    <div className="small text-dark fw-bold">
+                                                        {u.hospital_name ? u.hospital_name : "System Account"}
+                                                    </div>
+                                                    <div className="small text-muted" style={{fontSize: '10px'}}>
+                                                        Joined {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Col>
+                                    ))}
+                                </Row>
                             </div>
                         </Card.Body>
                     </Card>
@@ -571,29 +670,6 @@ const SuperAdminDashboard = () => {
                                         <div className="text-danger small fw-bold mb-2">
                                             ⚠ No Projects found! You must initialize a project first.
                                         </div>
-                                        <div className="d-flex gap-2">
-                                            <Form.Control
-                                                size="sm"
-                                                placeholder="Enter Project/Hospital Name"
-                                                id="quick_proj_name"
-                                            />
-                                            <Button
-                                                variant="primary"
-                                                size="sm"
-                                                className="fw-bold"
-                                                onClick={async () => {
-                                                    const name = document.getElementById('quick_proj_name').value;
-                                                    if (!name) return alert('Please enter a project name');
-                                                    try {
-                                                        await axios.post(api("/hospitals"), { name, address: "Default Address" }, { headers: authHeaders() });
-                                                        fetchAll();
-                                                        alert('Project "' + name + '" created! You can now select it.');
-                                                    } catch (err) { alert('Failed to create project'); }
-                                                }}
-                                            >
-                                                Initialize Project
-                                            </Button>
-                                        </div>
                                     </div>
                                 ) : (
                                     <Form.Select className="border-0 shadow-sm bg-white p-3"
@@ -639,11 +715,7 @@ const SuperAdminDashboard = () => {
                                 <Form.Control type="text" className="border-0 shadow-sm bg-white p-3"
                                     value={adminForm.phone} onChange={e => setAdminForm({ ...adminForm, phone: e.target.value })} />
                             </Col>
-                            <Col md={12}>
-                                <Form.Text className="text-danger small fw-bold mt-1 d-block">
-                                    ⚠ Once created, this password is required for all access to the assigned project.
-                                </Form.Text>
-                            </Col>
+
                             {editAdmin && (
                                 <Col md={6}>
                                     <Form.Label className="small fw-bold text-uppercase text-muted">Access Status</Form.Label>
@@ -721,13 +793,31 @@ const SuperAdminDashboard = () => {
             </Modal>
 
             <style>{`
-        .custom-tabs .nav-link { border-radius:50rem!important; padding:0.6rem 1.5rem!important; color:#495057!important; font-weight:700!important; border:none!important; transition:all .2s; margin: 0 4px; }
-        .custom-tabs .nav-link.active { background:var(--bs-primary)!important; color:#fff!important; box-shadow:0 8px 15px rgba(13,110,253,.2)!important; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        .fw-black { font-weight: 900; }
+        .tracking-tight { letter-spacing: -1px; }
+        .tracking-widest { letter-spacing: 2px; }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); }
+        
+        .bg-glass { background: rgba(255, 255, 255, 0.7) !important; backdrop-filter: blur(20px); }
+        .bg-glass-stat { background: rgba(255, 255, 255, 0.4) !important; backdrop-filter: blur(10px); border: 1px solid rgba(0,0,0,0.05) !important; }
+        
+        .custom-tabs { gap: 10px; border: 1px solid rgba(0,0,0,0.05) !important; }
+        .custom-tabs .nav-link { border-radius: 8px !important; padding: 0.5rem 1.2rem !important; color:#000 !important; font-weight: 900 !important; border:none !important; transition:all .2s; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        .custom-tabs .nav-link.active { background:#000 !important; color:#fff !important; shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+        
+        .hover-lift { transition: all 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important; }
+        .stat-card-premium:hover { border-color: rgba(13, 110, 253, 0.4) !important; box-shadow: 0 15px 30px rgba(13, 110, 253, 0.15) !important; }
+        .btn-premium-blue { background: #0d6efd !important; transition: all 0.3s ease; }
+        .btn-premium-blue:hover { background: #0b5ed7 !important; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(13,110,253,0.3) !important; }
+        .btn-premium-navy { background: #052c65 !important; transition: all 0.3s ease; }
+        .btn-premium-navy:hover { background: #031633 !important; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(5,44,101,0.3) !important; }
+        .transition-all { transition: all 0.3s ease; }
         .spin { animation:rotate 1s linear infinite; }
         @keyframes rotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .ls-1 { letter-spacing: 1px; }
-        .fw-extrabold { font-weight: 800; }
-        .shadow-xs { box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
       `}</style>
         </Container>
     );

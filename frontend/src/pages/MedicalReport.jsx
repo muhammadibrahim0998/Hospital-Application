@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
-import { 
-    Printer, 
-    Share2, 
-    ArrowLeft, 
-    Calendar, 
-    User, 
-    FileText, 
-    FlaskConical, 
-    Stethoscope, 
+import {
+    Printer,
+    Share2,
+    ArrowLeft,
+    Calendar,
+    User,
+    FileText,
+    FlaskConical,
+    Stethoscope,
     ShieldCheck,
     Phone,
     MapPin,
@@ -38,13 +38,13 @@ const MedicalReport = () => {
         if (!result || !range || !range.includes('-')) return { percent: 0, color: '#0d6efd', label: '', isAlert: false };
         const rangeMatch = range.match(/(\d+(\.\d+)?)/g);
         if (!rangeMatch || rangeMatch.length < 2) return { percent: 0, color: '#0d6efd', label: '', isAlert: false };
-        
+
         const min = parseFloat(rangeMatch[0]);
         const max = parseFloat(rangeMatch[1]);
         const val = parseFloat(result.match(/(\d+(\.\d+)?)/)?.[0] || '0');
-        
+
         if (isNaN(min) || isNaN(max) || isNaN(val)) return { percent: 0, color: '#0d6efd', label: '', isAlert: false };
-        
+
         let color = '#2c3e50'; // Default dark
         let label = '';
         let isAlert = false;
@@ -52,7 +52,7 @@ const MedicalReport = () => {
         if (val < min) { color = '#0d6efd'; label = 'Low'; isAlert = true; }
         else if (val > max) { color = '#dc3545'; label = 'High'; isAlert = true; }
         else { color = '#0d6efd'; label = ''; isAlert = false; }
-        
+
         return { color, label, isAlert };
     };
 
@@ -151,7 +151,7 @@ const MedicalReport = () => {
             {/* Professional Paper */}
             <Container className="report-canvas" style={{ maxWidth: '850px' }}>
                 <div className="report-paper-a4 bg-white shadow-2xl overflow-hidden position-relative">
-                    
+
                     {/* Header Branding */}
                     <div className="report-header p-4 border-bottom border-3 border-primary">
                         <Row className="align-items-center">
@@ -189,7 +189,7 @@ const MedicalReport = () => {
                                 <div className="barcode-stub bg-dark mb-1" style={{ width: '100px', height: '20px' }}></div>
                                 <div className="fw-black text-muted" style={{ fontSize: '7px' }}>REG: {new Date(first.date).getTime().toString().slice(-10)}</div>
                             </div>
-                            
+
                             <Row className="g-3">
                                 <Col md={4}>
                                     <div className="info-item">
@@ -223,7 +223,7 @@ const MedicalReport = () => {
                         {/* Results Table - Khkuly Style */}
                         <div className="results-section">
                             <h5 className="fw-black text-center mb-3 text-uppercase border-bottom pb-2 letter-spacing-1">Investigation Report</h5>
-                            
+
                             <Table borderless className="clinical-table align-middle">
                                 <thead>
                                     <tr className="border-bottom border-2 border-dark text-uppercase fw-black" style={{ fontSize: '11px' }}>
@@ -282,7 +282,7 @@ const MedicalReport = () => {
 
                         {/* Signature Blocks */}
                         <div className="signature-area mt-5 pt-4">
-                            
+
                             <Row className="text-center g-4">
                                 <Col xs={4}>
                                     <div className="signature-box">
@@ -311,10 +311,10 @@ const MedicalReport = () => {
 
                     {/* Bottom Branding Strip */}
                     <div className="branding-strip p-2 bg-primary text-white d-flex justify-content-between align-items-center px-4" style={{ position: 'absolute', bottom: 0, width: '100%' }}>
-                         <div className="fw-black" style={{ fontSize: '9px' }}>SAMPLE COLLECTION AT ANY BRANCH</div>
-                         <div className="fw-black d-flex align-items-center gap-2" style={{ fontSize: '12px' }}>
+                        <div className="fw-black" style={{ fontSize: '9px' }}>SAMPLE COLLECTION AT ANY BRANCH</div>
+                        <div className="fw-black d-flex align-items-center gap-2" style={{ fontSize: '12px' }}>
                             <Phone size={12} fill="white" /> 0123456789
-                         </div>
+                        </div>
                     </div>
                 </div>
             </Container>
@@ -339,14 +339,42 @@ const MedicalReport = () => {
 
                 @media print {
                     .d-print-none { display: none !important; }
-                    body { background: white !important; margin: 0 !important; padding: 0 !important; }
+                    body { background: white !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
                     .report-paper-a4 {
                         margin: 0 !important;
-                        width: 100% !important;
+                        width: 210mm !important;
+                        height: 297mm !important;
+                        min-height: 297mm !important;
+                        max-height: 297mm !important;
                         box-shadow: none !important;
                         border: none !important;
+                        padding-bottom: 0 !important;
+                        position: relative !important;
+                        overflow: hidden !important;
+                        page-break-after: avoid !important;
                     }
-                    @page { margin: 0; size: A4; }
+                    .report-canvas { max-width: 210mm !important; width: 210mm !important; margin: 0 !important; padding: 0 !important; }
+                    .report-header { padding: 8px 20px !important; margin-bottom: 0 !important; }
+                    .report-header h1 { font-size: 18px !important; }
+                    .patient-panel { padding: 8px 15px !important; margin-bottom: 8px !important; }
+                    .results-section h5 { margin-bottom: 5px !important; font-size: 12px !important; }
+                    .clinical-table th, .clinical-table td { padding: 2px 0 !important; font-size: 10px !important; }
+                    .clinical-table td div { font-size: 9px !important; }
+                    .clinical-table td span { font-size: 10px !important; }
+                    .prescription-block { margin-top: 8px !important; padding: 6px !important; }
+                    .signature-area { margin-top: 10px !important; padding-top: 0 !important; }
+                    .signature-box { border-top: none !important; }
+                    .branding-strip { 
+                        position: absolute !important; 
+                        bottom: 0 !important; 
+                        left: 0 !important;
+                        right: 0 !important;
+                        padding: 2px 15px !important; 
+                        height: 25px !important; 
+                        background-color: #0d6efd !important;
+                        -webkit-print-color-adjust: exact;
+                    }
+                    @page { margin: 0 !important; size: A4 portrait; }
                 }
             `}</style>
         </div>
