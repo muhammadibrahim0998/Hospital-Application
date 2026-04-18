@@ -45,7 +45,15 @@ export const updateProfile = async (req, res) => {
         if (!doctor) return res.status(404).json({ message: "Doctor profile not found" });
 
         const { specialization, contact_info, departmentId, fieldId, phone, fee, whatsappNumber } = req.body;
-        const image = req.file ? `/uploads/doctors/${req.file.filename}` : undefined;
+        
+        let image = undefined;
+        if (req.file) {
+            if (req.file.buffer) {
+                image = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+            } else if (req.file.filename) {
+                image = `/uploads/doctors/${req.file.filename}`;
+            }
+        }
 
         const updateData = {
             specialization,

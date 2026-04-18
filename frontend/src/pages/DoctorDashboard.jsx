@@ -220,10 +220,25 @@ const DoctorDashboard = () => {
                                 boxShadow: "0 0 0 3px #198754, 0 0 0 6px #0d6efd, 0 0 0 9px #212529" 
                             }}>
                                 <img
-                                    src={profile.image ? `${API_BASE_URL}${profile.image}` : "https://img.icons8.com/color/96/doctor-male.png"}
+                                    src={
+                                        profile.image 
+                                            ? (profile.image.startsWith("http") || profile.image.startsWith("data:") 
+                                                ? profile.image 
+                                                : `${API_BASE_URL}${profile.image.startsWith("/") ? "" : "/"}${profile.image}`) 
+                                            : "https://img.icons8.com/color/96/doctor-male.png"
+                                    }
                                     alt="Doctor"
                                     className="rounded-circle w-100 h-100"
                                     style={{ objectFit: "cover" }}
+                                    onError={(e) => {
+                                        if (e.target.src.includes('localhost') && !e.target.src.startsWith('data:') && !e.target.dataset.fallback) {
+                                            e.target.dataset.fallback = 'true';
+                                            const pathOnly = profile.image.startsWith('/') ? profile.image : `/${profile.image}`;
+                                            e.target.src = `https://hospital-application-1-gff3.onrender.com${pathOnly}`;
+                                        } else {
+                                            e.target.src = "https://img.icons8.com/color/96/doctor-male.png";
+                                        }
+                                    }}
                                 />
                             </div>
                             <div>
@@ -595,6 +610,10 @@ const DoctorDashboard = () => {
                         <Form.Group className="mb-3">
                             <Form.Label className="small fw-black text-muted text-uppercase mb-1" style={{ fontSize: '8px' }}>Specialization</Form.Label>
                             <Form.Control className="border-0 shadow-sm py-2 px-3 fw-bold" style={{ fontSize: '12px' }} value={editingProfile.specialization} onChange={(e) => setEditingProfile({ ...editingProfile, specialization: e.target.value })} required />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-black text-muted text-uppercase mb-1" style={{ fontSize: '8px' }}>Profile Picture</Form.Label>
+                            <Form.Control type="file" accept="image/*" className="border-0 shadow-sm py-2 px-3 fw-bold" style={{ fontSize: '12px' }} onChange={(e) => setEditingProfile({ ...editingProfile, imageFile: e.target.files[0] })} />
                         </Form.Group>
                         <BootstrapButton type="submit" variant="primary" className="w-100 py-2 rounded-pill fw-black shadow-lg btn-premium-sky border-0" style={{ fontSize: '11px' }}>SAVE PROFESSIONAL UPDATES</BootstrapButton>
                     </Form>
