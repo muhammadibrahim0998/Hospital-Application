@@ -25,7 +25,8 @@ import {
 import { FaFlask, FaMicroscope } from "react-icons/fa";
 
 export default function Layout() {
-  const { user, hasModule: authHasModule } = useContext(AuthContext);
+  const { user, logout, hasModule: authHasModule } = useContext(AuthContext);
+  const navigate = useNavigate();
   const location = useLocation();
 
   const isHome = location.pathname === "/";
@@ -50,6 +51,13 @@ export default function Layout() {
   }, [isHome]);
 
   const handleLinkClick = () => {
+    if (windowWidth <= 768) setSidebarOpen(false);
+  };
+
+  const handleLogoutClick = (e) => {
+    e.preventDefault();
+    logout();
+    navigate("/login");
     if (windowWidth <= 768) setSidebarOpen(false);
   };
 
@@ -415,14 +423,14 @@ export default function Layout() {
                 className="px-3 pt-2"
                 style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
               >
-                <Link
-                  to="/logout"
-                  onClick={handleLinkClick}
-                  style={{ ...linkStyle("/logout"), color: "#ff6b6b" }}
+                <a
+                  href="/login"
+                  onClick={handleLogoutClick}
+                  style={{ ...linkStyle("/logout"), color: "#ff6b6b", cursor: "pointer" }}
                 >
                   <BsBoxArrowRight style={{ ...iconStyle, color: "#ff6b6b" }} />
                   Logout
-                </Link>
+                </a>
               </div>
 
             </div>
