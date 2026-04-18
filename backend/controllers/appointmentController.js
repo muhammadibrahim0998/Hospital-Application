@@ -14,32 +14,12 @@ export const fetchAppointments = async (req, res) => {
         appointments = await Appointment.find({ doctor_id: doctor._id }).sort({ created_at: 1 });
       }
     } else {
-      const userId = req.userId; 
-      const userCnic = req.userCnic; 
-      const userPhone = req.userPhone; 
-      const userName = req.userName; 
-      let filter = { $or: [{ user_id: userId }] }; 
-      if (userCnic || userPhone || userName) { 
-        const cleanCnic = userCnic ? userCnic.replace(/\D/g, "") : ""; 
-        const cleanPhone = userPhone ? userPhone.replace(/\D/g, "") : ""; 
-        if (userCnic) { 
-            filter.$or.push({ CNIC: userCnic }); 
-            filter.$or.push({ CNIC: cleanCnic }); 
-            filter.$or.push({ CNIC: new RegExp(cleanCnic.split("").join("[- ]?"), "i") }); 
-        } 
-        if (userPhone) { 
-            filter.$or.push({ Phone: userPhone }); 
-            filter.$or.push({ Phone: cleanPhone }); 
-            filter.$or.push({ Phone: new RegExp(cleanPhone.split("").join("[- ]?"), "i") }); 
-        } 
-        if (userName) {
-            filter.$or.push({ Patient: new RegExp(`^${userName}$`, "i") });
-            const firstName = userName.split(" ")[0];
-            if (firstName.length > 2) {
-               filter.$or.push({ Patient: new RegExp(`^${firstName}`, "i") });
-            }
-        }
-      } 
+      const userId = req.userId;
+      const userCnic = req.userCnic;
+      let filter = { $or: [{ user_id: userId }] };
+      if (userCnic) {
+        filter.$or.push({ CNIC: userCnic });
+      }
       appointments = await Appointment.find(filter).sort({ created_at: -1 });
     }
 

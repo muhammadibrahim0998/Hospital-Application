@@ -124,7 +124,7 @@ export default function Home() {
               return (
                 <div className="col-lg-3 col-md-6" key={doc.id}>
                   <div className="doctor-card h-100">
-                    <div className="doctor-img-wrapper">
+                    <div className="doctor-img-wrapper d-flex justify-content-center">
                       <img
                         src={
                           doc.image
@@ -134,7 +134,7 @@ export default function Home() {
                             : "https://img.icons8.com/color/96/doctor-male.png"
                         }
                         alt={doc.name}
-                        className="rounded-circle border border-primary border-4 p-1 shadow mb-4"
+                        className="rounded-circle border border-primary border-4 p-1 shadow mb-4 mx-auto"
                         style={{ width: "160px", height: "160px", objectFit: "cover" }}
                         onError={(e) => {
                           if (e.target.src.includes('localhost') && !e.target.dataset.fallback) {
