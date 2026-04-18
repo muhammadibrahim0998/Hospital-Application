@@ -6,7 +6,9 @@ export default function AddDoctor() {
 
   const [formData, setFormData] = useState({
     name: "",
-    specialty: "",
+    email: "",
+    password: "",
+    specialization: "",
     phone: "",
     fee: "",
     image: null,
@@ -25,7 +27,9 @@ export default function AddDoctor() {
 
     const data = new FormData();
     data.append("name", formData.name);
-    data.append("specialty", formData.specialty);
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+    data.append("specialization", formData.specialization);
     data.append("phone", formData.phone);
     data.append("fee", formData.fee);
     data.append("status", "active");
@@ -35,7 +39,9 @@ export default function AddDoctor() {
 
     setFormData({
       name: "",
-      specialty: "",
+      email: "",
+      password: "",
+      specialization: "",
       phone: "",
       fee: "",
       image: null,
@@ -72,9 +78,41 @@ export default function AddDoctor() {
                 <td>
                   <input
                     type="text"
-                    name="specialty"
+                    name="specialization"
                     className="form-control"
-                    value={formData.specialty}
+                    value={formData.specialization}
+                    onChange={handleChange}
+                    required
+                  />
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label className="form-label fw-bold">Email</label>
+                </td>
+                <td>
+                  <input
+                    type="email"
+                    name="email"
+                    className="form-control"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label className="form-label fw-bold">Password</label>
+                </td>
+                <td>
+                  <input
+                    type="password"
+                    name="password"
+                    className="form-control"
+                    value={formData.password}
                     onChange={handleChange}
                     required
                   />

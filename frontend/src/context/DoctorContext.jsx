@@ -13,13 +13,19 @@ export const DoctorProvider = ({ children }) => {
 
   const fetchDoctors = async () => {
     const role = user?.role?.toLowerCase();
-    const isAdminRole = ['admin', 'hospital_admin', 'super_admin', 'doctor', 'lab_technician'].includes(role);
+    const isAdminRole = [
+      "admin",
+      "hospital_admin",
+      "super_admin",
+      "doctor",
+      "lab_technician",
+    ].includes(role);
 
     try {
       // For Admins/Staff: Use the protected admin endpoint with headers
       if (token && isAdminRole) {
         const res = await axios.get(`${API_BASE_URL}/api/admin/doctors`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         setDoctors(res.data || []);
       } else {
@@ -52,7 +58,6 @@ export const DoctorProvider = ({ children }) => {
       await axios.post(`${API_BASE_URL}/api/admin/doctors`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
       alert("Doctor added successfully");
@@ -69,7 +74,6 @@ export const DoctorProvider = ({ children }) => {
       await axios.put(`${API_BASE_URL}/api/admin/doctors/${id}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
       alert("Doctor updated successfully");
@@ -99,9 +103,10 @@ export const DoctorProvider = ({ children }) => {
     if (!token) return;
     const newStatus = currentStatus === "active" ? "inactive" : "active";
     try {
-      await axios.put(`${API_BASE_URL}/api/admin/doctors/${id}/status`,
+      await axios.put(
+        `${API_BASE_URL}/api/admin/doctors/${id}/status`,
         { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       fetchDoctors();
     } catch (err) {
@@ -114,7 +119,16 @@ export const DoctorProvider = ({ children }) => {
   }, [token, user?.role]);
 
   return (
-    <DoctorContext.Provider value={{ doctors, addDoctor, updateDoctor, removeDoctor, toggleStatus, fetchDoctors }}>
+    <DoctorContext.Provider
+      value={{
+        doctors,
+        addDoctor,
+        updateDoctor,
+        removeDoctor,
+        toggleStatus,
+        fetchDoctors,
+      }}
+    >
       {children}
     </DoctorContext.Provider>
   );

@@ -220,9 +220,9 @@ export default function About() {
                       variant="top"
                       src={
                         doc.image
-                          ? doc.image.startsWith("http")
+                          ? doc.image.startsWith("http") || doc.image.startsWith("data:")
                             ? doc.image
-                            : `${API_BASE_URL}${doc.image}`
+                            : `${API_BASE_URL}${doc.image.startsWith("/") ? "" : "/"}${doc.image}`
                           : "https://img.icons8.com/color/96/doctor-male.png"
                       }
                       className="img-fluid w-100 h-100 object-fit-cover transition-all"

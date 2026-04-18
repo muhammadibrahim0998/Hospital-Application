@@ -16,6 +16,8 @@ import appointmentRoutes from "./routes/appointmentRoutes.js";
 import labRoutes from "./routes/labRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import LabResult from "./models/LabResultModel.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 
@@ -42,7 +44,10 @@ app.get("/", (_req, res) =>
 app.get("/healthz", (_req, res) => res.send("OK"));
 
 // Static uploads
-app.use("/uploads", express.static("uploads"));
+// Static uploads - Using absolute path for local reliability
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // API Routes
 app.use("/api/auth", authRoutes);

@@ -128,12 +128,22 @@ export default function Home() {
                       <img
                         src={
                           doc.image
-                            ? doc.image.startsWith("http")
+                            ? doc.image.startsWith("http") || doc.image.startsWith("data:")
                               ? doc.image
-                              : `${API_BASE_URL}${doc.image}`
+                              : `${API_BASE_URL}${doc.image.startsWith("/") ? "" : "/"}${doc.image}`
                             : "https://img.icons8.com/color/96/doctor-male.png"
                         }
                         alt={doc.name}
+                        className="rounded-circle border border-primary border-4 p-1 shadow mb-4"
+                        style={{ width: "160px", height: "160px", objectFit: "cover" }}
+                        onError={(e) => {
+                          if (e.target.src.includes('localhost') && !e.target.dataset.fallback) {
+                              e.target.dataset.fallback = 'true';
+                              e.target.src = `https://hospital-application-1-gff3.onrender.com${doc.image.startsWith('/') ? '' : '/'}${doc.image}`;
+                          } else {
+                              e.target.src = "https://img.icons8.com/color/96/doctor-male.png";
+                          }
+                        }}
                       />
                     </div>
                     <div className="doctor-info text-center">

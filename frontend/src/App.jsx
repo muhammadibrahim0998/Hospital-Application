@@ -76,10 +76,23 @@ function AppContent() {
     const PUBLIC_PATHS = ["/login", "/register"];
     const isPublicPath = PUBLIC_PATHS.includes(location.pathname.toLowerCase());
     const isRootPath = location.pathname === "/";
+    const isPatientPathStr =
+      location.pathname.startsWith("/patient") ||
+      location.pathname.startsWith("/appointments") ||
+      location.pathname.startsWith("/lab-results") ||
+      location.pathname.startsWith("/medical-report") ||
+      location.pathname.startsWith("/find-doctor") ||
+      location.pathname.startsWith("/doctors") ||
+      location.pathname.startsWith("/doctor/") ||
+      location.pathname.startsWith("/department") ||
+      location.pathname.startsWith("/field") ||
+      location.pathname.startsWith("/contact") ||
+      location.pathname.startsWith("/about");
 
     if (!token) {
-      if (!isPublicPath && !isRootPath) { // allow root path (home)
-        navigate("/login", { replace: true });
+      if (!isPublicPath && !isRootPath && !isPatientPathStr) {
+        // block any other private paths
+        navigate("/patient/dashboard", { replace: true });
         return;
       }
     }
@@ -143,22 +156,27 @@ function AppContent() {
   const isPublicPath = PUBLIC_PATHS.includes(location.pathname.toLowerCase());
 
   // Skip login for patient dashboard and find-doctor to allow "Direct Access"
-  const isPatientPath = location.pathname.startsWith("/patient") ||
-                        location.pathname.startsWith("/lab-results") ||
-                        location.pathname.startsWith("/medical-report") ||
-                        location.pathname.startsWith("/find-doctor") ||
-                        location.pathname.startsWith("/doctors") ||
-                        location.pathname === "/";
+  const isPatientPath =
+    location.pathname.startsWith("/patient") ||
+    location.pathname.startsWith("/appointments") ||
+    location.pathname.startsWith("/lab-results") ||
+    location.pathname.startsWith("/medical-report") ||
+    location.pathname.startsWith("/find-doctor") ||
+    location.pathname.startsWith("/doctors") ||
+    location.pathname.startsWith("/doctor/") ||
+    location.pathname.startsWith("/department") ||
+    location.pathname.startsWith("/field") ||
+    location.pathname.startsWith("/contact") ||
+    location.pathname.startsWith("/about") ||
+    location.pathname === "/";
 
   // Not logged in + trying to access any non-public page AND not a patient path → go to Patient Dashboard
   if (!token && !isPublicPath && !isPatientPath) {
+    console.log("AppContent REDIRECT: !token && !isPublicPath && !isPatientPath", location.pathname);
     return <Navigate to="/patient/dashboard" replace />;
   }
 
-  // Auto-redirect root to patient dashboard for non-logged in users
-  if (!token && location.pathname === "/") {
-    return <Navigate to="/patient/dashboard" replace />;
-  }
+  // Removed auto-redirect of root to patient dashboard to allow Home page viewing
 
   // Logged in + on a public page (login/register) → go to own dashboard
   if (token && user && isPublicPath) {
@@ -166,7 +184,12 @@ function AppContent() {
   }
 
   // Special case: If at root and logged in but NOT a patient, go to dashboard
-  if (token && user && location.pathname === "/" && user.role?.toLowerCase() !== "patient") {
+  if (
+    token &&
+    user &&
+    location.pathname === "/" &&
+    user.role?.toLowerCase() !== "patient"
+  ) {
     return <Navigate to={getDashboardPath(user.role)} replace />;
   }
   // ─────────────────────────────────────────────────────────────────────────
@@ -186,15 +209,20 @@ function AppContent() {
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="appointments" element={<Appointments />} />
-          <Route path="doctor/:id" element={<DoctorProfile />} />
           <Route path="/admin/add-doctor" element={<AddDoctor />} />
-          <Route path="department/:id" element={<DepartmentDetails />} />
-          <Route path="field/:id" element={<FieldDetails />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="about" element={<About />} />
           <Route path="logout" element={<Logout />} />
         </Route>
+      </Route>
+
+      {/* Pages that should be viewable by anyone (including unauthenticated patients) */}
+      <Route path="/" element={<Layout />}>
+        <Route path="appointments" element={<Appointments />} />
+        <Route path="doctor/:id" element={<DoctorProfile />} />
+        <Route path="department/:id" element={<DepartmentDetails />} />
+        <Route path="field/:id" element={<FieldDetails />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="about" element={<About />} />
+        <Route path="lab-results" element={<LabResults />} />
       </Route>
 
       {/* Role-based Dashboards */}
@@ -226,12 +254,7 @@ function AppContent() {
         </Route>
       </Route>
 
-      {/* Shared Lab Routes — Ensures visibility for all relevant roles */}
-      <Route element={<PrivateRoute allowedRoles={["doctor", "lab_technician", "admin", "hospital_admin", "patient"]} />}>
-        <Route path="/" element={<Layout />}>
-          <Route path="lab-results" element={<LabResults />} />
-        </Route>
-      </Route>
+      {/* Lab routes which should be accessible by doctors, admins, and unauthenticated patients */}
 
       {/* Public Patient Access — No PrivateRoute for these specific paths */}
       <Route path="/" element={<Layout />}>
@@ -242,7 +265,18 @@ function AppContent() {
       {/* Standalone Route for completely clean printing without Layout */}
       <Route path="medical-report/:appointmentId" element={<MedicalReport />} />
 
-      <Route element={<PrivateRoute allowedRoles={["doctor", "lab_technician", "admin", "hospital_admin"]} />}>
+      <Route
+        element={
+          <PrivateRoute
+            allowedRoles={[
+              "doctor",
+              "lab_technician",
+              "admin",
+              "hospital_admin",
+            ]}
+          />
+        }
+      >
         <Route path="/" element={<Layout />}>
           <Route path="laboratory-panel" element={<LaboratoryPanel />} />
           <Route path="doctor-lab" element={<LaboratoryServices />} />

@@ -21,7 +21,10 @@ const PrivateRoute = ({ allowedRoles }) => {
 
   // Not logged in → redirect to login
   if (!token || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    console.log("PrivateRoute REDIRECT: !token || !user", location.pathname);
+    return (
+      <Navigate to="/login" state={{ from: location }} replace />
+    );
   }
 
   const role = user.role?.toLowerCase();
@@ -34,7 +37,8 @@ const PrivateRoute = ({ allowedRoles }) => {
     const allowed = allowedRoles.map((r) => r.toLowerCase());
     if (!allowed.includes(role)) {
       // Redirect each role back to their own dashboard
-      if (role === "hospital_admin") return <Navigate to="/hospital-admin/dashboard" replace />;
+      if (role === "hospital_admin")
+        return <Navigate to="/hospital-admin/dashboard" replace />;
       if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
       if (role === "doctor") return <Navigate to="/doctor/dashboard" replace />;
       return <Navigate to="/patient/dashboard" replace />;

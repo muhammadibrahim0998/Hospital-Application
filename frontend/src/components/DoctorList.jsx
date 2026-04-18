@@ -152,14 +152,22 @@ export default function DoctorList({ doctors }) {
                     <img
                       src={
                         doc.image
-                          ? doc.image.startsWith("http")
+                          ? doc.image.startsWith("http") || doc.image.startsWith("data:")
                             ? doc.image
-                            : `${API_BASE_URL}${doc.image}`
+                            : `${API_BASE_URL}${doc.image.startsWith("/") ? "" : "/"}${doc.image}`
                           : "https://img.icons8.com/color/96/doctor-male.png"
                       }
                       alt={doc.name}
                       className="w-100 h-100"
                       style={{ objectFit: "cover" }}
+                      onError={(e) => {
+                          if (e.target.src.includes('localhost') && !e.target.dataset.fallback) {
+                              e.target.dataset.fallback = 'true';
+                              e.target.src = `https://hospital-application-1-gff3.onrender.com${doc.image.startsWith('/') ? '' : '/'}${doc.image}`;
+                          } else {
+                              e.target.src = "https://img.icons8.com/color/96/doctor-male.png";
+                          }
+                      }}
                     />
                     <div className="position-absolute bottom-0 start-0 w-100 p-3 bg-gradient-dark text-white text-start">
                       {doc.department_id && (

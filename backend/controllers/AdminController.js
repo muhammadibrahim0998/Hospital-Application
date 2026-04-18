@@ -6,6 +6,23 @@ import bcrypt from "bcryptjs";
 
 export const addDoctor = async (req, res) => {
   try {
+    console.log("addDoctor called - body keys:", Object.keys(req.body || {}));
+    console.log("addDoctor body preview:", {
+      name: req.body.name,
+      email: req.body.email,
+      specialization: req.body.specialization || req.body.specialty,
+      phone: req.body.phone,
+    });
+    console.log(
+      "addDoctor file:",
+      req.file
+        ? {
+            originalname: req.file.originalname,
+            filename: req.file.filename,
+            size: req.file.size,
+          }
+        : null,
+    );
     const {
       name,
       email,
@@ -30,11 +47,18 @@ export const addDoctor = async (req, res) => {
       email,
       password: hash,
       role: "doctor",
-      hospital_id: hospitalId
+      hospital_id: hospitalId,
     });
     const userId = user._id;
 
-    const imagePath = req.file ? `/uploads/doctors/${req.file.filename}` : null;
+    let imagePath = null;
+    if (req.file) {
+      if (req.file.buffer) {
+        imagePath = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      } else if (req.file.filename) {
+        imagePath = `/uploads/doctors/${req.file.filename}`;
+      }
+    }
 
     // Insert doctor with hospital_id using Mongoose
     await Doctor.create({
@@ -47,12 +71,20 @@ export const addDoctor = async (req, res) => {
       phone,
       fee: fee || 500,
       whatsapp_number: whatsappNumber,
-      hospital_id: hospitalId
+      hospital_id: hospitalId,
     });
 
     res.status(201).json({ message: "Doctor added successfully" });
   } catch (error) {
-    console.error(error);
+    console.error("Add Doctor Error:", error);
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "A user with this email already exists! Please use a different email.",
+        });
+    }
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -70,9 +102,24 @@ export const editDoctor = async (req, res) => {
       whatsappNumber,
     } = req.body;
 
-    const imagePath = req.file ? `/uploads/doctors/${req.file.filename}` : null;
+    let imagePath = null;
+    if (req.file) {
+      if (req.file.buffer) {
+        imagePath = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      } else if (req.file.filename) {
+        imagePath = `/uploads/doctors/${req.file.filename}`;
+      }
+    }
 
-    const updateData = { specialization, contact_info, department_id: departmentId, field_id: fieldId, phone, fee, whatsapp_number: whatsappNumber };
+    const updateData = {
+      specialization,
+      contact_info,
+      department_id: departmentId,
+      field_id: fieldId,
+      phone,
+      fee,
+      whatsapp_number: whatsappNumber,
+    };
     if (imagePath) updateData.image = imagePath;
 
     await Doctor.findByIdAndUpdate(id, updateData);
@@ -103,12 +150,14 @@ export const getDoctors = async (req, res) => {
   try {
     const hospitalId = req.hospitalId || null;
     const filter = hospitalId ? { hospital_id: hospitalId } : {};
-    const doctors = await Doctor.find(filter).populate('user_id', 'name email').sort({ created_at: -1 });
-    
-    const formatted = doctors.map(d => ({
-        ...d.toObject(),
-        name: d.user_id?.name,
-        email: d.user_id?.email
+    const doctors = await Doctor.find(filter)
+      .populate("user_id", "name email")
+      .sort({ created_at: -1 });
+
+    const formatted = doctors.map((d) => ({
+      ...d.toObject(),
+      name: d.user_id?.name,
+      email: d.user_id?.email,
     }));
     res.json(formatted);
   } catch (err) {
@@ -120,11 +169,13 @@ export const getPatients = async (req, res) => {
   try {
     const hospitalId = req.hospitalId || null;
     const filter = hospitalId ? { hospital_id: hospitalId } : {};
-    const patients = await Patient.find(filter).populate('user_id', 'name email').sort({ created_at: -1 });
-    const formatted = patients.map(p => ({
-        ...p.toObject(),
-        name: p.user_id?.name,
-        email: p.user_id?.email
+    const patients = await Patient.find(filter)
+      .populate("user_id", "name email")
+      .sort({ created_at: -1 });
+    const formatted = patients.map((p) => ({
+      ...p.toObject(),
+      name: p.user_id?.name,
+      email: p.user_id?.email,
     }));
     res.json(formatted);
   } catch (err) {
@@ -136,7 +187,9 @@ export const getAppointments = async (req, res) => {
   try {
     const hospitalId = req.hospitalId || null;
     const filter = hospitalId ? { hospital_id: hospitalId } : {};
-    const appointments = await Appointment.find(filter).sort({ created_at: -1 });
+    const appointments = await Appointment.find(filter).sort({
+      created_at: -1,
+    });
     res.json(appointments);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -158,13 +211,19 @@ export const addLabTechnician = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Name, email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Name, email and password are required" });
     }
 
     // Proactive check for duplicate email to avoid 500 errors
-    const existing = await User.findOne({ email: { $regex: `^${email}$`, $options: "i" } });
+    const existing = await User.findOne({
+      email: { $regex: `^${email}$`, $options: "i" },
+    });
     if (existing) {
-      return res.status(400).json({ message: "A user with this email already exists." });
+      return res
+        .status(400)
+        .json({ message: "A user with this email already exists." });
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -175,7 +234,7 @@ export const addLabTechnician = async (req, res) => {
       password: hash,
       role: "lab_technician",
       hospital_id: hospitalId,
-      phone: phone || ""
+      phone: phone || "",
     });
     res.status(201).json({ message: "Lab technician added successfully" });
   } catch (error) {
@@ -187,12 +246,12 @@ export const addLabTechnician = async (req, res) => {
 export const getLabTechnicians = async (req, res) => {
   try {
     const hospitalId = req.hospitalId || null;
-    const filter = { role: 'lab_technician' };
+    const filter = { role: "lab_technician" };
     if (hospitalId) filter.hospital_id = hospitalId;
-    
+
     const rows = await User.find(filter)
-        .select('name email phone created_at')
-        .sort({ created_at: -1 });
+      .select("name email phone created_at")
+      .sort({ created_at: -1 });
     res.json(rows);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });

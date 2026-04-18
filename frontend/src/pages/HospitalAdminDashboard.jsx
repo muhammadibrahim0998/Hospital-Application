@@ -275,8 +275,16 @@ const HospitalAdminDashboard = () => {
                                                 <tr key={doc.id}>
                                                     <td className="px-4 py-3">
                                                         <div className="d-flex align-items-center gap-3">
-                                                            <img src={doc.image ? `${API_BASE_URL}${doc.image}` : "https://img.icons8.com/color/96/doctor-male.png"}
-                                                                alt="" className="rounded-circle border" style={{ width: 40, height: 40, objectFit: "cover" }} />
+                                                            <img src={doc.image ? (doc.image.startsWith("http") || doc.image.startsWith("data:") ? doc.image : `${API_BASE_URL}${doc.image.startsWith("/") ? "" : "/"}${doc.image}`) : "https://img.icons8.com/color/96/doctor-male.png"}
+                                                                alt={doc.name} className="rounded-circle border" style={{ width: 40, height: 40, objectFit: "cover" }}
+                                                                onError={(e) => {
+                                                                    if (e.target.src.includes('localhost') && !e.target.dataset.fallback) {
+                                                                        e.target.dataset.fallback = 'true';
+                                                                        e.target.src = `https://hospital-application-1-gff3.onrender.com${doc.image.startsWith('/') ? '' : '/'}${doc.image}`;
+                                                                    } else {
+                                                                        e.target.src = "https://img.icons8.com/color/96/doctor-male.png";
+                                                                    }
+                                                                }} />
                                                             <div>
                                                                 <div className="fw-bold">{doc.name}</div>
                                                                 <div className="small text-muted">{doc.email}</div>
